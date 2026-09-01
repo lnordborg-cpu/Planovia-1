@@ -4,7 +4,8 @@ import { buildWeekData } from "@/lib/plannerHelpers";
 import { getISOWeek, getMondayOfISOWeek, getWeekdays, toISODate, formatDateShort, todayISO, fromISODate } from "@/lib/dateUtils";
 import { WEEKDAYS, getSubjectColor, getExceptionType } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, Clock, Trash2, Check, Circle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Clock, Trash2, Check, Circle, CopyPlus, Printer } from "lucide-react";
+import { toast } from "sonner";
 import LessonDialog from "@/components/dialogs/LessonDialog";
 import LessonExpandedDialog from "@/components/dialogs/LessonExpandedDialog";
 
@@ -46,15 +47,45 @@ export default function Veckoplanering() {
     setYW({ year: y, week: w });
   };
 
+  const copyFromPrevWeek = () => {
+    const currMon = getMondayOfISOWeek(year, week);
+    const prevMon = new Date(currMon);
+    prevMon.setDate(prevMon.getDate() - 7);
+    const fromDates = getWeekdays(prevMon).map(toISODate);
+    const toDates = getWeekdays(currMon).map(toISODate);
+    const prevCount = planner.events.filter((e) => fromDates.includes(e.date)).length;
+    if (prevCount === 0) {
+      toast.info("Föregående vecka är tom – inget att kopiera.");
+      return;
+    }
+    planner.copyEventsBetweenDates(fromDates, toDates);
+    toast.success(`Kopierade ${prevCount} händelser från föregående vecka.`);
+  };
+
+  const printWeek = () => {
+    document.body.classList.add("print-week");
+    setTimeout(() => {
+      window.print();
+      document.body.classList.remove("print-week");
+    }, 100);
+  };
+
   return (
     <div className="space-y-6" data-testid="page-veckoplanering">
-      <header className="flex items-end justify-between flex-wrap gap-4">
+      <header className="flex items-end justify-between flex-wrap gap-4 no-print">
         <div>
           <div className="text-[11px] tracking-[0.2em] uppercase text-[#8A948C] font-semibold">Veckoplanering</div>
           <h1 className="font-serif-display text-4xl mt-1 text-[#2D312E]">Vecka {week}</h1>
           <div className="text-sm text-[#656E67] mt-1">{formatDateShort(monday)} – {formatDateShort(friday)} · {year}</div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button data-testid="copy-week-btn" variant="outline" size="sm" onClick={copyFromPrevWeek} className="border-[#E6E1DA] bg-white">
+            <CopyPlus className="h-4 w-4 mr-1" /> Kopiera föregående
+          </Button>
+          <Button data-testid="print-week-btn" variant="outline" size="sm" onClick={printWeek} className="border-[#E6E1DA] bg-white">
+            <Printer className="h-4 w-4 mr-1" /> Skriv ut
+          </Button>
+          <div className="w-px h-6 bg-[#E6E1DA] mx-1" />
           <Button data-testid="prev-week-btn" variant="outline" size="sm" onClick={() => gotoWeek(-1)} className="border-[#E6E1DA] bg-white">
             <ChevronLeft className="h-4 w-4 mr-1" /> Föregående
           </Button>
@@ -66,6 +97,11 @@ export default function Veckoplanering() {
           </Button>
         </div>
       </header>
+
+      <div className="hidden print:block mb-4">
+        <div className="text-xs uppercase tracking-widest">Veckoplanering</div>
+        <h1 className="font-serif-display text-3xl">Vecka {week} · {formatDateShort(monday)} – {formatDateShort(friday)} · {year}</h1>
+      </div>
 
       <div className="grid grid-cols-5 gap-3">
         {weekData.map((day, i) => (
@@ -102,6 +138,7 @@ export default function Veckoplanering() {
 const DayColumn = ({ label, day, planner, onAdd, onExpand }) => {
   const today = todayISO();
   const isToday = day.iso === today;
+  const [dragOver, setDragOver] = React.useState(false);
   // Merge slots + events sorted by time; followups appear on top
   const rows = useMemo(() => {
     const slotRows = day.slots.map((s) => ({ kind: "slot", time: s.time, data: s, id: `slot-${s.id}` }));
@@ -109,8 +146,31 @@ const DayColumn = ({ label, day, planner, onAdd, onExpand }) => {
     return [...slotRows, ...eventRows].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
   }, [day.slots, day.events]);
 
+  const onDragOver = (e) => {
+    if (e.dataTransfer.types.includes("text/x-event-id")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      if (!dragOver) setDragOver(true);
+    }
+  };
+  const onDragLeave = () => setDragOver(false);
+  const onDrop = (e) => {
+    const id = e.dataTransfer.getData("text/x-event-id");
+    setDragOver(false);
+    if (!id) return;
+    const ev = planner.events.find((x) => x.id === id);
+    if (!ev || ev.date === day.iso) return;
+    planner.moveEventToDate(id, day.iso);
+  };
+
   return (
-    <div className={`rounded-2xl border ${isToday ? "border-[#3D5A45]" : "border-[#E6E1DA]"} bg-[#FAF7F2]/40 flex flex-col min-h-[500px]`} data-testid={`day-column-${label.toLowerCase()}`}>
+    <div
+      className={`rounded-2xl border ${dragOver ? "border-[#3D5A45] bg-[#EAF0EC]/60" : isToday ? "border-[#3D5A45]" : "border-[#E6E1DA]"} bg-[#FAF7F2]/40 flex flex-col min-h-[500px] transition-colors`}
+      data-testid={`day-column-${label.toLowerCase()}`}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
       <div className="p-3 border-b border-[#E6E1DA] flex items-center justify-between">
         <div>
           <div className="text-[11px] uppercase tracking-widest text-[#8A948C] font-semibold">{label}</div>
@@ -201,8 +261,14 @@ const LessonCard = ({ row, planner, onExpand, onMaterialise }) => {
   return (
     <button
       onClick={handleClick}
+      draggable={isEvent}
+      onDragStart={(e) => {
+        if (!isEvent) return;
+        e.dataTransfer.setData("text/x-event-id", data.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
       data-testid={isEvent ? `event-card-${data.id}` : `slot-card-${data.id}`}
-      className={`w-full text-left rounded-xl border p-2.5 bg-white hover:shadow-sm transition ${isEvent && data.completed ? "opacity-60" : ""} ${!isEvent ? "border-dashed" : ""}`}
+      className={`w-full text-left rounded-xl border p-2.5 bg-white hover:shadow-sm transition ${isEvent && data.completed ? "opacity-60" : ""} ${!isEvent ? "border-dashed" : "cursor-grab active:cursor-grabbing"}`}
       style={{ borderColor: "#E6E1DA" }}
     >
       <div className="flex items-center gap-2 text-[11px] font-semibold tabular-nums text-[#656E67]">

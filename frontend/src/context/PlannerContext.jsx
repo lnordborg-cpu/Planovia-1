@@ -152,6 +152,35 @@ export const PlannerProvider = ({ children }) => {
     return obj;
   };
 
+  // Move an event to another date (drag & drop)
+  const moveEventToDate = (id, newDate) =>
+    setState((s) => ({
+      ...s,
+      events: s.events.map((e) => (e.id === id ? { ...e, date: newDate, timetableId: null } : e)),
+    }));
+
+  // Copy all events from one ISO date range into another with same weekday offset
+  // fromDates and toDates are arrays of ISO strings (Mon..Fri) of equal length
+  const copyEventsBetweenDates = (fromDates, toDates) => {
+    setState((s) => {
+      const clones = [];
+      s.events.forEach((e) => {
+        const idx = fromDates.indexOf(e.date);
+        if (idx === -1) return;
+        clones.push({
+          ...e,
+          id: uid(),
+          date: toDates[idx],
+          completed: false,
+          timetableId: null,
+          materials: (e.materials || []).map((m) => ({ ...m, id: uid() })),
+        });
+      });
+      return { ...s, events: [...s.events, ...clones] };
+    });
+  };
+
+
   // ------- Units (arbetsområden) -------
   const addUnit = (data) => {
     const obj = { id: uid(), ...data };
@@ -287,6 +316,7 @@ export const PlannerProvider = ({ children }) => {
       addTimetableSlot, deleteTimetableSlot,
       upsertEvent, deleteEvent, toggleEventCompleted,
       addMaterialToEvent, removeMaterialFromEvent, addPrintTaskForMaterial,
+      moveEventToDate, copyEventsBetweenDates,
       addUnit, updateUnit, deleteUnit,
       addTask, updateTask, deleteTask, toggleTaskCompleted,
       addFollowup, toggleFollowupCompleted, deleteFollowup,

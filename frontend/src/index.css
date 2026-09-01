@@ -60,6 +60,17 @@ body {
 ::-webkit-scrollbar-thumb { background: #E6E1DA; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #C9C1B5; }
 
+@media print {
+    @page { size: A4 landscape; margin: 12mm; }
+    body { background: white !important; }
+    aside, .no-print { display: none !important; }
+    main { overflow: visible !important; height: auto !important; }
+    .max-w-6xl { max-width: none !important; padding: 0 !important; }
+    .min-h-\\[500px\\] { min-height: 0 !important; }
+    .rounded-2xl, .rounded-xl { break-inside: avoid; page-break-inside: avoid; }
+    button[draggable] { cursor: default !important; }
+}
+
 @layer base {
     [data-debug-wrapper="true"] {
         display: contents !important;
