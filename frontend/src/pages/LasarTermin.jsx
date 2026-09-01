@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogT
 import { Plus, Trash2 } from "lucide-react";
 import { formatDateShort, fromISODate } from "@/lib/dateUtils";
 import { toast } from "sonner";
+import TerminTimeline from "@/components/TerminTimeline";
 
 export default function LasarTermin() {
   const planner = usePlanner();
@@ -24,6 +25,7 @@ export default function LasarTermin() {
       </header>
 
       <UnitsSection planner={planner} />
+      <TerminTimeline />
       <ExceptionsSection planner={planner} />
     </div>
   );

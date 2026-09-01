@@ -1,13 +1,15 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { usePlanner } from "@/context/PlannerContext";
 import { getSubjectColor } from "@/lib/constants";
 import { fromISODate, formatDateLong } from "@/lib/dateUtils";
 import { allMaterials } from "@/lib/plannerHelpers";
-import { Link as LinkIcon, Folder } from "lucide-react";
+import { Link as LinkIcon, Folder, FileText, Eye } from "lucide-react";
+import MaterialPreview, { canPreview } from "@/components/dialogs/MaterialPreview";
 
 export default function Material() {
   const planner = usePlanner();
   const materials = useMemo(() => allMaterials(planner.events, planner.classes, planner.subjects), [planner.events, planner.classes, planner.subjects]);
+  const [previewMaterial, setPreviewMaterial] = useState(null);
 
   return (
     <div className="space-y-6" data-testid="page-material">
@@ -30,6 +32,7 @@ export default function Material() {
             const subj = planner.subjects.find((s) => s.id === m.subjectId);
             const color = subj ? getSubjectColor(subj.colorId) : null;
             const klass = planner.classes.find((c) => c.id === m.classId);
+            const previewable = canPreview(m);
             return (
               <div key={m.id} className="rounded-xl border border-[#E6E1DA] bg-white p-4" data-testid={`material-row-${m.id}`}>
                 <div className="flex items-center gap-2 mb-2">
@@ -43,11 +46,29 @@ export default function Material() {
                   <span className="text-xs text-[#8A948C] ml-auto">{formatDateLong(fromISODate(m.date))}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <LinkIcon className="h-3.5 w-3.5 text-[#656E67]" />
-                  {m.url ? (
+                  {m.isFile ? <FileText className="h-3.5 w-3.5 text-[#3D5A45]" /> : <LinkIcon className="h-3.5 w-3.5 text-[#656E67]" />}
+                  {previewable && m.url ? (
+                    <button
+                      onClick={() => setPreviewMaterial(m)}
+                      className="text-[#3D5A45] underline underline-offset-2 text-sm text-left hover:text-[#2F4736]"
+                      data-testid={`material-preview-${m.id}`}
+                    >
+                      {m.name}
+                    </button>
+                  ) : m.url ? (
                     <a href={m.url} target="_blank" rel="noreferrer" className="text-[#3D5A45] underline underline-offset-2 text-sm">{m.name}</a>
                   ) : (
                     <span className="text-sm">{m.name}</span>
+                  )}
+                  {previewable && m.url && (
+                    <button
+                      onClick={() => setPreviewMaterial(m)}
+                      className="ml-auto text-[#656E67] hover:text-[#3D5A45] p-1 rounded hover:bg-[#F3EFEA]"
+                      title="Förhandsgranska"
+                      data-testid={`material-preview-btn-${m.id}`}
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </button>
                   )}
                 </div>
                 {m.eventTitle && <div className="text-xs text-[#8A948C] mt-1">Från lektion: {m.eventTitle}</div>}
@@ -56,6 +77,8 @@ export default function Material() {
           })}
         </div>
       )}
+
+      <MaterialPreview material={previewMaterial} onOpenChange={(v) => !v && setPreviewMaterial(null)} />
     </div>
   );
 }

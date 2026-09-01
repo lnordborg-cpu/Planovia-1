@@ -9,8 +9,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { usePlanner } from "@/context/PlannerContext";
 import { getSubjectColor } from "@/lib/constants";
 import { formatDateLong, fromISODate } from "@/lib/dateUtils";
-import { Trash2, Link as LinkIcon, X, Paperclip, FileText, Upload, StickyNote } from "lucide-react";
+import { Trash2, Link as LinkIcon, X, Paperclip, FileText, Upload, StickyNote, Eye } from "lucide-react";
 import { toast } from "sonner";
+import MaterialPreview, { canPreview } from "@/components/dialogs/MaterialPreview";
 
 const PRINTABLE_RE = /\.(pdf|docx?|odt|pptx?|xlsx?|rtf|txt|png|jpe?g)(\?|#|$)/i;
 const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
@@ -27,6 +28,7 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
   const [matUrl, setMatUrl] = useState("");
   const [confirmPrint, setConfirmPrint] = useState(null); // pending pdf mat name
   const [notes, setNotes] = useState(event?.notes || "");
+  const [previewMaterial, setPreviewMaterial] = useState(null);
   const fileInputRef = useRef(null);
 
   React.useEffect(() => { setNotes(event?.notes || ""); }, [event?.id, event?.notes]);
@@ -120,22 +122,43 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
               <Label className="text-xs uppercase tracking-widest text-[#656E67]">Material</Label>
               <div className="space-y-2 mt-1">
                 {(event.materials || []).length === 0 && <div className="text-xs text-[#8A948C]">Inga material tillagda.</div>}
-                {(event.materials || []).map((m) => (
-                  <div key={m.id} className="flex items-center gap-2 text-sm bg-[#FAF7F2] border border-[#E6E1DA] rounded-lg px-3 py-1.5" data-testid={`material-${m.id}`}>
-                    {m.isFile ? <FileText className="h-3.5 w-3.5 text-[#3D5A45]" /> : <LinkIcon className="h-3.5 w-3.5 text-[#656E67]" />}
-                    {m.url ? (
-                      <a href={m.url} download={m.isFile ? m.name : undefined} target="_blank" rel="noreferrer" className="text-[#3D5A45] underline underline-offset-2 flex-1 truncate">{m.name}</a>
-                    ) : (
-                      <span className="flex-1 truncate">{m.name}</span>
-                    )}
-                    {m.isFile && m.size && (
-                      <span className="text-[10px] text-[#8A948C] tabular-nums">{Math.round(m.size / 1024)} kB</span>
-                    )}
-                    <button onClick={() => removeMaterial(m.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`material-remove-${m.id}`}>
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                ))}
+                {(event.materials || []).map((m) => {
+                  const previewable = canPreview(m);
+                  return (
+                    <div key={m.id} className="flex items-center gap-2 text-sm bg-[#FAF7F2] border border-[#E6E1DA] rounded-lg px-3 py-1.5" data-testid={`material-${m.id}`}>
+                      {m.isFile ? <FileText className="h-3.5 w-3.5 text-[#3D5A45]" /> : <LinkIcon className="h-3.5 w-3.5 text-[#656E67]" />}
+                      {previewable && m.url ? (
+                        <button
+                          onClick={() => setPreviewMaterial(m)}
+                          className="text-[#3D5A45] underline underline-offset-2 flex-1 truncate text-left hover:text-[#2F4736]"
+                          data-testid={`material-preview-${m.id}`}
+                        >
+                          {m.name}
+                        </button>
+                      ) : m.url ? (
+                        <a href={m.url} download={m.isFile ? m.name : undefined} target="_blank" rel="noreferrer" className="text-[#3D5A45] underline underline-offset-2 flex-1 truncate">{m.name}</a>
+                      ) : (
+                        <span className="flex-1 truncate">{m.name}</span>
+                      )}
+                      {previewable && m.url && (
+                        <button
+                          onClick={() => setPreviewMaterial(m)}
+                          className="text-[#656E67] hover:text-[#3D5A45] p-1 rounded hover:bg-white"
+                          title="Förhandsgranska"
+                          data-testid={`material-preview-btn-${m.id}`}
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                      {m.isFile && m.size && (
+                        <span className="text-[10px] text-[#8A948C] tabular-nums">{Math.round(m.size / 1024)} kB</span>
+                      )}
+                      <button onClick={() => removeMaterial(m.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`material-remove-${m.id}`}>
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  );
+                })}
                 <div className="grid grid-cols-5 gap-2">
                   <Input data-testid="material-name-input" value={matName} onChange={(e) => setMatName(e.target.value)} placeholder="Namn på material" className="col-span-2" />
                   <Input data-testid="material-url-input" value={matUrl} onChange={(e) => setMatUrl(e.target.value)} placeholder="Länk (valfri)" className="col-span-2" />
@@ -201,6 +224,8 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <MaterialPreview material={previewMaterial} onOpenChange={(v) => !v && setPreviewMaterial(null)} />
 
       <AlertDialog open={!!confirmPrint} onOpenChange={(v) => !v && setConfirmPrint(null)}>
         <AlertDialogContent data-testid="print-confirm-dialog">
