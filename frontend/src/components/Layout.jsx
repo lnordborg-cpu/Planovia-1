@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
-import { LayoutDashboard, CalendarRange, CalendarDays, Users, Folder, Settings, PanelRightClose, PanelRightOpen, Search } from "lucide-react";
+import { LayoutDashboard, CalendarRange, CalendarDays, Users, Folder, Settings, PanelRightClose, PanelRightOpen, Search, BarChart3 } from "lucide-react";
 import TodoPanel from "@/components/TodoPanel";
 import GlobalSearch from "@/components/GlobalSearch";
 import QuickNote from "@/components/QuickNote";
@@ -11,14 +11,15 @@ const NAV_ITEMS = [
   { to: "/vecka", label: "Veckoplanering", icon: CalendarDays, testId: "nav-vecka" },
   { to: "/elever", label: "Elevkort", icon: Users, testId: "nav-elever" },
   { to: "/material", label: "Material", icon: Folder, testId: "nav-material" },
+  { to: "/statistik", label: "Statistik", icon: BarChart3, testId: "nav-statistik" },
   { to: "/installningar", label: "Inställningar", icon: Settings, testId: "nav-installningar" },
 ];
 
 const Sidebar = () => (
   <aside className="w-60 flex-shrink-0 bg-[#F3EFEA] border-r border-[#E6E1DA] flex flex-col p-4" data-testid="sidebar">
     <div className="px-2 py-4 mb-4">
-      <div className="text-[11px] tracking-[0.2em] uppercase text-[#8A948C] font-semibold">Lärarplaneraren</div>
-      <div className="font-serif-display text-2xl leading-tight text-[#2D312E] mt-1">Din lugna vy</div>
+      <div className="font-serif-display text-3xl leading-none text-[#2D312E] tracking-tight">Planova</div>
+      <div className="text-[10px] tracking-[0.3em] uppercase text-[#8A948C] font-semibold mt-1.5">Lärarplanerare</div>
     </div>
     <nav className="flex flex-col gap-1 flex-1">
       {NAV_ITEMS.map((item) => {

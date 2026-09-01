@@ -8,6 +8,7 @@ import LasarTermin from "@/pages/LasarTermin";
 import Veckoplanering from "@/pages/Veckoplanering";
 import Elevkort from "@/pages/Elevkort";
 import Material from "@/pages/Material";
+import Statistik from "@/pages/Statistik";
 import Installningar from "@/pages/Installningar";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/elever" element={<Elevkort />} />
             <Route path="/elever/:studentId" element={<Elevkort />} />
             <Route path="/material" element={<Material />} />
+            <Route path="/statistik" element={<Statistik />} />
             <Route path="/installningar" element={<Installningar />} />
           </Route>
         </Routes>

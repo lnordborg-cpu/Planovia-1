@@ -1,4 +1,5 @@
 export const SUBJECT_COLORS = [
+  // Pastels (soft)
   { id: "sage", name: "Salvia", bg: "#EFF5F0", text: "#2D5A3A", border: "#D2E4D5" },
   { id: "clay", name: "Tegel", bg: "#FDF2F0", text: "#9E4A3B", border: "#F5D5D0" },
   { id: "honey", name: "Honung", bg: "#FEF8EC", text: "#8C5E14", border: "#F9E8C7" },
@@ -7,6 +8,15 @@ export const SUBJECT_COLORS = [
   { id: "sand", name: "Sand", bg: "#FCF5EE", text: "#8C4A27", border: "#F5DCB8" },
   { id: "mist", name: "Dimma", bg: "#F1F4F3", text: "#455955", border: "#DAE0DE" },
   { id: "rose", name: "Ros", bg: "#FCF0F4", text: "#A03E64", border: "#F5D0DE" },
+  // Sharp / vivid
+  { id: "emerald", name: "Emerald", bg: "#0F9D58", text: "#FFFFFF", border: "#0B7B45" },
+  { id: "cobalt", name: "Kobolt", bg: "#1F5FE1", text: "#FFFFFF", border: "#1747B0" },
+  { id: "fuchsia", name: "Fuchsia", bg: "#D6006C", text: "#FFFFFF", border: "#A80054" },
+  { id: "coral", name: "Korall", bg: "#FF5A3C", text: "#FFFFFF", border: "#D63F24" },
+  { id: "amber", name: "Bärnsten", bg: "#F5B301", text: "#2D312E", border: "#C99400" },
+  { id: "teal", name: "Petrol", bg: "#0EA5A5", text: "#FFFFFF", border: "#0A7A7A" },
+  { id: "violet", name: "Violett", bg: "#7C3AED", text: "#FFFFFF", border: "#5B21B6" },
+  { id: "crimson", name: "Karmosin", bg: "#DC2626", text: "#FFFFFF", border: "#991B1B" },
 ];
 
 export const CLASS_COLORS = SUBJECT_COLORS;

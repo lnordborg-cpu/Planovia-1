@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Search, User, Check, Circle } from "lucide-react";
+import { Plus, Trash2, Search, User, Check, Circle, FileDown } from "lucide-react";
 import { formatDateLong, fromISODate, todayISO } from "@/lib/dateUtils";
 import { ClassDot } from "@/components/ClassDot";
 import { toast } from "sonner";
@@ -168,6 +168,7 @@ const MotenTab = ({ student, planner }) => {
   const [meetingType, setMeetingType] = useState("");
   const [participants, setParticipants] = useState("");
   const [notes, setNotes] = useState("");
+  const [selected, setSelected] = useState({});
 
   // Include utvecklingssamtal events for this student
   const eventsAsMeetings = planner.events
@@ -183,6 +184,50 @@ const MotenTab = ({ student, planner }) => {
     toast.success("Mötesanteckning tillagd");
   };
 
+  const toggleSelected = (id) => setSelected((s) => ({ ...s, [id]: !s[id] }));
+  const selectedItems = combined.filter((m) => selected[m.id]);
+
+  const exportSelected = () => {
+    if (selectedItems.length === 0) { toast.info("Välj minst en anteckning att exportera."); return; }
+    const klass = planner.classes.find((c) => c.id === student.classId);
+    const html = `<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><title>Mötesanteckningar – ${student.name}</title>
+<style>
+  @page { size: A4; margin: 20mm; }
+  body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #2D312E; line-height: 1.5; }
+  h1 { font-family: 'Fraunces', Georgia, serif; font-size: 28px; margin: 0 0 4px; }
+  .sub { color: #656E67; font-size: 13px; margin-bottom: 24px; }
+  .meta { color: #8A948C; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; }
+  .note { border: 1px solid #E6E1DA; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; page-break-inside: avoid; }
+  .note .head { font-size: 12px; color: #656E67; font-weight: 600; margin-bottom: 6px; }
+  .note .type { display: inline-block; padding: 2px 8px; border-radius: 4px; background: #EFF5F0; color: #2D5A3A; font-size: 11px; font-weight: 600; margin-right: 8px; }
+  .note .participants { font-size: 12px; color: #656E67; margin: 4px 0; }
+  .note .body { font-size: 13px; white-space: pre-wrap; margin-top: 8px; }
+  .footer { color: #8A948C; font-size: 11px; margin-top: 32px; border-top: 1px solid #E6E1DA; padding-top: 12px; }
+</style></head><body>
+  <div class="meta">Planova – Mötesanteckningar</div>
+  <h1>${student.name}</h1>
+  <div class="sub">${klass?.name || ""}${klass?.name ? " · " : ""}Utskrivet ${new Date().toLocaleDateString("sv-SE")}</div>
+  ${selectedItems.map((m) => `
+    <div class="note">
+      <div class="head">
+        <span class="type">${(m.meetingType || "Möte").replace(/</g, "&lt;")}</span>
+        ${new Date(m.date + "T00:00:00").toLocaleDateString("sv-SE", { day: "numeric", month: "long", year: "numeric" })}
+      </div>
+      ${m.participants ? `<div class="participants"><strong>Deltagare:</strong> ${m.participants.replace(/</g, "&lt;")}</div>` : ""}
+      ${m.notes ? `<div class="body">${m.notes.replace(/</g, "&lt;")}</div>` : ""}
+    </div>
+  `).join("")}
+  <div class="footer">Sammanställt via Planova. Denna sammanställning kan sparas som PDF från utskriftsdialogen.</div>
+</body></html>`;
+    const win = window.open("", "_blank", "width=900,height=1100");
+    if (!win) { toast.error("Popup blockerades av webbläsaren."); return; }
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); }, 400);
+  };
+
   return (
     <div className="pt-4 space-y-4">
       <div className="rounded-xl border border-[#E6E1DA] p-3 bg-[#FAF7F2] space-y-2">
@@ -194,18 +239,38 @@ const MotenTab = ({ student, planner }) => {
         <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anteckningar" data-testid="mtg-notes-input" />
         <div className="flex justify-end"><Button data-testid="mtg-add-btn" onClick={save} className="bg-[#3D5A45] hover:bg-[#2F4736]"><Plus className="h-4 w-4 mr-1" />Lägg till</Button></div>
       </div>
+
+      {combined.length > 0 && (
+        <div className="flex items-center justify-between text-xs text-[#656E67]" data-testid="mtg-export-bar">
+          <span>{selectedItems.length > 0 ? `${selectedItems.length} anteckning${selectedItems.length > 1 ? "ar" : ""} valda` : "Kryssa i för att exportera som PDF till vårdnadshavare"}</span>
+          <Button data-testid="mtg-export-btn" size="sm" variant="outline" className="border-[#E6E1DA]" disabled={selectedItems.length === 0} onClick={exportSelected}>
+            <FileDown className="h-3.5 w-3.5 mr-1" /> Exportera som PDF
+          </Button>
+        </div>
+      )}
+
       {combined.length === 0 ? <div className="text-sm text-[#8A948C]">Inga möten ännu.</div> :
         combined.map((m) => (
-          <div key={m.id} className="rounded-xl border border-[#E6E1DA] p-3 bg-white" data-testid={`mtg-${m.id}`}>
-            <div className="flex items-center justify-between">
-              <div className="text-xs text-[#8A948C]">{formatDateLong(fromISODate(m.date))} · {m.meetingType || "Möte"}</div>
-              {!m.fromEvent && (
-                <button onClick={() => planner.deleteMeetingNote(m.id)} className="text-[#8A948C] hover:text-[#9E4A3B]"><Trash2 className="h-3.5 w-3.5" /></button>
-              )}
+          <div key={m.id} className="rounded-xl border border-[#E6E1DA] p-3 bg-white flex gap-3" data-testid={`mtg-${m.id}`}>
+            <input
+              type="checkbox"
+              checked={!!selected[m.id]}
+              onChange={() => toggleSelected(m.id)}
+              className="mt-1 h-4 w-4 accent-[#3D5A45]"
+              data-testid={`mtg-select-${m.id}`}
+              aria-label="Välj för export"
+            />
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-[#8A948C]">{formatDateLong(fromISODate(m.date))} · {m.meetingType || "Möte"}</div>
+                {!m.fromEvent && (
+                  <button onClick={() => planner.deleteMeetingNote(m.id)} className="text-[#8A948C] hover:text-[#9E4A3B]"><Trash2 className="h-3.5 w-3.5" /></button>
+                )}
+              </div>
+              {m.participants && <div className="text-xs text-[#656E67] mt-1">Deltagare: {m.participants}</div>}
+              {m.notes && <div className="text-sm text-[#656E67] whitespace-pre-wrap mt-1">{m.notes}</div>}
+              {m.fromEvent && <div className="text-[10px] text-[#8A948C] mt-2">Från utvecklingssamtal i veckoplaneringen</div>}
             </div>
-            {m.participants && <div className="text-xs text-[#656E67] mt-1">Deltagare: {m.participants}</div>}
-            {m.notes && <div className="text-sm text-[#656E67] whitespace-pre-wrap mt-1">{m.notes}</div>}
-            {m.fromEvent && <div className="text-[10px] text-[#8A948C] mt-2">Från utvecklingssamtal i veckoplaneringen</div>}
           </div>
         ))
       }
