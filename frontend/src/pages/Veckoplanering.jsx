@@ -3,6 +3,7 @@ import { usePlanner } from "@/context/PlannerContext";
 import { buildWeekData } from "@/lib/plannerHelpers";
 import { getISOWeek, getMondayOfISOWeek, getWeekdays, toISODate, formatDateShort, todayISO, fromISODate } from "@/lib/dateUtils";
 import { WEEKDAYS, getSubjectColor, getExceptionType } from "@/lib/constants";
+import { ClassDot } from "@/components/ClassDot";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus, Clock, Trash2, Check, Circle, CopyPlus, Printer, Filter, X } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,6 +15,15 @@ import LessonExpandedDialog from "@/components/dialogs/LessonExpandedDialog";
 const initialYW = () => getISOWeek(new Date());
 
 const ALL = "__all__";
+const FILTER_KEY = "lararplanerare_v1_filter";
+
+const loadFilter = () => {
+  try {
+    const raw = localStorage.getItem(FILTER_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) { /* ignore */ }
+  return { classId: ALL, subjectId: ALL };
+};
 
 export default function Veckoplanering() {
   const planner = usePlanner();
@@ -23,8 +33,14 @@ export default function Veckoplanering() {
   });
   const [dialogState, setDialogState] = useState(null); // { date, prefill }
   const [expandedEventId, setExpandedEventId] = useState(null);
-  const [filterClassId, setFilterClassId] = useState(ALL);
-  const [filterSubjectId, setFilterSubjectId] = useState(ALL);
+  const initialFilter = loadFilter();
+  const [filterClassId, setFilterClassId] = useState(initialFilter.classId);
+  const [filterSubjectId, setFilterSubjectId] = useState(initialFilter.subjectId);
+
+  React.useEffect(() => {
+    try { localStorage.setItem(FILTER_KEY, JSON.stringify({ classId: filterClassId, subjectId: filterSubjectId })); }
+    catch (e) { /* ignore */ }
+  }, [filterClassId, filterSubjectId]);
 
   const rawWeekData = useMemo(
     () => buildWeekData({
@@ -347,7 +363,12 @@ const LessonCard = ({ row, planner, onExpand, onMaterialise }) => {
             {subject.name}
           </span>
         )}
-        {klass && <span className="text-[10px] text-[#656E67]">{klass.name}</span>}
+        {klass && (
+          <span className="text-[10px] text-[#656E67] flex items-center gap-1">
+            <ClassDot colorId={klass.colorId} size={8} />
+            {klass.name}
+          </span>
+        )}
       </div>
       <div className="mt-1 text-sm text-[#2D312E] line-clamp-2">
         {isEvent ? data.title : (data.defaultTitle || <span className="text-[#8A948C] italic">Klicka för att planera</span>)}

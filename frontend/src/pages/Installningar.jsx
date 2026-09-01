@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { usePlanner } from "@/context/PlannerContext";
-import { SUBJECT_COLORS, WEEKDAYS, getSubjectColor } from "@/lib/constants";
+import { SUBJECT_COLORS, CLASS_COLORS, WEEKDAYS, getSubjectColor, getClassColor } from "@/lib/constants";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -43,24 +43,59 @@ export default function Installningar() {
 
 const ClassesSection = ({ planner }) => {
   const [name, setName] = useState("");
+  const [colorId, setColorId] = useState(CLASS_COLORS[0].id);
   return (
-    <Section title="Klasser" description="Skapa de klasser du undervisar." testId="section-classes">
-      <div className="flex gap-2 mb-4">
-        <Input data-testid="class-name-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="T.ex. 6A" />
+    <Section title="Klasser" description="Skapa de klasser du undervisar och ge dem gärna en egen accentfärg." testId="section-classes">
+      <div className="flex gap-2 mb-4 flex-wrap">
+        <Input data-testid="class-name-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="T.ex. 6A" className="flex-1 min-w-[200px]" />
+        <Select value={colorId} onValueChange={setColorId}>
+          <SelectTrigger data-testid="class-color-select" className="w-40"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {CLASS_COLORS.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: c.bg, border: `1px solid ${c.border}` }} />
+                  {c.name}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Button
           data-testid="class-add-btn"
-          onClick={() => { if (name.trim()) { planner.addClass(name); setName(""); toast.success("Klass tillagd"); } }}
+          onClick={() => { if (name.trim()) { planner.addClass(name, colorId); setName(""); toast.success("Klass tillagd"); } }}
           className="bg-[#3D5A45] hover:bg-[#2F4736]"
         ><Plus className="h-4 w-4 mr-1" /> Lägg till</Button>
       </div>
       <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
         {planner.classes.length === 0 && <div className="text-sm text-[#8A948C]">Inga klasser tillagda ännu.</div>}
-        {planner.classes.map((c) => (
-          <div key={c.id} className="flex items-center justify-between rounded-lg border border-[#E6E1DA] px-3 py-2 bg-[#FAF7F2]" data-testid={`class-row-${c.id}`}>
-            <span className="text-sm">{c.name}</span>
-            <button onClick={() => planner.deleteClass(c.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`class-delete-${c.id}`}><Trash2 className="h-3.5 w-3.5" /></button>
-          </div>
-        ))}
+        {planner.classes.map((c) => {
+          const col = getClassColor(c.colorId);
+          return (
+            <div key={c.id} className="flex items-center justify-between rounded-lg border border-[#E6E1DA] px-3 py-2 bg-[#FAF7F2]" data-testid={`class-row-${c.id}`}>
+              <div className="flex items-center gap-2">
+                {col && <span className="h-3 w-3 rounded-full" style={{ backgroundColor: col.bg, border: `1.5px solid ${col.text}` }} />}
+                <span className="text-sm">{c.name}</span>
+                <Select value={c.colorId || ""} onValueChange={(v) => planner.updateClass(c.id, { colorId: v })}>
+                  <SelectTrigger data-testid={`class-color-change-${c.id}`} className="h-6 w-6 p-0 border-0 bg-transparent" aria-label="Byt färg">
+                    <span className="sr-only">Byt färg</span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CLASS_COLORS.map((cc) => (
+                      <SelectItem key={cc.id} value={cc.id}>
+                        <div className="flex items-center gap-2">
+                          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: cc.bg, border: `1px solid ${cc.border}` }} />
+                          {cc.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <button onClick={() => planner.deleteClass(c.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`class-delete-${c.id}`}><Trash2 className="h-3.5 w-3.5" /></button>
+            </div>
+          );
+        })}
       </div>
     </Section>
   );

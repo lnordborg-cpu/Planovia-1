@@ -9,6 +9,10 @@ export const SUBJECT_COLORS = [
   { id: "rose", name: "Ros", bg: "#FCF0F4", text: "#A03E64", border: "#F5D0DE" },
 ];
 
+export const CLASS_COLORS = SUBJECT_COLORS;
+export const getClassColor = (colorId) =>
+  CLASS_COLORS.find((c) => c.id === colorId) || null;
+
 export const getSubjectColor = (colorId) =>
   SUBJECT_COLORS.find((c) => c.id === colorId) || SUBJECT_COLORS[0];
 

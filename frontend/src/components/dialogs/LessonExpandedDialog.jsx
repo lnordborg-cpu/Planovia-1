@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,7 +9,16 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { usePlanner } from "@/context/PlannerContext";
 import { getSubjectColor } from "@/lib/constants";
 import { formatDateLong, fromISODate } from "@/lib/dateUtils";
-import { Trash2, Link as LinkIcon, X } from "lucide-react";
+import { Trash2, Link as LinkIcon, X, Paperclip, FileText, Upload, StickyNote } from "lucide-react";
+import { toast } from "sonner";
+
+const PRINTABLE_RE = /\.(pdf|docx?|odt|pptx?|xlsx?|rtf|txt|png|jpe?g)(\?|#|$)/i;
+const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
+  const r = new FileReader();
+  r.onload = () => resolve(r.result);
+  r.onerror = reject;
+  r.readAsDataURL(file);
+});
 
 export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
   const planner = usePlanner();
@@ -18,6 +27,7 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
   const [matUrl, setMatUrl] = useState("");
   const [confirmPrint, setConfirmPrint] = useState(null); // pending pdf mat name
   const [notes, setNotes] = useState(event?.notes || "");
+  const fileInputRef = useRef(null);
 
   React.useEffect(() => { setNotes(event?.notes || ""); }, [event?.id, event?.notes]);
 
@@ -27,12 +37,52 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
   const klass = planner.classes.find((c) => c.id === event.classId);
   const color = subject ? getSubjectColor(subject.colorId) : null;
 
+  const linkedNotes = planner.studentNotes.filter((n) => n.linkedEventId === event.id);
+
   const addMaterial = () => {
     if (!matName.trim()) return;
     planner.addMaterialToEvent(event.id, { name: matName.trim(), url: matUrl.trim() });
     const isPdf = /\.pdf(\?|#|$)/i.test(matName.trim()) || /\.pdf(\?|#|$)/i.test(matUrl.trim());
     if (isPdf) setConfirmPrint({ name: matName.trim() });
     setMatName(""); setMatUrl("");
+  };
+
+  const handleFilesSelected = async (files) => {
+    if (!files || files.length === 0) return;
+    const addedNames = [];
+    for (const file of Array.from(files)) {
+      try {
+        // Limit to ~4MB per file to keep localStorage healthy
+        if (file.size > 4 * 1024 * 1024) {
+          toast.error(`${file.name} är för stor (max 4MB för lokal lagring).`);
+          continue;
+        }
+        const dataUrl = await readFileAsDataUrl(file);
+        planner.addMaterialToEvent(event.id, {
+          name: file.name,
+          url: dataUrl,
+          isFile: true,
+          mimeType: file.type,
+          size: file.size,
+        });
+        addedNames.push(file.name);
+      } catch (err) {
+        toast.error(`Kunde inte läsa ${file.name}`);
+      }
+    }
+    // Auto-create print tasks for printable-looking files
+    addedNames.forEach((name) => {
+      if (PRINTABLE_RE.test(name)) {
+        planner.addPrintTaskForMaterial(event.id, name, event.date);
+      }
+    });
+    if (addedNames.length > 0) {
+      const printable = addedNames.filter((n) => PRINTABLE_RE.test(n)).length;
+      toast.success(
+        `${addedNames.length} fil${addedNames.length > 1 ? "er" : ""} bifogad${addedNames.length > 1 ? "e" : ""}${printable ? ` · ${printable} utskriftsuppgift${printable > 1 ? "er" : ""} tillagd${printable > 1 ? "a" : ""}` : ""}`,
+      );
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const removeMaterial = (id) => planner.removeMaterialFromEvent(event.id, id);
@@ -72,11 +122,14 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
                 {(event.materials || []).length === 0 && <div className="text-xs text-[#8A948C]">Inga material tillagda.</div>}
                 {(event.materials || []).map((m) => (
                   <div key={m.id} className="flex items-center gap-2 text-sm bg-[#FAF7F2] border border-[#E6E1DA] rounded-lg px-3 py-1.5" data-testid={`material-${m.id}`}>
-                    <LinkIcon className="h-3.5 w-3.5 text-[#656E67]" />
+                    {m.isFile ? <FileText className="h-3.5 w-3.5 text-[#3D5A45]" /> : <LinkIcon className="h-3.5 w-3.5 text-[#656E67]" />}
                     {m.url ? (
-                      <a href={m.url} target="_blank" rel="noreferrer" className="text-[#3D5A45] underline underline-offset-2 flex-1 truncate">{m.name}</a>
+                      <a href={m.url} download={m.isFile ? m.name : undefined} target="_blank" rel="noreferrer" className="text-[#3D5A45] underline underline-offset-2 flex-1 truncate">{m.name}</a>
                     ) : (
                       <span className="flex-1 truncate">{m.name}</span>
+                    )}
+                    {m.isFile && m.size && (
+                      <span className="text-[10px] text-[#8A948C] tabular-nums">{Math.round(m.size / 1024)} kB</span>
                     )}
                     <button onClick={() => removeMaterial(m.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`material-remove-${m.id}`}>
                       <X className="h-3.5 w-3.5" />
@@ -88,8 +141,49 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
                   <Input data-testid="material-url-input" value={matUrl} onChange={(e) => setMatUrl(e.target.value)} placeholder="Länk (valfri)" className="col-span-2" />
                   <Button data-testid="material-add-btn" onClick={addMaterial} className="bg-[#3D5A45] hover:bg-[#2F4736]">Lägg till</Button>
                 </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    className="hidden"
+                    data-testid="material-file-input"
+                    onChange={(e) => handleFilesSelected(e.target.files)}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-[#E6E1DA] text-[#3D5A45] hover:bg-[#EAF0EC]"
+                    data-testid="material-file-btn"
+                  >
+                    <Paperclip className="h-4 w-4 mr-2" /> Bifoga fil…
+                  </Button>
+                  <span className="text-[11px] text-[#8A948C]">Skapar automatiskt "Skriv ut"-uppgift för utskriftsbara filer.</span>
+                </div>
               </div>
             </div>
+
+            {linkedNotes.length > 0 && (
+              <div data-testid="linked-notes-section">
+                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Elevnoteringar från denna lektion</Label>
+                <div className="space-y-1.5 mt-1">
+                  {linkedNotes.map((n) => {
+                    const s = planner.students.find((x) => x.id === n.studentId);
+                    return (
+                      <div key={n.id} className="text-sm bg-[#FEF8EC] border border-[#F9E8C7] rounded-lg px-3 py-2 flex items-start gap-2" data-testid={`linked-note-${n.id}`}>
+                        <StickyNote className="h-3.5 w-3.5 mt-0.5 text-[#8C5E14]" />
+                        <div className="flex-1">
+                          <div className="text-xs text-[#8C5E14] font-semibold">{s?.name || "Elev"} · {formatDateLong(fromISODate(n.date))}</div>
+                          {n.title && <div className="text-sm font-semibold text-[#2D312E]">{n.title}</div>}
+                          {n.note && <div className="text-sm text-[#656E67] whitespace-pre-wrap">{n.note}</div>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center justify-between pt-2 border-t border-[#E6E1DA]">
               <label className="flex items-center gap-2 text-sm">

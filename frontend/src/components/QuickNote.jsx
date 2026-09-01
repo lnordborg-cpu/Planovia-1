@@ -17,11 +17,12 @@ export default function QuickNote({ initialStudentId = "", offsetRight = "21rem"
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [date, setDate] = useState(todayISO());
+  const [linkedEventId, setLinkedEventId] = useState("");
 
   useEffect(() => {
     if (!open) return;
     setStudentId(initialStudentId || (planner.students[0]?.id ?? ""));
-    setTitle(""); setNote(""); setDate(todayISO());
+    setTitle(""); setNote(""); setDate(todayISO()); setLinkedEventId("");
   }, [open, initialStudentId, planner.students]);
 
   useEffect(() => {
@@ -37,11 +38,32 @@ export default function QuickNote({ initialStudentId = "", offsetRight = "21rem"
 
   const save = () => {
     if (!studentId || (!title.trim() && !note.trim())) return;
-    planner.addStudentNote({ studentId, date, title: title.trim(), note: note.trim() });
+    planner.addStudentNote({
+      studentId,
+      date,
+      title: title.trim(),
+      note: note.trim(),
+      linkedEventId: linkedEventId && linkedEventId !== "none" ? linkedEventId : null,
+    });
     const student = planner.students.find((s) => s.id === studentId);
     toast.success(`Notering sparad för ${student?.name || "eleven"}`);
     setOpen(false);
   };
+
+  // Nearby lessons (±3 days) matching selected student's class
+  const student = planner.students.find((s) => s.id === studentId);
+  const nearbyLessons = React.useMemo(() => {
+    if (!student) return [];
+    const anchor = new Date(date + "T00:00:00");
+    const inRange = (iso) => {
+      const d = new Date(iso + "T00:00:00");
+      const diff = Math.abs((d - anchor) / (1000 * 60 * 60 * 24));
+      return diff <= 3;
+    };
+    return planner.events
+      .filter((e) => e.type === "lesson" && e.classId === student.classId && inRange(e.date))
+      .sort((a, b) => (a.date + (a.time || "")).localeCompare(b.date + (b.time || "")));
+  }, [planner.events, student, date]);
 
   return (
     <>
@@ -93,6 +115,25 @@ export default function QuickNote({ initialStudentId = "", offsetRight = "21rem"
                 <Label className="text-xs uppercase tracking-widest text-[#656E67]">Notering</Label>
                 <Textarea data-testid="quick-note-body" rows={3} value={note} onChange={(e) => setNote(e.target.value)} className="mt-1" placeholder="Skriv en snabb notering…" autoFocus />
               </div>
+              {nearbyLessons.length > 0 && (
+                <div>
+                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Koppla till lektion (valfritt)</Label>
+                  <Select value={linkedEventId || "none"} onValueChange={setLinkedEventId}>
+                    <SelectTrigger data-testid="quick-note-lesson-select" className="mt-1"><SelectValue placeholder="Ingen" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Ingen koppling</SelectItem>
+                      {nearbyLessons.map((e) => {
+                        const subj = planner.subjects.find((s) => s.id === e.subjectId);
+                        return (
+                          <SelectItem key={e.id} value={e.id}>
+                            {e.date} · {e.time} · {subj?.name || "Lektion"} – {e.title || "utan rubrik"}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="text-[11px] text-[#8A948C]">Tips: öppna med Ctrl+Shift+N från vilken sida som helst.</div>
             </div>
           )}

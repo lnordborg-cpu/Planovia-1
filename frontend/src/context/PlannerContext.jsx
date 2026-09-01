@@ -71,11 +71,13 @@ export const PlannerProvider = ({ children }) => {
   const update = useCallback((partial) => setState((s) => ({ ...s, ...partial })), []);
 
   // ------- Classes -------
-  const addClass = (name) => {
-    const obj = { id: uid(), name: name.trim() };
+  const addClass = (name, colorId) => {
+    const obj = { id: uid(), name: name.trim(), colorId: colorId || null };
     setState((s) => ({ ...s, classes: [...s.classes, obj] }));
     return obj;
   };
+  const updateClass = (id, patch) =>
+    setState((s) => ({ ...s, classes: s.classes.map((c) => (c.id === id ? { ...c, ...patch } : c)) }));
   const deleteClass = (id) =>
     setState((s) => ({
       ...s,
@@ -340,7 +342,7 @@ export const PlannerProvider = ({ children }) => {
   const value = useMemo(
     () => ({
       ...state,
-      addClass, deleteClass,
+      addClass, deleteClass, updateClass,
       addSubject, deleteSubject,
       addStudent, deleteStudent,
       addTimetableSlot, deleteTimetableSlot,

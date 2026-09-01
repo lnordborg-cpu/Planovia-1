@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Search, User, Check, Circle } from "lucide-react";
 import { formatDateLong, fromISODate, todayISO } from "@/lib/dateUtils";
+import { ClassDot } from "@/components/ClassDot";
 import { toast } from "sonner";
 
 export default function Elevkort() {
@@ -63,7 +64,10 @@ export default function Elevkort() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm text-[#2D312E] truncate">{s.name}</div>
-                      <div className="text-xs text-[#8A948C]">{klass?.name}</div>
+                      <div className="text-xs text-[#8A948C] flex items-center gap-1">
+                        <ClassDot colorId={klass?.colorId} size={7} />
+                        {klass?.name}
+                      </div>
                     </div>
                   </button>
                 );
@@ -94,7 +98,10 @@ const StudentProfile = ({ student, planner }) => {
           </div>
           <div>
             <h2 className="font-serif-display text-3xl text-[#2D312E]">{student.name}</h2>
-            <div className="text-sm text-[#656E67]">{klass?.name}</div>
+            <div className="text-sm text-[#656E67] flex items-center gap-1.5">
+              <ClassDot colorId={klass?.colorId} size={8} />
+              {klass?.name}
+            </div>
           </div>
         </div>
 

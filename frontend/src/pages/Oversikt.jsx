@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { usePlanner } from "@/context/PlannerContext";
 import { todayISO, formatDateLong, fromISODate, weekdayIndex, getISOWeek, getMondayOfISOWeek, getWeekdays, toISODate } from "@/lib/dateUtils";
 import { getSubjectColor } from "@/lib/constants";
+import { ClassDot } from "@/components/ClassDot";
 import { unitProgress } from "@/lib/plannerHelpers";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, BookOpen, ClipboardList, Sparkles, ArrowRight, Check, CheckCircle2 } from "lucide-react";
@@ -171,7 +172,10 @@ const TodayList = ({ todaysEvents, todaysSlots }) => {
                 {subj.name}
               </span>
             )}
-            <div className="text-sm text-[#656E67]">{nameOf(r.classId, classes)}</div>
+            <div className="text-sm text-[#656E67] flex items-center gap-1.5">
+              <ClassDot colorId={classes.find((c) => c.id === r.classId)?.colorId} size={8} />
+              {nameOf(r.classId, classes)}
+            </div>
             <div className="text-sm text-[#2D312E] flex-1 truncate">{r.title}</div>
             {r.virtual && <span className="text-[10px] text-[#8A948C]">Återkommande</span>}
           </div>
