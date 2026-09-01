@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Search, User, Check, Circle, FileDown } from "lucide-react";
+import { Plus, Trash2, Search, User, Check, Circle, FileDown, Save } from "lucide-react";
 import { formatDateLong, fromISODate, todayISO } from "@/lib/dateUtils";
 import { ClassDot } from "@/components/ClassDot";
 import { toast } from "sonner";
@@ -181,6 +181,22 @@ const MotenTab = ({ student, planner }) => {
     toast.success(`Mall "${t.name}" applicerad`);
   };
 
+  const saveAsTemplate = () => {
+    if (!meetingType.trim() && !notes.trim() && !participants.trim()) {
+      toast.info("Fyll i något att spara som mall först.");
+      return;
+    }
+    const name = window.prompt("Namn på mallen:", meetingType || "Ny mall");
+    if (!name || !name.trim()) return;
+    planner.addMeetingTemplate({
+      name: name.trim(),
+      meetingType: meetingType.trim(),
+      participants: participants.trim(),
+      notes: notes.trim(),
+    });
+    toast.success(`Mall "${name.trim()}" sparad`);
+  };
+
   // Include utvecklingssamtal events for this student
   const eventsAsMeetings = planner.events
     .filter((e) => e.type === "utvecklingssamtal" && e.studentId === student.id)
@@ -263,7 +279,17 @@ const MotenTab = ({ student, planner }) => {
           <Input value={participants} onChange={(e) => setParticipants(e.target.value)} placeholder="Deltagare" data-testid="mtg-part-input" />
         </div>
         <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Anteckningar" data-testid="mtg-notes-input" />
-        <div className="flex justify-end"><Button data-testid="mtg-add-btn" onClick={save} className="bg-[#3D5A45] hover:bg-[#2F4736]"><Plus className="h-4 w-4 mr-1" />Lägg till</Button></div>
+        <div className="flex justify-end gap-2">
+          <Button
+            data-testid="mtg-save-template-btn"
+            variant="outline"
+            className="border-[#E6E1DA] text-[#3D5A45] hover:bg-[#EAF0EC]"
+            onClick={saveAsTemplate}
+          >
+            <Save className="h-4 w-4 mr-1" /> Spara som mall
+          </Button>
+          <Button data-testid="mtg-add-btn" onClick={save} className="bg-[#3D5A45] hover:bg-[#2F4736]"><Plus className="h-4 w-4 mr-1" />Lägg till</Button>
+        </div>
       </div>
 
       {combined.length > 0 && (

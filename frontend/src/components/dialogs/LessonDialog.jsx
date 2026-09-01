@@ -8,6 +8,59 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { usePlanner } from "@/context/PlannerContext";
 import { formatDateLong, fromISODate } from "@/lib/dateUtils";
+import { Sparkles, X } from "lucide-react";
+import { toast } from "sonner";
+
+const DEFAULT_SAMTAL_TEMPLATE = {
+  name: "Utvecklingssamtal (standard)",
+  meetingType: "Utvecklingssamtal",
+  participants: "Elev, vårdnadshavare",
+  notes: `1. Inledning – hur trivs eleven?\n2. Ämnesöverblick\n   • Styrkor\n   • Utvecklingsområden\n3. Mål till nästa samtal\n4. Anpassningar & stöd\n5. Övriga frågor\n6. Överenskommelser`,
+};
+
+const SamtalTemplateSuggestion = ({ planner, onApply }) => {
+  const templates = planner.meetingTemplates || [];
+  const hasSamtalTemplate = templates.some((t) => /utvecklingssamtal/i.test(t.name) || /utvecklingssamtal/i.test(t.meetingType || ""));
+  const dismissed = planner.hasSeenSamtalSuggestion;
+  if (hasSamtalTemplate || dismissed) return null;
+
+  const install = () => {
+    const created = planner.addMeetingTemplate(DEFAULT_SAMTAL_TEMPLATE);
+    planner.dismissSamtalSuggestion();
+    onApply(created);
+    toast.success("Mall lagd till – och applicerad på detta samtal.");
+  };
+  const later = () => {
+    planner.dismissSamtalSuggestion();
+  };
+
+  return (
+    <div className="rounded-xl border border-[#F9E8C7] bg-[#FEF8EC] p-3 flex gap-3 items-start" data-testid="samtal-template-suggestion">
+      <div className="h-8 w-8 rounded-lg bg-[#F5B301]/20 flex items-center justify-center text-[#8C5E14] flex-shrink-0">
+        <Sparkles className="h-4 w-4" />
+      </div>
+      <div className="flex-1">
+        <div className="text-sm font-semibold text-[#2D312E]">Använd en färdig samtalsmall?</div>
+        <div className="text-xs text-[#656E67] mt-0.5">Vi kan lägga till en klassisk utvecklingssamtalstruktur med rubriker som du kan bygga vidare på.</div>
+        <div className="flex gap-2 mt-2">
+          <button
+            onClick={install}
+            className="text-xs px-3 py-1.5 rounded-lg bg-[#3D5A45] text-white hover:bg-[#2F4736]"
+            data-testid="samtal-template-install"
+          >Ja tack, använd mallen</button>
+          <button
+            onClick={later}
+            className="text-xs px-3 py-1.5 rounded-lg text-[#656E67] hover:bg-white/60"
+            data-testid="samtal-template-dismiss"
+          >Nej tack</button>
+        </div>
+      </div>
+      <button onClick={later} className="text-[#8A948C] hover:text-[#2D312E]" aria-label="Stäng">
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  );
+};
 
 export default function LessonDialog({ open, onOpenChange, date, prefill = {} }) {
   const planner = usePlanner();
@@ -180,6 +233,10 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
 
           {type === "utvecklingssamtal" && (
             <>
+              <SamtalTemplateSuggestion planner={planner} onApply={(tpl) => {
+                if (tpl.participants) setParticipants(tpl.participants);
+                if (tpl.notes) setNotes(tpl.notes);
+              }} />
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label className="text-xs uppercase tracking-widest text-[#656E67]">Elev</Label>
