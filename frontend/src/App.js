@@ -1,0 +1,35 @@
+import "@/App.css";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "sonner";
+import { PlannerProvider } from "@/context/PlannerContext";
+import Layout from "@/components/Layout";
+import Oversikt from "@/pages/Oversikt";
+import LasarTermin from "@/pages/LasarTermin";
+import Veckoplanering from "@/pages/Veckoplanering";
+import Elevkort from "@/pages/Elevkort";
+import Material from "@/pages/Material";
+import Installningar from "@/pages/Installningar";
+
+function App() {
+  return (
+    <PlannerProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Navigate to="/oversikt" replace />} />
+            <Route path="/oversikt" element={<Oversikt />} />
+            <Route path="/lasar" element={<LasarTermin />} />
+            <Route path="/vecka" element={<Veckoplanering />} />
+            <Route path="/elever" element={<Elevkort />} />
+            <Route path="/elever/:studentId" element={<Elevkort />} />
+            <Route path="/material" element={<Material />} />
+            <Route path="/installningar" element={<Installningar />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+      <Toaster position="bottom-right" richColors closeButton />
+    </PlannerProvider>
+  );
+}
+
+export default App;

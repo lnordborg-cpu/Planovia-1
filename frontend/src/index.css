@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: #FAF8F5;
+    color: #2D312E;
+}
+
+.font-serif-display {
+    font-family: 'Fraunces', Georgia, serif;
+    font-optical-sizing: auto;
+}
+
+@layer base {
+    :root {
+        --background: 36 36% 97%;
+        --foreground: 140 6% 19%;
+        --card: 0 0% 100%;
+        --card-foreground: 140 6% 19%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 140 6% 19%;
+        --primary: 133 19% 30%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 34 30% 93%;
+        --secondary-foreground: 140 6% 19%;
+        --muted: 34 30% 93%;
+        --muted-foreground: 140 5% 43%;
+        --accent: 133 19% 92%;
+        --accent-foreground: 133 19% 20%;
+        --destructive: 0 60% 55%;
+        --destructive-foreground: 0 0% 100%;
+        --border: 34 24% 88%;
+        --input: 34 24% 88%;
+        --ring: 133 19% 40%;
+        --radius: 0.75rem;
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+/* Slim scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #E6E1DA; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #C9C1B5; }
+
+@layer base {
+    [data-debug-wrapper="true"] {
+        display: contents !important;
+    }
+    [data-debug-wrapper="true"] > * {
+        margin-left: inherit; margin-right: inherit;
+        margin-top: inherit; margin-bottom: inherit;
+        padding-left: inherit; padding-right: inherit;
+        padding-top: inherit; padding-bottom: inherit;
+        column-gap: inherit; row-gap: inherit; gap: inherit;
+        border-left-width: inherit; border-right-width: inherit;
+        border-top-width: inherit; border-bottom-width: inherit;
+        border-left-style: inherit; border-right-style: inherit;
+        border-top-style: inherit; border-bottom-style: inherit;
+        border-left-color: inherit; border-right-color: inherit;
+        border-top-color: inherit; border-bottom-color: inherit;
+    }
+}

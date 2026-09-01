@@ -1,0 +1,209 @@
+{
+  "project_name": "SkolPlaneraren - Modern Swedish Digital Teacher Planner",
+  "app_type": "dashboard / SaaS app (single-user local planner)",
+  "language": "sv-SE",
+  "theme": "light_only",
+  "persona": {
+    "identity": "Calm, modern digital teacher planner inspired by Canva and Notion",
+    "tone": "Warm, encouraging, organized, editorial, tactile, human",
+    "core_feeling": "Reduces cognitive stress for teachers through warm off-white surfaces, generous padding, and clear visual order"
+  },
+  "typography": {
+    "font_family_heading": "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    "font_family_body": "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    "font_family_mono": "'JetBrains Mono', monospace",
+    "scale": {
+      "h1": "text-2xl sm:text-3xl font-bold tracking-tight text-[#2D312E]",
+      "h2": "text-xl sm:text-2xl font-semibold tracking-tight text-[#2D312E]",
+      "h3": "text-lg font-medium text-[#2D312E]",
+      "subtitle": "text-sm text-[#656E67] font-normal",
+      "body": "text-sm text-[#2D312E] leading-relaxed",
+      "small": "text-xs text-[#78827A]",
+      "label": "text-xs font-semibold uppercase tracking-wider text-[#656E67]"
+    }
+  },
+  "colors": {
+    "background_canvas": "#FAF8F5",
+    "background_sidebar": "#F3EFEA",
+    "background_card": "#FFFFFF",
+    "background_panel": "#FAF7F2",
+    "border_subtle": "#E6E1DA",
+    "border_active": "#3D5A45",
+    "text_primary": "#2D312E",
+    "text_secondary": "#656E67",
+    "text_muted": "#8A948C",
+    "primary": {
+      "DEFAULT": "#3D5A45",
+      "hover": "#2F4736",
+      "light": "#EAF0EC",
+      "foreground": "#FFFFFF"
+    },
+    "subject_presets": [
+      {
+        "id": "svenska",
+        "name": "Svenska",
+        "bg": "#FDF2F0",
+        "text": "#9E4A3B",
+        "border": "#F5D5D0",
+        "badge": "bg-[#FDF2F0] text-[#9E4A3B] border-[#F5D5D0]"
+      },
+      {
+        "id": "matematik",
+        "name": "Matematik",
+        "bg": "#EFF5F0",
+        "text": "#2D5A3A",
+        "border": "#D2E4D5",
+        "badge": "bg-[#EFF5F0] text-[#2D5A3A] border-[#D2E4D5]"
+      },
+      {
+        "id": "engelska",
+        "name": "Engelska",
+        "bg": "#FEF8EC",
+        "text": "#8C5E14",
+        "border": "#F9E8C7",
+        "badge": "bg-[#FEF8EC] text-[#8C5E14] border-[#F9E8C7]"
+      },
+      {
+        "id": "no",
+        "name": "NO (Naturorientering)",
+        "bg": "#F0F5FA",
+        "text": "#2C5282",
+        "border": "#D0E1F3",
+        "badge": "bg-[#F0F5FA] text-[#2C5282] border-[#D0E1F3]"
+      },
+      {
+        "id": "so",
+        "name": "SO (Samhällsorientering)",
+        "bg": "#F6F2FB",
+        "text": "#5A3B8B",
+        "border": "#E2D5F3",
+        "badge": "bg-[#F6F2FB] text-[#5A3B8B] border-[#E2D5F3]"
+      },
+      {
+        "id": "bild_musik_idrott",
+        "name": "Praktiska ämnen (Bild/Musik/Idrott)",
+        "bg": "#FCF5EE",
+        "text": "#8C4A27",
+        "border": "#F5DCB8",
+        "badge": "bg-[#FCF5EE] text-[#8C4A27] border-[#F5DCB8]"
+      }
+    ],
+    "calendar_exceptions": {
+      "lov": {
+        "label": "Lov (Skollovis)",
+        "badge": "bg-[#FFF3EC] text-[#C05621] border-[#FBD38D]"
+      },
+      "studiedag": {
+        "label": "Studiedag",
+        "badge": "bg-[#E6FFFA] text-[#234E52] border-[#B2F5EA]"
+      },
+      "helgdag": {
+        "label": "Röd dag / Helgdag",
+        "badge": "bg-[#FFF5F5] text-[#C53030] border-[#FEB2B2]"
+      },
+      "temadag": {
+        "label": "Temadag / Event",
+        "badge": "bg-[#EBF8FF] text-[#2B6CB0] border-[#BEE3F8]"
+      }
+    }
+  },
+  "layout_structure": {
+    "main_container": "flex h-screen w-screen overflow-hidden bg-[#FAF8F5] text-[#2D312E] font-sans antialiased",
+    "sidebar": {
+      "container": "w-64 flex-shrink-0 bg-[#F3EFEA] border-r border-[#E6E1DA] flex flex-col justify-between p-4",
+      "navigation_links": [
+        { "id": "oversikt", "label": "Översikt", "icon": "LayoutDashboard" },
+        { "id": "lasar_termin", "label": "Läsår / Termin", "icon": "CalendarRange" },
+        { "id": "veckoplanering", "label": "Veckoplanering", "icon": "CalendarDays" },
+        { "id": "elevkort", "label": "Elevkort", "icon": "Users" },
+        { "id": "material", "label": "Material", "icon": "FolderFolder" },
+        { "id": "installningar", "label": "Inställningar", "icon": "Settings" }
+      ]
+    },
+    "center_area": "flex-1 flex flex-col min-w-0 overflow-y-auto bg-[#FAF8F5]",
+    "right_panel": {
+      "container": "w-80 flex-shrink-0 bg-[#FAF7F2] border-l border-[#E6E1DA] flex flex-col h-full transition-all duration-300 shadow-sm",
+      "categories": ["Prioriterat", "Rättning", "Föräldrakontakt", "Övrigt"],
+      "features": ["To-do item check off", "Add task inline", "Link task to student or lesson", "Quick notes section"]
+    }
+  },
+  "pages_and_components": {
+    "dashboard": {
+      "id": "oversikt",
+      "title": "Översikt",
+      "widgets": [
+        "Välkomsthälsning med dagens datum och vecka",
+        "Dagens lektioner (tidssorterade kort)",
+        "Snabblänkar (Ny lektion, Ny uppgift, Skapa elevanteckning)",
+        "Kommande händelser (Lov, Studiedagar, Utvecklingssamtal)",
+        "Tomtillstånd (Onboarding-kort med 'Ladda demo-data' knapp)"
+      ]
+    },
+    "weekly_planner": {
+      "id": "veckoplanering",
+      "title": "Veckoplanering",
+      "features": [
+        "5-kolumns layout (Måndag till Fredag)",
+        "Navigering: Vecka före/efter (Standard till aktuell vecka)",
+        "Lektionskort med tid, ämne-tagg, klass, rubrik, och 'Mer'-knapp",
+        "Expanderbar lektionsdialog med mål, material-länkar, anteckningar",
+        "Automatisk förifyllning från Lässchema-mallen (Återkommande schema)"
+      ]
+    },
+    "year_planner": {
+      "id": "lasar_termin",
+      "title": "Läsår & Termin",
+      "features": [
+        "Terminsöversikt (Hösttermin / Vårtermin)",
+        "Arbetsområden med framstegsindikatorer (Progress bars)",
+        "Kalenderavvikelser & Skollovis (Lov, Studiedag, Temadag)",
+        "Koppling mellan arbetsområde och veckoplanering"
+      ]
+    },
+    "student_profiles": {
+      "id": "elevkort",
+      "title": "Elevkort",
+      "features": [
+        "Sökbar grid med elevkort (Klass, avatar, snabbinfo)",
+        "Flikar i elevprofil: Översikt, Anpassningar & Stöd, Utvecklingssamtal, Uppföljningar",
+        "Synkronisering med 'Att göra'-panelen för uppföljningar"
+      ]
+    },
+    "materials_library": {
+      "id": "material",
+      "title": "Materialbank",
+      "features": [
+        "Fil- och länkbibliotek taggat med Ämne och Klass",
+        "Sökning, filtrering och snabblänkar till lektionsplanering"
+      ]
+    },
+    "settings": {
+      "id": "installningar",
+      "title": "Inställningar",
+      "sections": [
+        "Hantera Klasser & Elever",
+        "Anpassa Ämnen & Färger",
+        "Lässchema-mall (Återkommande veckoschema)",
+        "Säkerhetskopiering (Exportera / Importera JSON-data)"
+      ]
+    }
+  },
+  "images_and_media": {
+    "hero_desk_image": "https://images.pexels.com/photos/5124878/pexels-photo-5124878.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+    "notebook_image": "https://images.unsplash.com/photo-1654124803453-5bb8819e1524?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "desk_sunlight": "https://images.unsplash.com/photo-1773625688491-6110ff9f1e4f?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "testing_and_accessibility": {
+    "data_testid_rule": "ALL interactive components, buttons, inputs, tabs, modal triggers, and lesson cards MUST include data-testid attributes (e.g. data-testid='nav-veckoplanering', data-testid='lesson-card-1', data-testid='add-todo-btn').",
+    "keyboard_navigation": "Ensure all modal overlays have full escape-key handling and clear focus traps.",
+    "contrast_guarantee": "All text elements maintain WCAG AA standard against warm off-white background."
+  },
+  "instructions_to_main_agent": [
+    "Build the React application using Tailwind CSS and Lucide React icons.",
+    "Use localStorage as the single source of truth for persistent data.",
+    "All text content and labels must be strictly in Swedish (sv-SE).",
+    "Ensure generous padding (p-6, p-8), smooth rounded corners (rounded-2xl or rounded-xl), warm soft borders (#E6E1DA), and no dark mode toggle (Light theme only).",
+    "Maintain high code modularity: separate components for Sidebar, Header, RightTodoPanel, LessonCard, StudentCard, WorkAreaCard, and SettingsForms.",
+    "Add sample seed data generator on empty state so the user can populate realistic Swedish teacher planner data with one click."
+  ]
+}
