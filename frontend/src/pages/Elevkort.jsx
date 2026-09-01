@@ -170,6 +170,17 @@ const MotenTab = ({ student, planner }) => {
   const [notes, setNotes] = useState("");
   const [selected, setSelected] = useState({});
 
+  const templates = planner.meetingTemplates || [];
+  const applyTemplate = (id) => {
+    if (id === "none") return;
+    const t = templates.find((x) => x.id === id);
+    if (!t) return;
+    if (t.meetingType) setMeetingType(t.meetingType);
+    if (t.participants) setParticipants(t.participants);
+    if (t.notes) setNotes(t.notes);
+    toast.success(`Mall "${t.name}" applicerad`);
+  };
+
   // Include utvecklingssamtal events for this student
   const eventsAsMeetings = planner.events
     .filter((e) => e.type === "utvecklingssamtal" && e.studentId === student.id)
@@ -231,6 +242,21 @@ const MotenTab = ({ student, planner }) => {
   return (
     <div className="pt-4 space-y-4">
       <div className="rounded-xl border border-[#E6E1DA] p-3 bg-[#FAF7F2] space-y-2">
+        {templates.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-widest text-[#8A948C] font-semibold">Mall</span>
+            <Select value="none" onValueChange={applyTemplate}>
+              <SelectTrigger data-testid="mtg-template-select" className="h-8 bg-white text-xs w-56">
+                <SelectValue placeholder="Välj mall att fylla i…" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— välj —</SelectItem>
+                {templates.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <a href="/installningar" className="text-[11px] text-[#3D5A45] hover:underline ml-auto">Hantera mallar</a>
+          </div>
+        )}
         <div className="grid grid-cols-3 gap-2">
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} data-testid="mtg-date-input" />
           <Input value={meetingType} onChange={(e) => setMeetingType(e.target.value)} placeholder="Typ av möte" data-testid="mtg-type-input" />

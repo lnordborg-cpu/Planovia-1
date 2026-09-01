@@ -18,6 +18,7 @@ const emptyState = {
   studentAdaptations: {},
   studentSupport: {},
   autoCompletedSlots: [],
+  meetingTemplates: [],
 };
 
 const PlannerContext = createContext(null);
@@ -324,6 +325,15 @@ export const PlannerProvider = ({ children }) => {
   const setStudentSupport = (studentId, text) =>
     setState((s) => ({ ...s, studentSupport: { ...s.studentSupport, [studentId]: text } }));
 
+  // ------- Meeting templates -------
+  const addMeetingTemplate = (data) => {
+    const obj = { id: uid(), ...data };
+    setState((s) => ({ ...s, meetingTemplates: [...(s.meetingTemplates || []), obj] }));
+    return obj;
+  };
+  const deleteMeetingTemplate = (id) =>
+    setState((s) => ({ ...s, meetingTemplates: (s.meetingTemplates || []).filter((t) => t.id !== id) }));
+
   // ------- Backup -------
   const exportBackup = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -356,6 +366,7 @@ export const PlannerProvider = ({ children }) => {
       addStudentNote, deleteStudentNote,
       addMeetingNote, deleteMeetingNote,
       setStudentAdaptation, setStudentSupport,
+      addMeetingTemplate, deleteMeetingTemplate,
       exportBackup, importBackup, clearAll,
       update,
     }),

@@ -36,6 +36,28 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
+const ColorLegend = ({ title, items, testIdPrefix }) => (
+  <div className="rounded-xl border border-[#E6E1DA] bg-[#FAF7F2] p-3" data-testid={`${testIdPrefix}-panel`}>
+    <div className="text-[10px] uppercase tracking-widest text-[#8A948C] font-semibold mb-2">{title}</div>
+    <ul className="space-y-1.5">
+      {items.map((it, i) => {
+        const col = getSubjectColor(it.colorId);
+        const swatch = col.text === "#FFFFFF" ? col.bg : col.text;
+        return (
+          <li key={i} className="flex items-center gap-2 text-xs text-[#2D312E]" data-testid={`${testIdPrefix}-${i}`}>
+            <span className="inline-block h-3 w-3 rounded-sm flex-shrink-0" style={{ backgroundColor: swatch, border: `1px solid ${col.border}` }} />
+            <span className="truncate">{it.label}</span>
+          </li>
+        );
+      })}
+      <li className="flex items-center gap-2 text-xs text-[#656E67] pt-1 mt-1 border-t border-[#E6E1DA]">
+        <span className="inline-block h-3 w-3 rounded-sm flex-shrink-0" style={{ backgroundColor: "#D2E4D5" }} />
+        <span>Planerade</span>
+      </li>
+    </ul>
+  </div>
+);
+
 export default function Statistik() {
   const { classes, subjects, events, tasks, followups, timetable, autoCompletedSlots = [] } = usePlanner();
 
@@ -117,22 +139,29 @@ export default function Statistik() {
             ) : (
               <Card className="border-[#E6E1DA] shadow-none bg-white">
                 <CardContent className="p-5" data-testid="chart-per-subject">
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={stats.bySubject} barGap={4}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E6E1DA" vertical={false} />
-                      <XAxis dataKey="name" stroke="#8A948C" fontSize={12} />
-                      <YAxis stroke="#8A948C" fontSize={12} allowDecimals={false} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend wrapperStyle={{ fontSize: 12 }} />
-                      <Bar dataKey="planned" name="Planerade" fill="#D2E4D5" radius={[6, 6, 0, 0]} />
-                      <Bar dataKey="completed" name="Genomförda" radius={[6, 6, 0, 0]}>
-                        {stats.bySubject.map((entry, i) => {
-                          const col = getSubjectColor(entry.colorId);
-                          return <Cell key={`sub-${i}`} fill={col.bg && col.bg !== "#FFFFFF" && col.text === "#FFFFFF" ? col.bg : col.text} />;
-                        })}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="grid md:grid-cols-[1fr,180px] gap-6 items-start">
+                    <ResponsiveContainer width="100%" height={280}>
+                      <BarChart data={stats.bySubject} barGap={4}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E6E1DA" vertical={false} />
+                        <XAxis dataKey="name" stroke="#8A948C" fontSize={12} />
+                        <YAxis stroke="#8A948C" fontSize={12} allowDecimals={false} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend wrapperStyle={{ fontSize: 12 }} />
+                        <Bar dataKey="planned" name="Planerade" fill="#D2E4D5" radius={[6, 6, 0, 0]} />
+                        <Bar dataKey="completed" name="Genomförda" radius={[6, 6, 0, 0]}>
+                          {stats.bySubject.map((entry, i) => {
+                            const col = getSubjectColor(entry.colorId);
+                            return <Cell key={`sub-${i}`} fill={col.bg && col.bg !== "#FFFFFF" && col.text === "#FFFFFF" ? col.bg : col.text} />;
+                          })}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <ColorLegend
+                      title="Ämnen"
+                      items={stats.bySubject.map((s) => ({ label: s.name, colorId: s.colorId }))}
+                      testIdPrefix="legend-subject"
+                    />
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -145,22 +174,29 @@ export default function Statistik() {
             ) : (
               <Card className="border-[#E6E1DA] shadow-none bg-white">
                 <CardContent className="p-5" data-testid="chart-per-class">
-                  <ResponsiveContainer width="100%" height={280}>
-                    <BarChart data={stats.byClass} layout="vertical" barGap={4}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E6E1DA" horizontal={false} />
-                      <XAxis type="number" stroke="#8A948C" fontSize={12} allowDecimals={false} />
-                      <YAxis type="category" dataKey="name" stroke="#8A948C" fontSize={12} width={70} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend wrapperStyle={{ fontSize: 12 }} />
-                      <Bar dataKey="planned" name="Planerade" fill="#D2E4D5" radius={[0, 6, 6, 0]} />
-                      <Bar dataKey="completed" name="Genomförda" radius={[0, 6, 6, 0]}>
-                        {stats.byClass.map((entry, i) => {
-                          const col = getSubjectColor(entry.colorId);
-                          return <Cell key={`cls-${i}`} fill={col.bg && col.bg !== "#FFFFFF" && col.text === "#FFFFFF" ? col.bg : col.text} />;
-                        })}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="grid md:grid-cols-[1fr,180px] gap-6 items-start">
+                    <ResponsiveContainer width="100%" height={280}>
+                      <BarChart data={stats.byClass} layout="vertical" barGap={4}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E6E1DA" horizontal={false} />
+                        <XAxis type="number" stroke="#8A948C" fontSize={12} allowDecimals={false} />
+                        <YAxis type="category" dataKey="name" stroke="#8A948C" fontSize={12} width={70} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend wrapperStyle={{ fontSize: 12 }} />
+                        <Bar dataKey="planned" name="Planerade" fill="#D2E4D5" radius={[0, 6, 6, 0]} />
+                        <Bar dataKey="completed" name="Genomförda" radius={[0, 6, 6, 0]}>
+                          {stats.byClass.map((entry, i) => {
+                            const col = getSubjectColor(entry.colorId);
+                            return <Cell key={`cls-${i}`} fill={col.bg && col.bg !== "#FFFFFF" && col.text === "#FFFFFF" ? col.bg : col.text} />;
+                          })}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <ColorLegend
+                      title="Klasser"
+                      items={stats.byClass.map((c) => ({ label: c.name, colorId: c.colorId }))}
+                      testIdPrefix="legend-class"
+                    />
+                  </div>
                 </CardContent>
               </Card>
             )}

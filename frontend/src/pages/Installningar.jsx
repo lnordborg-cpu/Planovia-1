@@ -3,6 +3,7 @@ import { usePlanner } from "@/context/PlannerContext";
 import { SUBJECT_COLORS, CLASS_COLORS, WEEKDAYS, getSubjectColor, getClassColor } from "@/lib/constants";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -36,6 +37,7 @@ export default function Installningar() {
       <SubjectsSection planner={planner} />
       <StudentsSection planner={planner} />
       <TimetableSection planner={planner} />
+      <MeetingTemplatesSection planner={planner} />
       <BackupSection planner={planner} />
     </div>
   );
@@ -261,6 +263,62 @@ const TimetableSection = ({ planner }) => {
     </Section>
   );
 };
+
+const MeetingTemplatesSection = ({ planner }) => {
+  const [name, setName] = useState("");
+  const [meetingType, setMeetingType] = useState("");
+  const [participants, setParticipants] = useState("");
+  const [notes, setNotes] = useState("");
+  const templates = planner.meetingTemplates || [];
+
+  const save = () => {
+    if (!name.trim()) { toast.info("Ge mallen ett namn."); return; }
+    planner.addMeetingTemplate({
+      name: name.trim(),
+      meetingType: meetingType.trim(),
+      participants: participants.trim(),
+      notes: notes.trim(),
+    });
+    setName(""); setMeetingType(""); setParticipants(""); setNotes("");
+    toast.success("Mall sparad");
+  };
+
+  return (
+    <Section title="Mötesmallar" description="Skapa återanvändbara mallar för vanliga möten – t.ex. elevhälsomöte eller trygghetssamtal." testId="section-templates">
+      <div className="rounded-xl border border-[#E6E1DA] p-3 bg-[#FAF7F2] space-y-2 mb-4">
+        <div className="grid md:grid-cols-3 gap-2">
+          <Input data-testid="template-name-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Mallens namn (t.ex. Elevhälsomöte)" />
+          <Input data-testid="template-type-input" value={meetingType} onChange={(e) => setMeetingType(e.target.value)} placeholder="Typ av möte" />
+          <Input data-testid="template-participants-input" value={participants} onChange={(e) => setParticipants(e.target.value)} placeholder="Standarddeltagare" />
+        </div>
+        <Textarea data-testid="template-notes-input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Standardanteckning eller struktur (valfri)" />
+        <div className="flex justify-end">
+          <Button data-testid="template-add-btn" onClick={save} className="bg-[#3D5A45] hover:bg-[#2F4736]"><Plus className="h-4 w-4 mr-1" />Spara mall</Button>
+        </div>
+      </div>
+      {templates.length === 0 ? (
+        <div className="text-sm text-[#8A948C]">Inga mallar sparade ännu.</div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-2">
+          {templates.map((t) => (
+            <div key={t.id} className="rounded-lg border border-[#E6E1DA] bg-[#FAF7F2] p-3" data-testid={`template-row-${t.id}`}>
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-semibold text-[#2D312E]">{t.name}</div>
+                <button onClick={() => planner.deleteMeetingTemplate(t.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`template-delete-${t.id}`}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              {t.meetingType && <div className="text-xs text-[#656E67] mt-1">{t.meetingType}</div>}
+              {t.participants && <div className="text-xs text-[#8A948C] mt-0.5">Deltagare: {t.participants}</div>}
+              {t.notes && <div className="text-xs text-[#8A948C] mt-1 whitespace-pre-wrap line-clamp-3">{t.notes}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </Section>
+  );
+};
+
 
 const BackupSection = ({ planner }) => {
   const fileRef = React.useRef(null);
