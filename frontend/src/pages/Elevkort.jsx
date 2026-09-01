@@ -33,20 +33,20 @@ export default function Elevkort() {
   return (
     <div className="space-y-6" data-testid="page-elever">
       <header>
-        <div className="text-[11px] tracking-[0.2em] uppercase text-[#8A948C] font-semibold">Elevkort</div>
-        <h1 className="font-serif-display text-4xl mt-1 text-[#2D312E]">Elever</h1>
+        <div className="text-[11px] tracking-[0.2em] uppercase text-[#A3A69F] font-semibold">Elevkort</div>
+        <h1 className="font-serif-display text-4xl mt-1 text-[#293330]">Elever</h1>
       </header>
 
       {planner.students.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[#E6E1DA] p-10 text-center text-sm text-[#8A948C]">
+        <div className="rounded-2xl border border-dashed border-[#DEDAD2] p-10 text-center text-sm text-[#A3A69F]">
           Inga elever ännu. Lägg till elever i <a href="/installningar" className="underline">Inställningar</a>.
         </div>
       ) : (
         <div className="grid grid-cols-12 gap-6">
           <aside className="col-span-4 space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8A948C]" />
-              <Input data-testid="student-search-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sök elev" className="pl-9 bg-white border-[#E6E1DA]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#A3A69F]" />
+              <Input data-testid="student-search-input" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Sök elev" className="pl-9 bg-white border-[#DEDAD2]" />
             </div>
             <div className="space-y-1 max-h-[70vh] overflow-y-auto">
               {filtered.map((s) => {
@@ -57,14 +57,14 @@ export default function Elevkort() {
                     key={s.id}
                     data-testid={`student-item-${s.id}`}
                     onClick={() => navigate(`/elever/${s.id}`)}
-                    className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl border ${isActive ? "border-[#3D5A45] bg-white" : "border-[#E6E1DA] bg-white hover:bg-[#FAF7F2]"}`}
+                    className={`w-full text-left flex items-center gap-3 px-3 py-2 rounded-xl border ${isActive ? "border-[#718A7F] bg-white" : "border-[#DEDAD2] bg-white hover:bg-[#FFFEFB]"}`}
                   >
-                    <div className="h-8 w-8 rounded-full bg-[#F3EFEA] flex items-center justify-center text-[#656E67] text-xs font-semibold">
+                    <div className="h-8 w-8 rounded-full bg-[#EFEAE1] flex items-center justify-center text-[#78817D] text-xs font-semibold">
                       {s.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm text-[#2D312E] truncate">{s.name}</div>
-                      <div className="text-xs text-[#8A948C] flex items-center gap-1">
+                      <div className="text-sm text-[#293330] truncate">{s.name}</div>
+                      <div className="text-xs text-[#A3A69F] flex items-center gap-1">
                         <ClassDot colorId={klass?.colorId} size={7} />
                         {klass?.name}
                       </div>
@@ -77,7 +77,7 @@ export default function Elevkort() {
 
           <div className="col-span-8">
             {selected ? <StudentProfile student={selected} planner={planner} /> : (
-              <div className="text-sm text-[#8A948C]">Välj en elev.</div>
+              <div className="text-sm text-[#A3A69F]">Välj en elev.</div>
             )}
           </div>
         </div>
@@ -90,15 +90,15 @@ const StudentProfile = ({ student, planner }) => {
   const klass = planner.classes.find((c) => c.id === student.classId);
   const [tab, setTab] = useState("notiser");
   return (
-    <Card className="border-[#E6E1DA] shadow-none bg-white" data-testid={`student-profile-${student.id}`}>
+    <Card className="border-[#DEDAD2] shadow-none bg-white" data-testid={`student-profile-${student.id}`}>
       <CardContent className="p-6">
         <div className="flex items-center gap-4 mb-6">
-          <div className="h-14 w-14 rounded-2xl bg-[#EAF0EC] flex items-center justify-center text-[#3D5A45] text-lg font-semibold">
+          <div className="h-14 w-14 rounded-2xl bg-[#DFE9E2] flex items-center justify-center text-[#718A7F] text-lg font-semibold">
             {student.name.slice(0, 2).toUpperCase()}
           </div>
           <div>
-            <h2 className="font-serif-display text-3xl text-[#2D312E]">{student.name}</h2>
-            <div className="text-sm text-[#656E67] flex items-center gap-1.5">
+            <h2 className="font-serif-display text-3xl text-[#293330]">{student.name}</h2>
+            <div className="text-sm text-[#78817D] flex items-center gap-1.5">
               <ClassDot colorId={klass?.colorId} size={8} />
               {klass?.name}
             </div>
@@ -106,7 +106,7 @@ const StudentProfile = ({ student, planner }) => {
         </div>
 
         <Tabs value={tab} onValueChange={setTab}>
-          <TabsList className="bg-[#F3EFEA] rounded-xl">
+          <TabsList className="bg-[#EFEAE1] rounded-xl">
             <TabsTrigger data-testid="tab-notiser" value="notiser">Dagliga notiser</TabsTrigger>
             <TabsTrigger data-testid="tab-moten" value="moten">Mötesanteckningar</TabsTrigger>
             <TabsTrigger data-testid="tab-anpassningar" value="anpassningar">Anpassningar</TabsTrigger>
@@ -139,23 +139,23 @@ const NotiserTab = ({ student, planner }) => {
 
   return (
     <div className="pt-4 space-y-4">
-      <div className="rounded-xl border border-[#E6E1DA] p-3 bg-[#FAF7F2] space-y-2">
+      <div className="rounded-xl border border-[#DEDAD2] p-3 bg-[#FFFEFB] space-y-2">
         <div className="grid grid-cols-3 gap-2">
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} data-testid="note-date-input" />
           <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Rubrik" className="col-span-2" data-testid="note-title-input" />
         </div>
         <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Notering" data-testid="note-body-input" />
-        <div className="flex justify-end"><Button data-testid="note-add-btn" onClick={save} className="bg-[#3D5A45] hover:bg-[#2F4736]"><Plus className="h-4 w-4 mr-1" />Lägg till</Button></div>
+        <div className="flex justify-end"><Button data-testid="note-add-btn" onClick={save} className="bg-[#718A7F] hover:bg-[#5C7267]"><Plus className="h-4 w-4 mr-1" />Lägg till</Button></div>
       </div>
-      {notes.length === 0 ? <div className="text-sm text-[#8A948C]">Inga notiser ännu.</div> :
+      {notes.length === 0 ? <div className="text-sm text-[#A3A69F]">Inga notiser ännu.</div> :
         notes.map((n) => (
-          <div key={n.id} className="rounded-xl border border-[#E6E1DA] p-3 bg-white" data-testid={`note-${n.id}`}>
+          <div key={n.id} className="rounded-xl border border-[#DEDAD2] p-3 bg-white" data-testid={`note-${n.id}`}>
             <div className="flex items-center justify-between">
-              <div className="text-xs text-[#8A948C]">{formatDateLong(fromISODate(n.date))}</div>
-              <button onClick={() => planner.deleteStudentNote(n.id)} className="text-[#8A948C] hover:text-[#9E4A3B]"><Trash2 className="h-3.5 w-3.5" /></button>
+              <div className="text-xs text-[#A3A69F]">{formatDateLong(fromISODate(n.date))}</div>
+              <button onClick={() => planner.deleteStudentNote(n.id)} className="text-[#A3A69F] hover:text-[#9E4A3B]"><Trash2 className="h-3.5 w-3.5" /></button>
             </div>
             {n.title && <div className="text-sm font-semibold mt-1">{n.title}</div>}
-            {n.note && <div className="text-sm text-[#656E67] whitespace-pre-wrap">{n.note}</div>}
+            {n.note && <div className="text-sm text-[#78817D] whitespace-pre-wrap">{n.note}</div>}
           </div>
         ))
       }
@@ -221,16 +221,16 @@ const MotenTab = ({ student, planner }) => {
 <html lang="sv"><head><meta charset="utf-8"><title>Mötesanteckningar – ${student.name}</title>
 <style>
   @page { size: A4; margin: 20mm; }
-  body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #2D312E; line-height: 1.5; }
+  body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #293330; line-height: 1.5; }
   h1 { font-family: 'Fraunces', Georgia, serif; font-size: 28px; margin: 0 0 4px; }
-  .sub { color: #656E67; font-size: 13px; margin-bottom: 24px; }
-  .meta { color: #8A948C; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; }
-  .note { border: 1px solid #E6E1DA; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; page-break-inside: avoid; }
-  .note .head { font-size: 12px; color: #656E67; font-weight: 600; margin-bottom: 6px; }
+  .sub { color: #78817D; font-size: 13px; margin-bottom: 24px; }
+  .meta { color: #A3A69F; font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 24px; }
+  .note { border: 1px solid #DEDAD2; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; page-break-inside: avoid; }
+  .note .head { font-size: 12px; color: #78817D; font-weight: 600; margin-bottom: 6px; }
   .note .type { display: inline-block; padding: 2px 8px; border-radius: 4px; background: #EFF5F0; color: #2D5A3A; font-size: 11px; font-weight: 600; margin-right: 8px; }
-  .note .participants { font-size: 12px; color: #656E67; margin: 4px 0; }
+  .note .participants { font-size: 12px; color: #78817D; margin: 4px 0; }
   .note .body { font-size: 13px; white-space: pre-wrap; margin-top: 8px; }
-  .footer { color: #8A948C; font-size: 11px; margin-top: 32px; border-top: 1px solid #E6E1DA; padding-top: 12px; }
+  .footer { color: #A3A69F; font-size: 11px; margin-top: 32px; border-top: 1px solid #DEDAD2; padding-top: 12px; }
 </style></head><body>
   <div class="meta">Planova – Mötesanteckningar</div>
   <h1>${student.name}</h1>
@@ -257,10 +257,10 @@ const MotenTab = ({ student, planner }) => {
 
   return (
     <div className="pt-4 space-y-4">
-      <div className="rounded-xl border border-[#E6E1DA] p-3 bg-[#FAF7F2] space-y-2">
+      <div className="rounded-xl border border-[#DEDAD2] p-3 bg-[#FFFEFB] space-y-2">
         {templates.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase tracking-widest text-[#8A948C] font-semibold">Mall</span>
+            <span className="text-[10px] uppercase tracking-widest text-[#A3A69F] font-semibold">Mall</span>
             <Select value="none" onValueChange={applyTemplate}>
               <SelectTrigger data-testid="mtg-template-select" className="h-8 bg-white text-xs w-56">
                 <SelectValue placeholder="Välj mall att fylla i…" />
@@ -270,7 +270,7 @@ const MotenTab = ({ student, planner }) => {
                 {templates.map((t) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
               </SelectContent>
             </Select>
-            <a href="/installningar" className="text-[11px] text-[#3D5A45] hover:underline ml-auto">Hantera mallar</a>
+            <a href="/installningar" className="text-[11px] text-[#718A7F] hover:underline ml-auto">Hantera mallar</a>
           </div>
         )}
         <div className="grid grid-cols-3 gap-2">
@@ -283,45 +283,45 @@ const MotenTab = ({ student, planner }) => {
           <Button
             data-testid="mtg-save-template-btn"
             variant="outline"
-            className="border-[#E6E1DA] text-[#3D5A45] hover:bg-[#EAF0EC]"
+            className="border-[#DEDAD2] text-[#718A7F] hover:bg-[#DFE9E2]"
             onClick={saveAsTemplate}
           >
             <Save className="h-4 w-4 mr-1" /> Spara som mall
           </Button>
-          <Button data-testid="mtg-add-btn" onClick={save} className="bg-[#3D5A45] hover:bg-[#2F4736]"><Plus className="h-4 w-4 mr-1" />Lägg till</Button>
+          <Button data-testid="mtg-add-btn" onClick={save} className="bg-[#718A7F] hover:bg-[#5C7267]"><Plus className="h-4 w-4 mr-1" />Lägg till</Button>
         </div>
       </div>
 
       {combined.length > 0 && (
-        <div className="flex items-center justify-between text-xs text-[#656E67]" data-testid="mtg-export-bar">
+        <div className="flex items-center justify-between text-xs text-[#78817D]" data-testid="mtg-export-bar">
           <span>{selectedItems.length > 0 ? `${selectedItems.length} anteckning${selectedItems.length > 1 ? "ar" : ""} valda` : "Kryssa i för att exportera som PDF till vårdnadshavare"}</span>
-          <Button data-testid="mtg-export-btn" size="sm" variant="outline" className="border-[#E6E1DA]" disabled={selectedItems.length === 0} onClick={exportSelected}>
+          <Button data-testid="mtg-export-btn" size="sm" variant="outline" className="border-[#DEDAD2]" disabled={selectedItems.length === 0} onClick={exportSelected}>
             <FileDown className="h-3.5 w-3.5 mr-1" /> Exportera som PDF
           </Button>
         </div>
       )}
 
-      {combined.length === 0 ? <div className="text-sm text-[#8A948C]">Inga möten ännu.</div> :
+      {combined.length === 0 ? <div className="text-sm text-[#A3A69F]">Inga möten ännu.</div> :
         combined.map((m) => (
-          <div key={m.id} className="rounded-xl border border-[#E6E1DA] p-3 bg-white flex gap-3" data-testid={`mtg-${m.id}`}>
+          <div key={m.id} className="rounded-xl border border-[#DEDAD2] p-3 bg-white flex gap-3" data-testid={`mtg-${m.id}`}>
             <input
               type="checkbox"
               checked={!!selected[m.id]}
               onChange={() => toggleSelected(m.id)}
-              className="mt-1 h-4 w-4 accent-[#3D5A45]"
+              className="mt-1 h-4 w-4 accent-[#718A7F]"
               data-testid={`mtg-select-${m.id}`}
               aria-label="Välj för export"
             />
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <div className="text-xs text-[#8A948C]">{formatDateLong(fromISODate(m.date))} · {m.meetingType || "Möte"}</div>
+                <div className="text-xs text-[#A3A69F]">{formatDateLong(fromISODate(m.date))} · {m.meetingType || "Möte"}</div>
                 {!m.fromEvent && (
-                  <button onClick={() => planner.deleteMeetingNote(m.id)} className="text-[#8A948C] hover:text-[#9E4A3B]"><Trash2 className="h-3.5 w-3.5" /></button>
+                  <button onClick={() => planner.deleteMeetingNote(m.id)} className="text-[#A3A69F] hover:text-[#9E4A3B]"><Trash2 className="h-3.5 w-3.5" /></button>
                 )}
               </div>
-              {m.participants && <div className="text-xs text-[#656E67] mt-1">Deltagare: {m.participants}</div>}
-              {m.notes && <div className="text-sm text-[#656E67] whitespace-pre-wrap mt-1">{m.notes}</div>}
-              {m.fromEvent && <div className="text-[10px] text-[#8A948C] mt-2">Från utvecklingssamtal i veckoplaneringen</div>}
+              {m.participants && <div className="text-xs text-[#78817D] mt-1">Deltagare: {m.participants}</div>}
+              {m.notes && <div className="text-sm text-[#78817D] whitespace-pre-wrap mt-1">{m.notes}</div>}
+              {m.fromEvent && <div className="text-[10px] text-[#A3A69F] mt-2">Från utvecklingssamtal i veckoplaneringen</div>}
             </div>
           </div>
         ))
@@ -336,7 +336,7 @@ const FreeTextTab = ({ studentId, value, onSave, placeholder, testId }) => {
   return (
     <div className="pt-4 space-y-3">
       <Textarea rows={8} value={text} onChange={(e) => setText(e.target.value)} placeholder={placeholder} onBlur={() => onSave(text)} data-testid={`${testId}-textarea`} className="bg-white" />
-      <div className="text-xs text-[#8A948C]">Sparas automatiskt när du klickar utanför fältet.</div>
+      <div className="text-xs text-[#A3A69F]">Sparas automatiskt när du klickar utanför fältet.</div>
     </div>
   );
 };
@@ -355,25 +355,25 @@ const UppfoljningTab = ({ student, planner }) => {
 
   return (
     <div className="pt-4 space-y-4">
-      <div className="rounded-xl border border-[#E6E1DA] p-3 bg-[#FAF7F2] space-y-2">
+      <div className="rounded-xl border border-[#DEDAD2] p-3 bg-[#FFFEFB] space-y-2">
         <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Beskriv uppföljningen…" data-testid="followup-desc-input" />
         <div className="grid grid-cols-3 gap-2">
           <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} data-testid="followup-due-input" />
           <div />
-          <Button data-testid="followup-add-btn" onClick={save} className="bg-[#3D5A45] hover:bg-[#2F4736]"><Plus className="h-4 w-4 mr-1" />Lägg till</Button>
+          <Button data-testid="followup-add-btn" onClick={save} className="bg-[#718A7F] hover:bg-[#5C7267]"><Plus className="h-4 w-4 mr-1" />Lägg till</Button>
         </div>
       </div>
-      {followups.length === 0 ? <div className="text-sm text-[#8A948C]">Inga uppföljningar ännu.</div> :
+      {followups.length === 0 ? <div className="text-sm text-[#A3A69F]">Inga uppföljningar ännu.</div> :
         followups.map((f) => (
-          <div key={f.id} className="rounded-xl border border-[#E6E1DA] p-3 bg-white flex items-start gap-3" data-testid={`followup-row-${f.id}`}>
+          <div key={f.id} className="rounded-xl border border-[#DEDAD2] p-3 bg-white flex items-start gap-3" data-testid={`followup-row-${f.id}`}>
             <button onClick={() => planner.toggleFollowupCompleted(f.id)} className="mt-0.5" data-testid={`followup-toggle-${f.id}`}>
-              {f.completed ? <Check className="h-4 w-4 text-[#3D5A45]" /> : <Circle className="h-4 w-4 text-[#8A948C]" />}
+              {f.completed ? <Check className="h-4 w-4 text-[#718A7F]" /> : <Circle className="h-4 w-4 text-[#A3A69F]" />}
             </button>
             <div className="flex-1">
-              <div className={`text-sm ${f.completed ? "line-through text-[#8A948C]" : ""}`}>{f.description}</div>
-              <div className="text-xs text-[#8A948C] mt-1">Deadline: {formatDateLong(fromISODate(f.dueDate))}</div>
+              <div className={`text-sm ${f.completed ? "line-through text-[#A3A69F]" : ""}`}>{f.description}</div>
+              <div className="text-xs text-[#A3A69F] mt-1">Deadline: {formatDateLong(fromISODate(f.dueDate))}</div>
             </div>
-            <button onClick={() => planner.deleteFollowup(f.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`followup-delete-${f.id}`}>
+            <button onClick={() => planner.deleteFollowup(f.id)} className="text-[#A3A69F] hover:text-[#9E4A3B]" data-testid={`followup-delete-${f.id}`}>
               <Trash2 className="h-3.5 w-3.5" />
             </button>
           </div>

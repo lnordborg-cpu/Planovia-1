@@ -114,25 +114,25 @@ export default function Veckoplanering() {
     <div className="space-y-6" data-testid="page-veckoplanering">
       <header className="flex items-end justify-between flex-wrap gap-4 no-print">
         <div>
-          <div className="text-[11px] tracking-[0.2em] uppercase text-[#8A948C] font-semibold">Veckoplanering</div>
-          <h1 className="font-serif-display text-4xl mt-1 text-[#2D312E]">Vecka {week}</h1>
-          <div className="text-sm text-[#656E67] mt-1">{formatDateShort(monday)} – {formatDateShort(friday)} · {year}</div>
+          <div className="text-[11px] tracking-[0.2em] uppercase text-[#A3A69F] font-semibold">Veckoplanering</div>
+          <h1 className="font-serif-display text-4xl mt-1 text-[#293330]">Vecka {week}</h1>
+          <div className="text-sm text-[#78817D] mt-1">{formatDateShort(monday)} – {formatDateShort(friday)} · {year}</div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button data-testid="copy-week-btn" variant="outline" size="sm" onClick={copyFromPrevWeek} className="border-[#E6E1DA] bg-white">
+          <Button data-testid="copy-week-btn" variant="outline" size="sm" onClick={copyFromPrevWeek} className="border-[#DEDAD2] bg-white">
             <CopyPlus className="h-4 w-4 mr-1" /> Kopiera föregående
           </Button>
-          <Button data-testid="print-week-btn" variant="outline" size="sm" onClick={printWeek} className="border-[#E6E1DA] bg-white">
+          <Button data-testid="print-week-btn" variant="outline" size="sm" onClick={printWeek} className="border-[#DEDAD2] bg-white">
             <Printer className="h-4 w-4 mr-1" /> Skriv ut
           </Button>
-          <div className="w-px h-6 bg-[#E6E1DA] mx-1" />
-          <Button data-testid="prev-week-btn" variant="outline" size="sm" onClick={() => gotoWeek(-1)} className="border-[#E6E1DA] bg-white">
+          <div className="w-px h-6 bg-[#DEDAD2] mx-1" />
+          <Button data-testid="prev-week-btn" variant="outline" size="sm" onClick={() => gotoWeek(-1)} className="border-[#DEDAD2] bg-white">
             <ChevronLeft className="h-4 w-4 mr-1" /> Föregående
           </Button>
-          <Button data-testid="this-week-btn" variant="outline" size="sm" onClick={gotoThisWeek} className="border-[#E6E1DA] bg-white">
+          <Button data-testid="this-week-btn" variant="outline" size="sm" onClick={gotoThisWeek} className="border-[#DEDAD2] bg-white">
             Denna vecka
           </Button>
-          <Button data-testid="next-week-btn" variant="outline" size="sm" onClick={() => gotoWeek(1)} className="border-[#E6E1DA] bg-white">
+          <Button data-testid="next-week-btn" variant="outline" size="sm" onClick={() => gotoWeek(1)} className="border-[#DEDAD2] bg-white">
             Nästa <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
@@ -144,11 +144,11 @@ export default function Veckoplanering() {
       </div>
 
       <div className="flex items-center gap-2 flex-wrap no-print" data-testid="week-filter-bar">
-        <div className="flex items-center gap-1.5 text-xs text-[#656E67]">
+        <div className="flex items-center gap-1.5 text-xs text-[#78817D]">
           <Filter className="h-3.5 w-3.5" /> Filtrera
         </div>
         <Select value={filterClassId} onValueChange={setFilterClassId}>
-          <SelectTrigger data-testid="filter-class-select" className="h-8 w-40 bg-white border-[#E6E1DA] text-xs">
+          <SelectTrigger data-testid="filter-class-select" className="h-8 w-40 bg-white border-[#DEDAD2] text-xs">
             <SelectValue placeholder="Alla klasser" />
           </SelectTrigger>
           <SelectContent>
@@ -157,7 +157,7 @@ export default function Veckoplanering() {
           </SelectContent>
         </Select>
         <Select value={filterSubjectId} onValueChange={setFilterSubjectId}>
-          <SelectTrigger data-testid="filter-subject-select" className="h-8 w-40 bg-white border-[#E6E1DA] text-xs">
+          <SelectTrigger data-testid="filter-subject-select" className="h-8 w-40 bg-white border-[#DEDAD2] text-xs">
             <SelectValue placeholder="Alla ämnen" />
           </SelectTrigger>
           <SelectContent>
@@ -169,7 +169,7 @@ export default function Veckoplanering() {
           <button
             data-testid="filter-clear-btn"
             onClick={() => { setFilterClassId(ALL); setFilterSubjectId(ALL); }}
-            className="h-8 px-2 rounded-lg border border-[#E6E1DA] bg-white text-xs text-[#656E67] hover:text-[#2D312E] flex items-center gap-1"
+            className="h-8 px-2 rounded-lg border border-[#DEDAD2] bg-white text-xs text-[#78817D] hover:text-[#293330] flex items-center gap-1"
           >
             <X className="h-3 w-3" /> Rensa filter
           </button>
@@ -238,21 +238,21 @@ const DayColumn = ({ label, day, planner, onAdd, onExpand }) => {
 
   return (
     <div
-      className={`rounded-2xl border ${dragOver ? "border-[#3D5A45] bg-[#EAF0EC]/60" : isToday ? "border-[#3D5A45]" : "border-[#E6E1DA]"} bg-[#FAF7F2]/40 flex flex-col min-h-[500px] transition-colors`}
+      className={`rounded-2xl border ${dragOver ? "border-[#718A7F] bg-[#DFE9E2]/60" : isToday ? "border-[#718A7F]" : "border-[#DEDAD2]"} bg-[#FFFEFB]/40 flex flex-col min-h-[500px] transition-colors`}
       data-testid={`day-column-${label.toLowerCase()}`}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
     >
-      <div className="p-3 border-b border-[#E6E1DA] flex items-center justify-between">
+      <div className="p-3 border-b border-[#DEDAD2] flex items-center justify-between">
         <div>
-          <div className="text-[11px] uppercase tracking-widest text-[#8A948C] font-semibold">{label}</div>
-          <div className={`text-sm font-serif-display ${isToday ? "text-[#3D5A45]" : "text-[#2D312E]"}`}>{formatDateShort(day.date)}</div>
+          <div className="text-[11px] uppercase tracking-widest text-[#A3A69F] font-semibold">{label}</div>
+          <div className={`text-sm font-serif-display ${isToday ? "text-[#718A7F]" : "text-[#293330]"}`}>{formatDateShort(day.date)}</div>
         </div>
         <button
           data-testid={`add-day-${label.toLowerCase()}`}
           onClick={() => onAdd({})}
-          className="p-1.5 rounded-lg hover:bg-white text-[#656E67]"
+          className="p-1.5 rounded-lg hover:bg-white text-[#78817D]"
         >
           <Plus className="h-4 w-4" />
         </button>
@@ -271,7 +271,7 @@ const DayColumn = ({ label, day, planner, onAdd, onExpand }) => {
           <FollowupRow key={f.id} f={f} onToggle={() => planner.toggleFollowupCompleted(f.id)} students={planner.students} />
         ))}
         {rows.length === 0 && day.followups.length === 0 && !day.hideRegular && (
-          <div className="text-xs text-[#8A948C] px-2 py-6 text-center">Inga lektioner</div>
+          <div className="text-xs text-[#A3A69F] px-2 py-6 text-center">Inga lektioner</div>
         )}
         {rows.map((r) => (
           <LessonCard
@@ -298,8 +298,8 @@ const FollowupRow = ({ f, onToggle, students }) => {
       {f.completed ? <Check className="h-3.5 w-3.5 text-[#5A3B8B] mt-0.5" /> : <Circle className="h-3.5 w-3.5 text-[#5A3B8B] mt-0.5" />}
       <span className="flex-1">
         <div className={`text-[#5A3B8B] font-semibold text-[10px] uppercase tracking-widest`}>Uppföljning</div>
-        <div className={`${f.completed ? "line-through" : ""} text-[#2D312E]`}>{f.description}</div>
-        {s && <div className="text-[#8A948C]">{s.name}</div>}
+        <div className={`${f.completed ? "line-through" : ""} text-[#293330]`}>{f.description}</div>
+        {s && <div className="text-[#A3A69F]">{s.name}</div>}
       </span>
     </button>
   );
@@ -343,13 +343,13 @@ const LessonCard = ({ row, planner, onExpand, onMaterialise }) => {
       }}
       data-testid={isEvent ? `event-card-${data.id}` : `slot-card-${data.id}`}
       className={`w-full text-left rounded-xl border p-2.5 bg-white hover:shadow-sm transition ${isEvent && data.completed ? "opacity-60" : ""} ${isAutoDone ? "opacity-60" : ""} ${!isEvent ? "border-dashed" : "cursor-grab active:cursor-grabbing"}`}
-      style={{ borderColor: "#E6E1DA" }}
+      style={{ borderColor: "#DEDAD2" }}
     >
-      <div className="flex items-center gap-2 text-[11px] font-semibold tabular-nums text-[#656E67]">
+      <div className="flex items-center gap-2 text-[11px] font-semibold tabular-nums text-[#78817D]">
         <Clock className="h-3 w-3" /> {row.time || "—"}
-        {!isEvent && !isAutoDone && <span className="ml-auto text-[10px] uppercase tracking-wider text-[#8A948C]">Schema</span>}
+        {!isEvent && !isAutoDone && <span className="ml-auto text-[10px] uppercase tracking-wider text-[#A3A69F]">Schema</span>}
         {isAutoDone && (
-          <span className="ml-auto text-[10px] uppercase tracking-wider text-[#3D5A45] flex items-center gap-1" data-testid={`slot-autodone-${data.id}`}>
+          <span className="ml-auto text-[10px] uppercase tracking-wider text-[#718A7F] flex items-center gap-1" data-testid={`slot-autodone-${data.id}`}>
             <Check className="h-3 w-3" /> Genomförd
           </span>
         )}
@@ -364,17 +364,17 @@ const LessonCard = ({ row, planner, onExpand, onMaterialise }) => {
           </span>
         )}
         {klass && (
-          <span className="text-[10px] text-[#656E67] flex items-center gap-1">
+          <span className="text-[10px] text-[#78817D] flex items-center gap-1">
             <ClassDot colorId={klass.colorId} size={8} />
             {klass.name}
           </span>
         )}
       </div>
-      <div className="mt-1 text-sm text-[#2D312E] line-clamp-2">
-        {isEvent ? data.title : (data.defaultTitle || <span className="text-[#8A948C] italic">Klicka för att planera</span>)}
+      <div className="mt-1 text-sm text-[#293330] line-clamp-2">
+        {isEvent ? data.title : (data.defaultTitle || <span className="text-[#A3A69F] italic">Klicka för att planera</span>)}
       </div>
       {isEvent && (
-        <div className="text-[10px] text-[#3D5A45] mt-1 font-semibold uppercase tracking-wider">Mer →</div>
+        <div className="text-[10px] text-[#718A7F] mt-1 font-semibold uppercase tracking-wider">Mer →</div>
       )}
     </button>
   );

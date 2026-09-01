@@ -23,7 +23,7 @@ export default function MaterialPreview({ material, onOpenChange }) {
   return (
     <Dialog open={!!material} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl h-[85vh] p-0 flex flex-col overflow-hidden" data-testid="material-preview-dialog">
-        <DialogHeader className="px-5 py-3 border-b border-[#E6E1DA] flex-row items-center gap-3 space-y-0">
+        <DialogHeader className="px-5 py-3 border-b border-[#DEDAD2] flex-row items-center gap-3 space-y-0">
           <DialogTitle className="font-serif-display text-lg truncate flex-1">{material.name}</DialogTitle>
           <div className="flex items-center gap-2">
             {material.url && (
@@ -32,7 +32,7 @@ export default function MaterialPreview({ material, onOpenChange }) {
                   asChild
                   variant="outline"
                   size="sm"
-                  className="border-[#E6E1DA]"
+                  className="border-[#DEDAD2]"
                   data-testid="preview-open-tab"
                 >
                   <a href={material.url} target="_blank" rel="noreferrer">
@@ -43,7 +43,7 @@ export default function MaterialPreview({ material, onOpenChange }) {
                   asChild
                   variant="outline"
                   size="sm"
-                  className="border-[#E6E1DA]"
+                  className="border-[#DEDAD2]"
                   data-testid="preview-download"
                 >
                   <a href={material.url} download={material.name}>
@@ -54,7 +54,7 @@ export default function MaterialPreview({ material, onOpenChange }) {
             )}
           </div>
         </DialogHeader>
-        <div className="flex-1 min-h-0 bg-[#F3EFEA]">
+        <div className="flex-1 min-h-0 bg-[#EFEAE1]">
           {pdf && material.url ? (
             <iframe
               src={material.url}
@@ -67,7 +67,7 @@ export default function MaterialPreview({ material, onOpenChange }) {
               <img src={material.url} alt={material.name} className="max-w-full max-h-full object-contain" data-testid="preview-image" />
             </div>
           ) : (
-            <div className="h-full flex items-center justify-center text-[#656E67] text-sm px-6 text-center">
+            <div className="h-full flex items-center justify-center text-[#78817D] text-sm px-6 text-center">
               Förhandsgranskning saknas för denna filtyp. Använd knapparna ovan.
             </div>
           )}

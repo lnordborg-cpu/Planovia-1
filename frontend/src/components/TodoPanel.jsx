@@ -32,40 +32,40 @@ export default function TodoPanel({ onCollapse }) {
   };
 
   return (
-    <aside className="w-80 h-full bg-[#FAF7F2] border-l border-[#E6E1DA] flex flex-col" data-testid="todo-panel">
-      <div className="p-5 border-b border-[#E6E1DA] flex items-center justify-between">
+    <aside className="w-80 h-full bg-[#FFFEFB] border-l border-[#DEDAD2] flex flex-col" data-testid="todo-panel">
+      <div className="p-5 border-b border-[#DEDAD2] flex items-center justify-between">
         <div>
-          <div className="text-[11px] tracking-[0.2em] uppercase text-[#8A948C] font-semibold">Att göra</div>
-          <div className="font-serif-display text-xl text-[#2D312E] mt-0.5">
+          <div className="text-[11px] tracking-[0.2em] uppercase text-[#A3A69F] font-semibold">Att göra</div>
+          <div className="font-serif-display text-xl text-[#293330] mt-0.5">
             {activeCount === 0 ? "Allt är klart" : `${activeCount} kvar`}
           </div>
         </div>
         <button
           data-testid="todo-collapse-btn"
           onClick={onCollapse}
-          className="p-1.5 rounded-lg hover:bg-[#F3EFEA] text-[#656E67]"
+          className="p-1.5 rounded-lg hover:bg-[#EFEAE1] text-[#78817D]"
           title="Fäll ihop"
         >
           <PanelRightClose className="h-4 w-4" />
         </button>
       </div>
 
-      <div className="p-4 border-b border-[#E6E1DA] space-y-2">
+      <div className="p-4 border-b border-[#DEDAD2] space-y-2">
         <div className="flex gap-2">
           <Input
             data-testid="todo-quick-input"
             value={quickTitle}
             onChange={(e) => setQuickTitle(e.target.value)}
             placeholder="Lägg till uppgift…"
-            className="bg-white border-[#E6E1DA]"
+            className="bg-white border-[#DEDAD2]"
             onKeyDown={(e) => e.key === "Enter" && submit()}
           />
-          <Button data-testid="todo-quick-add-btn" onClick={submit} size="icon" className="bg-[#3D5A45] hover:bg-[#2F4736]">
+          <Button data-testid="todo-quick-add-btn" onClick={submit} size="icon" className="bg-[#718A7F] hover:bg-[#5C7267]">
             <Plus className="h-4 w-4" />
           </Button>
         </div>
         <button
-          className="text-xs text-[#656E67] hover:text-[#2D312E] flex items-center gap-1"
+          className="text-xs text-[#78817D] hover:text-[#293330] flex items-center gap-1"
           onClick={() => setShowAdvanced(!showAdvanced)}
           data-testid="todo-advanced-toggle"
         >
@@ -75,7 +75,7 @@ export default function TodoPanel({ onCollapse }) {
         {showAdvanced && (
           <div className="grid grid-cols-2 gap-2 pt-1">
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger data-testid="todo-category-select" className="bg-white border-[#E6E1DA] h-9 text-xs">
+              <SelectTrigger data-testid="todo-category-select" className="bg-white border-[#DEDAD2] h-9 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -83,7 +83,7 @@ export default function TodoPanel({ onCollapse }) {
               </SelectContent>
             </Select>
             <Select value={priority} onValueChange={setPriority}>
-              <SelectTrigger data-testid="todo-priority-select" className="bg-white border-[#E6E1DA] h-9 text-xs">
+              <SelectTrigger data-testid="todo-priority-select" className="bg-white border-[#DEDAD2] h-9 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -95,7 +95,7 @@ export default function TodoPanel({ onCollapse }) {
               type="date"
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}
-              className="col-span-2 bg-white border-[#E6E1DA] h-9 text-xs"
+              className="col-span-2 bg-white border-[#DEDAD2] h-9 text-xs"
             />
           </div>
         )}
@@ -103,7 +103,7 @@ export default function TodoPanel({ onCollapse }) {
 
       <div className="flex-1 overflow-y-auto p-3 space-y-2" data-testid="todo-list">
         {sorted.length === 0 && (
-          <div className="text-center text-sm text-[#8A948C] py-10 px-4">
+          <div className="text-center text-sm text-[#A3A69F] py-10 px-4">
             Inga uppgifter ännu. Skapa din första här ovanför.
           </div>
         )}
@@ -123,7 +123,7 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdate }) => {
     <div
       data-testid={`task-item-${task.id}`}
       className={`group rounded-xl border p-3 bg-white transition ${
-        task.completed ? "opacity-60 border-[#E6E1DA]" : overdue ? "border-[#F5D5D0] bg-[#FDF7F5]" : "border-[#E6E1DA] hover:shadow-sm"
+        task.completed ? "opacity-60 border-[#DEDAD2]" : overdue ? "border-[#DFC6C6] bg-[#FCF2F2]" : "border-[#DEDAD2] hover:shadow-sm"
       }`}
     >
       <div className="flex items-start gap-2">
@@ -134,13 +134,13 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdate }) => {
           aria-label="Klarmarkera"
         >
           {task.completed ? (
-            <CheckCircle2 className="h-4 w-4 text-[#3D5A45]" />
+            <CheckCircle2 className="h-4 w-4 text-[#718A7F]" />
           ) : (
-            <Circle className="h-4 w-4 text-[#8A948C]" />
+            <Circle className="h-4 w-4 text-[#A3A69F]" />
           )}
         </button>
         <div className="flex-1 min-w-0">
-          <div className={`text-sm ${task.completed ? "line-through text-[#8A948C]" : "text-[#2D312E]"}`}>
+          <div className={`text-sm ${task.completed ? "line-through text-[#A3A69F]" : "text-[#293330]"}`}>
             {task.title}
           </div>
           <div className="flex items-center gap-2 mt-1.5 flex-wrap">
@@ -153,7 +153,7 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdate }) => {
               </span>
             )}
             {task.deadline && (
-              <span className={`text-[10px] ${overdue ? "text-[#9E4A3B] font-semibold" : dueToday ? "text-[#8C5E14] font-semibold" : "text-[#8A948C]"}`}>
+              <span className={`text-[10px] ${overdue ? "text-[#6F3C3C] font-semibold" : dueToday ? "text-[#6B5A2A] font-semibold" : "text-[#A3A69F]"}`}>
                 {overdue ? "Försenad · " : dueToday ? "Idag · " : ""}{formatDateShort(fromISODate(task.deadline))}
               </span>
             )}
@@ -162,7 +162,7 @@ const TaskRow = ({ task, onToggle, onDelete, onUpdate }) => {
         <button
           data-testid={`task-delete-${task.id}`}
           onClick={() => onDelete(task.id)}
-          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[#F3EFEA] text-[#8A948C]"
+          className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[#EFEAE1] text-[#A3A69F]"
           aria-label="Ta bort"
         >
           <Trash2 className="h-3.5 w-3.5" />

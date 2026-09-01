@@ -1,22 +1,12 @@
 export const SUBJECT_COLORS = [
-  // Pastels (soft)
-  { id: "sage", name: "Salvia", bg: "#EFF5F0", text: "#2D5A3A", border: "#D2E4D5" },
-  { id: "clay", name: "Tegel", bg: "#FDF2F0", text: "#9E4A3B", border: "#F5D5D0" },
-  { id: "honey", name: "Honung", bg: "#FEF8EC", text: "#8C5E14", border: "#F9E8C7" },
-  { id: "sky", name: "Himmel", bg: "#F0F5FA", text: "#2C5282", border: "#D0E1F3" },
-  { id: "lilac", name: "Lila", bg: "#F6F2FB", text: "#5A3B8B", border: "#E2D5F3" },
-  { id: "sand", name: "Sand", bg: "#FCF5EE", text: "#8C4A27", border: "#F5DCB8" },
-  { id: "mist", name: "Dimma", bg: "#F1F4F3", text: "#455955", border: "#DAE0DE" },
-  { id: "rose", name: "Ros", bg: "#FCF0F4", text: "#A03E64", border: "#F5D0DE" },
-  // Sharp / vivid
-  { id: "emerald", name: "Emerald", bg: "#0F9D58", text: "#FFFFFF", border: "#0B7B45" },
-  { id: "cobalt", name: "Kobolt", bg: "#1F5FE1", text: "#FFFFFF", border: "#1747B0" },
-  { id: "fuchsia", name: "Fuchsia", bg: "#D6006C", text: "#FFFFFF", border: "#A80054" },
-  { id: "coral", name: "Korall", bg: "#FF5A3C", text: "#FFFFFF", border: "#D63F24" },
-  { id: "amber", name: "Bärnsten", bg: "#F5B301", text: "#2D312E", border: "#C99400" },
-  { id: "teal", name: "Petrol", bg: "#0EA5A5", text: "#FFFFFF", border: "#0A7A7A" },
-  { id: "violet", name: "Violett", bg: "#7C3AED", text: "#FFFFFF", border: "#5B21B6" },
-  { id: "crimson", name: "Karmosin", bg: "#DC2626", text: "#FFFFFF", border: "#991B1B" },
+  { id: "sky", name: "Dammig blå", bg: "#DCE7EF", text: "#375062", border: "#C1D3E0" },
+  { id: "rose", name: "Dammig ros", bg: "#EEDDDD", text: "#6F3C3C", border: "#DFC6C6" },
+  { id: "sage", name: "Salvia", bg: "#DFE9E2", text: "#47594E", border: "#C7D6CB" },
+  { id: "clay", name: "Terrakotta", bg: "#EEDACB", text: "#7B4B31", border: "#DFC3AC" },
+  { id: "lilac", name: "Lavendel", bg: "#E8E0EC", text: "#4E3A5D", border: "#D4C7DA" },
+  { id: "honey", name: "Smörgul", bg: "#F2E8C8", text: "#6B5A2A", border: "#E1D3A9" },
+  { id: "sand", name: "Sand", bg: "#EFE3D2", text: "#8C6B44", border: "#DDC9AE" },
+  { id: "mist", name: "Dimma", bg: "#E5E5E0", text: "#455955", border: "#D1D1C9" },
 ];
 
 export const CLASS_COLORS = SUBJECT_COLORS;
@@ -39,35 +29,35 @@ export const TASK_CATEGORIES = [
 ];
 
 export const CATEGORY_STYLES = {
-  Internt: "bg-[#F1F4F3] text-[#455955] border-[#DAE0DE]",
-  Lektion: "bg-[#EFF5F0] text-[#2D5A3A] border-[#D2E4D5]",
-  Planering: "bg-[#F0F5FA] text-[#2C5282] border-[#D0E1F3]",
-  "Skriv ut": "bg-[#FEF8EC] text-[#8C5E14] border-[#F9E8C7]",
-  Övrigt: "bg-[#FCF5EE] text-[#8C4A27] border-[#F5DCB8]",
-  Uppföljning: "bg-[#F6F2FB] text-[#5A3B8B] border-[#E2D5F3]",
+  Internt: "bg-[#E5E5E0] text-[#455955] border-[#D1D1C9]",
+  Lektion: "bg-[#DFE9E2] text-[#47594E] border-[#C7D6CB]",
+  Planering: "bg-[#DCE7EF] text-[#375062] border-[#C1D3E0]",
+  "Skriv ut": "bg-[#F2E8C8] text-[#6B5A2A] border-[#E1D3A9]",
+  Övrigt: "bg-[#EFE3D2] text-[#8C6B44] border-[#DDC9AE]",
+  Uppföljning: "bg-[#E8E0EC] text-[#4E3A5D] border-[#D4C7DA]",
 };
 
 export const PRIORITIES = ["Normal", "Viktig", "Hög"];
 export const PRIORITY_VALUES = { Normal: 0, Viktig: 1, Hög: 2 };
 export const PRIORITY_STYLES = {
-  Normal: "bg-[#F3EFEA] text-[#656E67] border-[#E6E1DA]",
-  Viktig: "bg-[#FEF8EC] text-[#8C5E14] border-[#F9E8C7]",
-  Hög: "bg-[#FDF2F0] text-[#9E4A3B] border-[#F5D5D0]",
+  Normal: "bg-[#EFEAE1] text-[#78817D] border-[#DEDAD2]",
+  Viktig: "bg-[#F2E8C8] text-[#6B5A2A] border-[#E1D3A9]",
+  Hög: "bg-[#EEDDDD] text-[#6F3C3C] border-[#DFC6C6]",
 };
 
 export const EVENT_TYPES = {
-  lesson: { label: "Lektion", badge: "bg-[#EFF5F0] text-[#2D5A3A]" },
-  meeting: { label: "Möte", badge: "bg-[#F0F5FA] text-[#2C5282]" },
-  utvecklingssamtal: { label: "Utvecklingssamtal", badge: "bg-[#F6F2FB] text-[#5A3B8B]" },
+  lesson: { label: "Lektion", badge: "bg-[#DFE9E2] text-[#47594E]" },
+  meeting: { label: "Möte", badge: "bg-[#DCE7EF] text-[#375062]" },
+  utvecklingssamtal: { label: "Utvecklingssamtal", badge: "bg-[#E8E0EC] text-[#4E3A5D]" },
 };
 
 export const EXCEPTION_TYPES = [
-  { id: "lov", label: "Lov", badge: "bg-[#FFF3EC] text-[#C05621] border-[#FBD38D]" },
-  { id: "studiedag", label: "Studiedag", badge: "bg-[#E6FFFA] text-[#234E52] border-[#B2F5EA]" },
-  { id: "temadag", label: "Temadag", badge: "bg-[#EBF8FF] text-[#2B6CB0] border-[#BEE3F8]" },
-  { id: "provperiod", label: "Provperiod", badge: "bg-[#FFF5F5] text-[#C53030] border-[#FEB2B2]" },
-  { id: "projekt", label: "Projekt", badge: "bg-[#F6F2FB] text-[#5A3B8B] border-[#E2D5F3]" },
-  { id: "utflykt", label: "Utflykt", badge: "bg-[#FEF8EC] text-[#8C5E14] border-[#F9E8C7]" },
+  { id: "lov", label: "Lov", badge: "bg-[#EFE3D2] text-[#8C6B44] border-[#DDC9AE]" },
+  { id: "studiedag", label: "Studiedag", badge: "bg-[#DFE9E2] text-[#47594E] border-[#C7D6CB]" },
+  { id: "temadag", label: "Temadag", badge: "bg-[#DCE7EF] text-[#375062] border-[#C1D3E0]" },
+  { id: "provperiod", label: "Provperiod", badge: "bg-[#EEDDDD] text-[#6F3C3C] border-[#DFC6C6]" },
+  { id: "projekt", label: "Projekt", badge: "bg-[#E8E0EC] text-[#4E3A5D] border-[#D4C7DA]" },
+  { id: "utflykt", label: "Utflykt", badge: "bg-[#F2E8C8] text-[#6B5A2A] border-[#E1D3A9]" },
 ];
 
 export const getExceptionType = (id) =>

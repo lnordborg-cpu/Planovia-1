@@ -12,11 +12,11 @@ import { Trash2, Plus, Download, Upload, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 const Section = ({ title, description, children, testId }) => (
-  <Card className="border-[#E6E1DA] shadow-none bg-white" data-testid={testId}>
+  <Card className="border-[#DEDAD2] shadow-none bg-white" data-testid={testId}>
     <CardContent className="p-6">
       <div className="mb-4">
-        <h2 className="font-serif-display text-xl text-[#2D312E]">{title}</h2>
-        {description && <p className="text-sm text-[#656E67] mt-1">{description}</p>}
+        <h2 className="font-serif-display text-xl text-[#293330]">{title}</h2>
+        {description && <p className="text-sm text-[#78817D] mt-1">{description}</p>}
       </div>
       {children}
     </CardContent>
@@ -29,10 +29,11 @@ export default function Installningar() {
   return (
     <div className="space-y-6" data-testid="page-installningar">
       <header>
-        <div className="text-[11px] tracking-[0.2em] uppercase text-[#8A948C] font-semibold">Inställningar</div>
-        <h1 className="font-serif-display text-4xl mt-1 text-[#2D312E]">Hantera din planerare</h1>
+        <div className="text-[11px] tracking-[0.2em] uppercase text-[#A3A69F] font-semibold">Inställningar</div>
+        <h1 className="font-serif-display text-4xl mt-1 text-[#293330]">Hantera din planerare</h1>
       </header>
 
+      <ProfileSection planner={planner} />
       <ClassesSection planner={planner} />
       <SubjectsSection planner={planner} />
       <StudentsSection planner={planner} />
@@ -42,6 +43,30 @@ export default function Installningar() {
     </div>
   );
 }
+
+const ProfileSection = ({ planner }) => {
+  const [name, setName] = useState(planner.userName || "");
+  React.useEffect(() => { setName(planner.userName || ""); }, [planner.userName]);
+  const save = () => {
+    planner.setUserName(name);
+    toast.success(name.trim() ? `Trevligt att se dig, ${name.trim()}` : "Namn borttaget");
+  };
+  return (
+    <Section title="Din profil" description="Ditt namn används för hälsningen på Översikt." testId="section-profile">
+      <div className="flex flex-wrap gap-2 items-center">
+        <Input
+          data-testid="profile-name-input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="T.ex. Louise"
+          className="max-w-xs"
+          onKeyDown={(e) => e.key === "Enter" && save()}
+        />
+        <Button data-testid="profile-name-save" onClick={save} className="bg-[#718A7F] hover:bg-[#5C7267]">Spara</Button>
+      </div>
+    </Section>
+  );
+};
 
 const ClassesSection = ({ planner }) => {
   const [name, setName] = useState("");
@@ -66,15 +91,15 @@ const ClassesSection = ({ planner }) => {
         <Button
           data-testid="class-add-btn"
           onClick={() => { if (name.trim()) { planner.addClass(name, colorId); setName(""); toast.success("Klass tillagd"); } }}
-          className="bg-[#3D5A45] hover:bg-[#2F4736]"
+          className="bg-[#718A7F] hover:bg-[#5C7267]"
         ><Plus className="h-4 w-4 mr-1" /> Lägg till</Button>
       </div>
       <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
-        {planner.classes.length === 0 && <div className="text-sm text-[#8A948C]">Inga klasser tillagda ännu.</div>}
+        {planner.classes.length === 0 && <div className="text-sm text-[#A3A69F]">Inga klasser tillagda ännu.</div>}
         {planner.classes.map((c) => {
           const col = getClassColor(c.colorId);
           return (
-            <div key={c.id} className="flex items-center justify-between rounded-lg border border-[#E6E1DA] px-3 py-2 bg-[#FAF7F2]" data-testid={`class-row-${c.id}`}>
+            <div key={c.id} className="flex items-center justify-between rounded-lg border border-[#DEDAD2] px-3 py-2 bg-[#FFFEFB]" data-testid={`class-row-${c.id}`}>
               <div className="flex items-center gap-2">
                 {col && <span className="h-3 w-3 rounded-full" style={{ backgroundColor: col.bg, border: `1.5px solid ${col.text}` }} />}
                 <span className="text-sm">{c.name}</span>
@@ -94,7 +119,7 @@ const ClassesSection = ({ planner }) => {
                   </SelectContent>
                 </Select>
               </div>
-              <button onClick={() => planner.deleteClass(c.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`class-delete-${c.id}`}><Trash2 className="h-3.5 w-3.5" /></button>
+              <button onClick={() => planner.deleteClass(c.id)} className="text-[#A3A69F] hover:text-[#9E4A3B]" data-testid={`class-delete-${c.id}`}><Trash2 className="h-3.5 w-3.5" /></button>
             </div>
           );
         })}
@@ -126,11 +151,11 @@ const SubjectsSection = ({ planner }) => {
         <Button
           data-testid="subject-add-btn"
           onClick={() => { if (name.trim()) { planner.addSubject(name, colorId); setName(""); toast.success("Ämne tillagt"); } }}
-          className="bg-[#3D5A45] hover:bg-[#2F4736]"
+          className="bg-[#718A7F] hover:bg-[#5C7267]"
         ><Plus className="h-4 w-4 mr-1" /> Lägg till</Button>
       </div>
       <div className="flex flex-wrap gap-2">
-        {planner.subjects.length === 0 && <div className="text-sm text-[#8A948C]">Inga ämnen tillagda ännu.</div>}
+        {planner.subjects.length === 0 && <div className="text-sm text-[#A3A69F]">Inga ämnen tillagda ännu.</div>}
         {planner.subjects.map((s) => {
           const col = getSubjectColor(s.colorId);
           return (
@@ -152,7 +177,7 @@ const StudentsSection = ({ planner }) => {
   return (
     <Section title="Elever" description="Elever tillhör en klass." testId="section-students">
       {planner.classes.length === 0 ? (
-        <div className="text-sm text-[#8A948C]">Skapa minst en klass först.</div>
+        <div className="text-sm text-[#A3A69F]">Skapa minst en klass först.</div>
       ) : (
         <>
           <div className="flex gap-2 mb-4 flex-wrap">
@@ -166,20 +191,20 @@ const StudentsSection = ({ planner }) => {
             <Button
               data-testid="student-add-btn"
               onClick={() => { if (name.trim() && classId) { planner.addStudent(name, classId); setName(""); toast.success("Elev tillagd"); } }}
-              className="bg-[#3D5A45] hover:bg-[#2F4736]"
+              className="bg-[#718A7F] hover:bg-[#5C7267]"
             ><Plus className="h-4 w-4 mr-1" /> Lägg till</Button>
           </div>
           <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
-            {planner.students.length === 0 && <div className="text-sm text-[#8A948C]">Inga elever ännu.</div>}
+            {planner.students.length === 0 && <div className="text-sm text-[#A3A69F]">Inga elever ännu.</div>}
             {planner.students.map((st) => {
               const klass = planner.classes.find((c) => c.id === st.classId);
               return (
-                <div key={st.id} className="flex items-center justify-between rounded-lg border border-[#E6E1DA] px-3 py-2 bg-[#FAF7F2]" data-testid={`student-row-${st.id}`}>
+                <div key={st.id} className="flex items-center justify-between rounded-lg border border-[#DEDAD2] px-3 py-2 bg-[#FFFEFB]" data-testid={`student-row-${st.id}`}>
                   <div>
                     <div className="text-sm">{st.name}</div>
-                    <div className="text-xs text-[#8A948C]">{klass?.name}</div>
+                    <div className="text-xs text-[#A3A69F]">{klass?.name}</div>
                   </div>
-                  <button onClick={() => planner.deleteStudent(st.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`student-delete-${st.id}`}>
+                  <button onClick={() => planner.deleteStudent(st.id)} className="text-[#A3A69F] hover:text-[#9E4A3B]" data-testid={`student-delete-${st.id}`}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -203,7 +228,7 @@ const TimetableSection = ({ planner }) => {
   return (
     <Section title="Återkommande schema" description="Dessa lektioner visas automatiskt varje relevant vecka." testId="section-timetable">
       {planner.classes.length === 0 || planner.subjects.length === 0 ? (
-        <div className="text-sm text-[#8A948C]">Skapa minst en klass och ett ämne först.</div>
+        <div className="text-sm text-[#A3A69F]">Skapa minst en klass och ett ämne först.</div>
       ) : (
         <>
           <div className="grid md:grid-cols-6 gap-2 mb-4">
@@ -227,12 +252,12 @@ const TimetableSection = ({ planner }) => {
               disabled={!canAdd}
               data-testid="tt-add-btn"
               onClick={() => { planner.addTimetableSlot({ weekday: Number(weekday), time, classId, subjectId, defaultTitle }); setDefaultTitle(""); toast.success("Schemarad tillagd"); }}
-              className="bg-[#3D5A45] hover:bg-[#2F4736]"
+              className="bg-[#718A7F] hover:bg-[#5C7267]"
             ><Plus className="h-4 w-4 mr-1" /> Lägg till</Button>
           </div>
 
           <div className="grid gap-1">
-            {planner.timetable.length === 0 && <div className="text-sm text-[#8A948C]">Inga schemarader ännu.</div>}
+            {planner.timetable.length === 0 && <div className="text-sm text-[#A3A69F]">Inga schemarader ännu.</div>}
             {planner.timetable
               .slice()
               .sort((a, b) => a.weekday - b.weekday || (a.time || "").localeCompare(b.time || ""))
@@ -241,17 +266,17 @@ const TimetableSection = ({ planner }) => {
                 const subj = planner.subjects.find((s) => s.id === t.subjectId);
                 const col = subj ? getSubjectColor(subj.colorId) : null;
                 return (
-                  <div key={t.id} className="flex items-center gap-3 rounded-lg border border-[#E6E1DA] px-3 py-2 bg-[#FAF7F2]" data-testid={`tt-row-${t.id}`}>
-                    <span className="text-xs uppercase tracking-widest text-[#8A948C] font-semibold w-20">{WEEKDAYS[t.weekday]}</span>
+                  <div key={t.id} className="flex items-center gap-3 rounded-lg border border-[#DEDAD2] px-3 py-2 bg-[#FFFEFB]" data-testid={`tt-row-${t.id}`}>
+                    <span className="text-xs uppercase tracking-widest text-[#A3A69F] font-semibold w-20">{WEEKDAYS[t.weekday]}</span>
                     <span className="text-sm font-semibold tabular-nums w-12">{t.time}</span>
                     {subj && (
                       <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-md border font-semibold" style={{ backgroundColor: col.bg, color: col.text, borderColor: col.border }}>
                         {subj.name}
                       </span>
                     )}
-                    <span className="text-sm text-[#656E67]">{klass?.name}</span>
-                    <span className="text-sm text-[#2D312E] flex-1 truncate">{t.defaultTitle}</span>
-                    <button onClick={() => planner.deleteTimetableSlot(t.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`tt-delete-${t.id}`}>
+                    <span className="text-sm text-[#78817D]">{klass?.name}</span>
+                    <span className="text-sm text-[#293330] flex-1 truncate">{t.defaultTitle}</span>
+                    <button onClick={() => planner.deleteTimetableSlot(t.id)} className="text-[#A3A69F] hover:text-[#9E4A3B]" data-testid={`tt-delete-${t.id}`}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
@@ -285,7 +310,7 @@ const MeetingTemplatesSection = ({ planner }) => {
 
   return (
     <Section title="Mötesmallar" description="Skapa återanvändbara mallar för vanliga möten – t.ex. elevhälsomöte eller trygghetssamtal." testId="section-templates">
-      <div className="rounded-xl border border-[#E6E1DA] p-3 bg-[#FAF7F2] space-y-2 mb-4">
+      <div className="rounded-xl border border-[#DEDAD2] p-3 bg-[#FFFEFB] space-y-2 mb-4">
         <div className="grid md:grid-cols-3 gap-2">
           <Input data-testid="template-name-input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Mallens namn (t.ex. Elevhälsomöte)" />
           <Input data-testid="template-type-input" value={meetingType} onChange={(e) => setMeetingType(e.target.value)} placeholder="Typ av möte" />
@@ -293,24 +318,24 @@ const MeetingTemplatesSection = ({ planner }) => {
         </div>
         <Textarea data-testid="template-notes-input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Standardanteckning eller struktur (valfri)" />
         <div className="flex justify-end">
-          <Button data-testid="template-add-btn" onClick={save} className="bg-[#3D5A45] hover:bg-[#2F4736]"><Plus className="h-4 w-4 mr-1" />Spara mall</Button>
+          <Button data-testid="template-add-btn" onClick={save} className="bg-[#718A7F] hover:bg-[#5C7267]"><Plus className="h-4 w-4 mr-1" />Spara mall</Button>
         </div>
       </div>
       {templates.length === 0 ? (
-        <div className="text-sm text-[#8A948C]">Inga mallar sparade ännu.</div>
+        <div className="text-sm text-[#A3A69F]">Inga mallar sparade ännu.</div>
       ) : (
         <div className="grid sm:grid-cols-2 gap-2">
           {templates.map((t) => (
-            <div key={t.id} className="rounded-lg border border-[#E6E1DA] bg-[#FAF7F2] p-3" data-testid={`template-row-${t.id}`}>
+            <div key={t.id} className="rounded-lg border border-[#DEDAD2] bg-[#FFFEFB] p-3" data-testid={`template-row-${t.id}`}>
               <div className="flex items-center justify-between">
-                <div className="text-sm font-semibold text-[#2D312E]">{t.name}</div>
-                <button onClick={() => planner.deleteMeetingTemplate(t.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`template-delete-${t.id}`}>
+                <div className="text-sm font-semibold text-[#293330]">{t.name}</div>
+                <button onClick={() => planner.deleteMeetingTemplate(t.id)} className="text-[#A3A69F] hover:text-[#9E4A3B]" data-testid={`template-delete-${t.id}`}>
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
               </div>
-              {t.meetingType && <div className="text-xs text-[#656E67] mt-1">{t.meetingType}</div>}
-              {t.participants && <div className="text-xs text-[#8A948C] mt-0.5">Deltagare: {t.participants}</div>}
-              {t.notes && <div className="text-xs text-[#8A948C] mt-1 whitespace-pre-wrap line-clamp-3">{t.notes}</div>}
+              {t.meetingType && <div className="text-xs text-[#78817D] mt-1">{t.meetingType}</div>}
+              {t.participants && <div className="text-xs text-[#A3A69F] mt-0.5">Deltagare: {t.participants}</div>}
+              {t.notes && <div className="text-xs text-[#A3A69F] mt-1 whitespace-pre-wrap line-clamp-3">{t.notes}</div>}
             </div>
           ))}
         </div>
@@ -342,8 +367,8 @@ const BackupSection = ({ planner }) => {
   return (
     <Section title="Säkerhetskopiering" description="All data sparas lokalt. Exportera regelbundet för att inte förlora något." testId="section-backup">
       <div className="flex flex-wrap gap-2">
-        <Button variant="outline" onClick={planner.exportBackup} data-testid="backup-export-btn" className="border-[#E6E1DA]"><Download className="h-4 w-4 mr-2" />Exportera backup</Button>
-        <Button variant="outline" onClick={() => fileRef.current?.click()} data-testid="backup-import-btn" className="border-[#E6E1DA]"><Upload className="h-4 w-4 mr-2" />Importera backup</Button>
+        <Button variant="outline" onClick={planner.exportBackup} data-testid="backup-export-btn" className="border-[#DEDAD2]"><Download className="h-4 w-4 mr-2" />Exportera backup</Button>
+        <Button variant="outline" onClick={() => fileRef.current?.click()} data-testid="backup-import-btn" className="border-[#DEDAD2]"><Upload className="h-4 w-4 mr-2" />Importera backup</Button>
         <input type="file" ref={fileRef} onChange={handleImport} accept="application/json" className="hidden" />
         <AlertDialog>
           <AlertDialogTrigger asChild>

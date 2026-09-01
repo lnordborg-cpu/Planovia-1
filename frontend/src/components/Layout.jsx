@@ -16,12 +16,14 @@ const NAV_ITEMS = [
 ];
 
 const Sidebar = () => (
-  <aside className="w-60 flex-shrink-0 bg-[#F3EFEA] border-r border-[#E6E1DA] flex flex-col p-4" data-testid="sidebar">
-    <div className="px-2 py-4 mb-4">
-      <div className="font-serif-display text-3xl leading-none text-[#2D312E] tracking-tight">Planova</div>
-      <div className="text-[10px] tracking-[0.3em] uppercase text-[#8A948C] font-semibold mt-1.5">Lärarplanerare</div>
+  <aside className="w-60 flex-shrink-0 bg-[#EFEAE1] border-r border-[#DEDAD2] flex flex-col p-4" data-testid="sidebar">
+    <div className="px-2 pt-5 pb-6">
+      <div className="flex items-center gap-2">
+        <span className="inline-block h-6 w-6 rounded-lg bg-[#DFE9E2] border border-[#C7D6CB]" aria-hidden="true" />
+        <div className="font-display text-2xl leading-none text-[#293330] tracking-tight font-bold">Planova</div>
+      </div>
     </div>
-    <nav className="flex flex-col gap-1 flex-1">
+    <nav className="flex flex-col gap-0.5 flex-1">
       {NAV_ITEMS.map((item) => {
         const Icon = item.icon;
         return (
@@ -32,18 +34,18 @@ const Sidebar = () => (
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
                 isActive
-                  ? "bg-white text-[#2D312E] shadow-sm border border-[#E6E1DA]"
-                  : "text-[#656E67] hover:bg-white/60"
+                  ? "bg-[#DFE9E2] text-[#293330] font-semibold"
+                  : "text-[#78817D] hover:bg-white/60 hover:text-[#293330]"
               }`
             }
           >
             <Icon className="h-4 w-4" strokeWidth={1.75} />
-            <span className="font-medium">{item.label}</span>
+            <span>{item.label}</span>
           </NavLink>
         );
       })}
     </nav>
-    <div className="text-[11px] text-[#8A948C] px-3 py-2">
+    <div className="text-[11px] text-[#A3A69F] px-3 py-2 leading-relaxed">
       All data sparas lokalt i din webbläsare.
     </div>
   </aside>
@@ -65,18 +67,18 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#FAF8F5] text-[#2D312E]">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#F6F3EE] text-[#293330]">
       <Sidebar />
       <main className="flex-1 min-w-0 overflow-y-auto">
         <div className="max-w-6xl mx-auto px-8 pt-6 pb-2 flex justify-end no-print">
           <button
             data-testid="global-search-btn"
             onClick={() => setSearchOpen(true)}
-            className="flex items-center gap-2 text-sm text-[#656E67] bg-white border border-[#E6E1DA] rounded-xl pl-3 pr-2 py-1.5 min-w-[280px] hover:border-[#3D5A45] transition"
+            className="flex items-center gap-2 text-sm text-[#78817D] bg-white border border-[#DEDAD2] rounded-xl pl-3 pr-2 py-1.5 min-w-[280px] hover:border-[#718A7F] transition"
           >
             <Search className="h-4 w-4" />
             <span className="flex-1 text-left">Sök i planeraren…</span>
-            <kbd className="text-[10px] font-mono bg-[#F3EFEA] text-[#656E67] px-1.5 py-0.5 rounded border border-[#E6E1DA]">⌘K</kbd>
+            <kbd className="text-[10px] font-mono bg-[#EFEAE1] text-[#78817D] px-1.5 py-0.5 rounded border border-[#DEDAD2]">⌘K</kbd>
           </button>
         </div>
         <div className="max-w-6xl mx-auto px-8 pb-8">
@@ -90,11 +92,11 @@ export default function Layout() {
           <button
             data-testid="todo-expand-btn"
             onClick={() => setTodoOpen(true)}
-            className="h-full w-10 bg-[#FAF7F2] border-l border-[#E6E1DA] flex flex-col items-center justify-start pt-6 gap-2 hover:bg-[#F3EFEA] transition"
+            className="h-full w-10 bg-[#FFFEFB] border-l border-[#DEDAD2] flex flex-col items-center justify-start pt-6 gap-2 hover:bg-[#EFEAE1] transition"
             title="Öppna Att göra"
           >
-            <PanelRightOpen className="h-4 w-4 text-[#656E67]" />
-            <span className="[writing-mode:vertical-rl] rotate-180 text-xs tracking-widest text-[#656E67] mt-2">ATT GÖRA</span>
+            <PanelRightOpen className="h-4 w-4 text-[#78817D]" />
+            <span className="[writing-mode:vertical-rl] rotate-180 text-xs tracking-widest text-[#78817D] mt-2">ATT GÖRA</span>
           </button>
         )}
       </div>

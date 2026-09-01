@@ -71,7 +71,7 @@ export default function QuickNote({ initialStudentId = "", offsetRight = "21rem"
         data-testid="quick-note-fab"
         onClick={() => setOpen(true)}
         style={{ right: offsetRight }}
-        className="no-print fixed bottom-6 z-40 h-12 w-12 rounded-full bg-[#3D5A45] text-white shadow-lg hover:bg-[#2F4736] hover:scale-105 transition flex items-center justify-center"
+        className="no-print fixed bottom-6 z-40 h-12 w-12 rounded-full bg-[#718A7F] text-white shadow-lg hover:bg-[#5C7267] hover:scale-105 transition flex items-center justify-center"
         title="Snabbanteckning (Ctrl+Shift+N)"
         aria-label="Snabbanteckning"
       >
@@ -84,13 +84,13 @@ export default function QuickNote({ initialStudentId = "", offsetRight = "21rem"
             <DialogTitle className="font-serif-display text-2xl">Snabbanteckning</DialogTitle>
           </DialogHeader>
           {planner.students.length === 0 ? (
-            <div className="text-sm text-[#656E67] py-4">
-              Lägg till minst en elev i <a href="/installningar" className="underline text-[#3D5A45]">Inställningar</a> för att kunna skapa anteckningar.
+            <div className="text-sm text-[#78817D] py-4">
+              Lägg till minst en elev i <a href="/installningar" className="underline text-[#718A7F]">Inställningar</a> för att kunna skapa anteckningar.
             </div>
           ) : (
             <div className="space-y-3">
               <div>
-                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Elev</Label>
+                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Elev</Label>
                 <Select value={studentId} onValueChange={setStudentId}>
                   <SelectTrigger data-testid="quick-note-student-select" className="mt-1"><SelectValue placeholder="Välj elev" /></SelectTrigger>
                   <SelectContent>
@@ -103,21 +103,21 @@ export default function QuickNote({ initialStudentId = "", offsetRight = "21rem"
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Datum</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Datum</Label>
                   <Input data-testid="quick-note-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1" />
                 </div>
                 <div className="col-span-2">
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Rubrik</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Rubrik</Label>
                   <Input data-testid="quick-note-title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Valfritt" className="mt-1" />
                 </div>
               </div>
               <div>
-                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Notering</Label>
+                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Notering</Label>
                 <Textarea data-testid="quick-note-body" rows={3} value={note} onChange={(e) => setNote(e.target.value)} className="mt-1" placeholder="Skriv en snabb notering…" autoFocus />
               </div>
               {nearbyLessons.length > 0 && (
                 <div>
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Koppla till lektion (valfritt)</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Koppla till lektion (valfritt)</Label>
                   <Select value={linkedEventId || "none"} onValueChange={setLinkedEventId}>
                     <SelectTrigger data-testid="quick-note-lesson-select" className="mt-1"><SelectValue placeholder="Ingen" /></SelectTrigger>
                     <SelectContent>
@@ -134,13 +134,13 @@ export default function QuickNote({ initialStudentId = "", offsetRight = "21rem"
                   </Select>
                 </div>
               )}
-              <div className="text-[11px] text-[#8A948C]">Tips: öppna med Ctrl+Shift+N från vilken sida som helst.</div>
+              <div className="text-[11px] text-[#A3A69F]">Tips: öppna med Ctrl+Shift+N från vilken sida som helst.</div>
             </div>
           )}
           {planner.students.length > 0 && (
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Avbryt</Button>
-              <Button data-testid="quick-note-save" onClick={save} className="bg-[#3D5A45] hover:bg-[#2F4736]">Spara</Button>
+              <Button data-testid="quick-note-save" onClick={save} className="bg-[#718A7F] hover:bg-[#5C7267]">Spara</Button>
             </DialogFooter>
           )}
         </DialogContent>

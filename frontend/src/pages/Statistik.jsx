@@ -7,13 +7,13 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { BookOpen, CheckCircle2, ListTodo, TrendingUp } from "lucide-react";
 
 const Stat = ({ label, value, hint, icon: Icon, tone = "green" }) => (
-  <Card className="border-[#E6E1DA] bg-white shadow-none">
+  <Card className="border-[#DEDAD2] bg-white shadow-none">
     <CardContent className="p-5">
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-[11px] tracking-widest uppercase text-[#8A948C] font-semibold">{label}</div>
-          <div className="font-serif-display text-3xl mt-2 text-[#2D312E]">{value}</div>
-          {hint && <div className="text-xs text-[#656E67] mt-1">{hint}</div>}
+          <div className="text-[11px] tracking-widest uppercase text-[#A3A69F] font-semibold">{label}</div>
+          <div className="font-serif-display text-3xl mt-2 text-[#293330]">{value}</div>
+          {hint && <div className="text-xs text-[#78817D] mt-1">{hint}</div>}
         </div>
         <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${tone === "green" ? "bg-[#EFF5F0] text-[#2D5A3A]" : tone === "clay" ? "bg-[#FDF2F0] text-[#9E4A3B]" : tone === "sky" ? "bg-[#F0F5FA] text-[#2C5282]" : "bg-[#F6F2FB] text-[#5A3B8B]"}`}>
           <Icon className="h-4 w-4" strokeWidth={1.75} />
@@ -26,11 +26,11 @@ const Stat = ({ label, value, hint, icon: Icon, tone = "green" }) => (
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-lg border border-[#E6E1DA] bg-white px-3 py-2 shadow-md text-xs">
-      <div className="font-semibold text-[#2D312E]">{label}</div>
+    <div className="rounded-lg border border-[#DEDAD2] bg-white px-3 py-2 shadow-md text-xs">
+      <div className="font-semibold text-[#293330]">{label}</div>
       {payload.map((p) => (
-        <div key={p.dataKey} className="text-[#656E67] mt-0.5">
-          {p.name}: <span className="font-semibold text-[#2D312E]">{p.value}</span>
+        <div key={p.dataKey} className="text-[#78817D] mt-0.5">
+          {p.name}: <span className="font-semibold text-[#293330]">{p.value}</span>
         </div>
       ))}
     </div>
@@ -38,13 +38,13 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const ColorLegend = ({ title, items, testIdPrefix, selectedId, onSelect }) => (
-  <div className="rounded-xl border border-[#E6E1DA] bg-[#FAF7F2] p-3" data-testid={`${testIdPrefix}-panel`}>
+  <div className="rounded-xl border border-[#DEDAD2] bg-[#FFFEFB] p-3" data-testid={`${testIdPrefix}-panel`}>
     <div className="flex items-center justify-between mb-2">
-      <div className="text-[10px] uppercase tracking-widest text-[#8A948C] font-semibold">{title}</div>
+      <div className="text-[10px] uppercase tracking-widest text-[#A3A69F] font-semibold">{title}</div>
       {selectedId && (
         <button
           onClick={() => onSelect(null)}
-          className="text-[10px] text-[#3D5A45] hover:underline"
+          className="text-[10px] text-[#718A7F] hover:underline"
           data-testid={`${testIdPrefix}-clear`}
         >Visa alla</button>
       )}
@@ -59,16 +59,16 @@ const ColorLegend = ({ title, items, testIdPrefix, selectedId, onSelect }) => (
           <li key={it.id}>
             <button
               onClick={() => onSelect(isSelected ? null : it.id)}
-              className={`w-full flex items-center gap-2 text-xs text-left px-2 py-1 rounded-md transition ${isSelected ? "bg-white shadow-sm border border-[#E6E1DA]" : "hover:bg-white/60"} ${dimmed ? "opacity-40" : ""}`}
+              className={`w-full flex items-center gap-2 text-xs text-left px-2 py-1 rounded-md transition ${isSelected ? "bg-white shadow-sm border border-[#DEDAD2]" : "hover:bg-white/60"} ${dimmed ? "opacity-40" : ""}`}
               data-testid={`${testIdPrefix}-${it.id}`}
             >
               <span className="inline-block h-3 w-3 rounded-sm flex-shrink-0" style={{ backgroundColor: swatch, border: `1px solid ${col.border}` }} />
-              <span className="truncate text-[#2D312E]">{it.label}</span>
+              <span className="truncate text-[#293330]">{it.label}</span>
             </button>
           </li>
         );
       })}
-      <li className="flex items-center gap-2 text-xs text-[#656E67] pt-2 mt-1 border-t border-[#E6E1DA] px-2">
+      <li className="flex items-center gap-2 text-xs text-[#78817D] pt-2 mt-1 border-t border-[#DEDAD2] px-2">
         <span className="inline-block h-3 w-3 rounded-sm flex-shrink-0" style={{ backgroundColor: "#D2E4D5" }} />
         <span>Planerade</span>
       </li>
@@ -174,15 +174,15 @@ export default function Statistik() {
   return (
     <div className="space-y-8" data-testid="page-statistik">
       <header>
-        <div className="text-[11px] tracking-[0.2em] uppercase text-[#8A948C] font-semibold">Statistik</div>
-        <h1 className="font-serif-display text-4xl mt-1 text-[#2D312E]">Din progress i siffror</h1>
-        <p className="text-sm text-[#656E67] mt-2 max-w-xl">
+        <div className="text-[11px] tracking-[0.2em] uppercase text-[#A3A69F] font-semibold">Statistik</div>
+        <h1 className="font-serif-display text-4xl mt-1 text-[#293330]">Din progress i siffror</h1>
+        <p className="text-sm text-[#78817D] mt-2 max-w-xl">
           En översikt över genomförda lektioner per klass och ämne. Statistik uppdateras automatiskt när du markerar lektioner som genomförda.
         </p>
       </header>
 
       {!hasAnyData ? (
-        <div className="rounded-2xl border border-dashed border-[#E6E1DA] p-10 text-center text-sm text-[#8A948C]">
+        <div className="rounded-2xl border border-dashed border-[#DEDAD2] p-10 text-center text-sm text-[#A3A69F]">
           Inget att visa ännu. Lägg till klasser, ämnen och lektioner så börjar din statistik byggas upp här.
         </div>
       ) : (
@@ -195,18 +195,18 @@ export default function Statistik() {
           </div>
 
           <section>
-            <h2 className="font-serif-display text-2xl text-[#2D312E] mb-3">Per ämne</h2>
+            <h2 className="font-serif-display text-2xl text-[#293330] mb-3">Per ämne</h2>
             {stats.bySubject.length === 0 ? (
-              <div className="text-sm text-[#8A948C]">Inga ämnen registrerade.</div>
+              <div className="text-sm text-[#A3A69F]">Inga ämnen registrerade.</div>
             ) : (
-              <Card className="border-[#E6E1DA] shadow-none bg-white">
+              <Card className="border-[#DEDAD2] shadow-none bg-white">
                 <CardContent className="p-5" data-testid="chart-per-subject">
                   <div className="grid md:grid-cols-[1fr,180px] gap-6 items-start">
                     <ResponsiveContainer width="100%" height={280}>
                       <BarChart data={filteredSubject} barGap={4}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E6E1DA" vertical={false} />
-                        <XAxis dataKey="name" stroke="#8A948C" fontSize={12} />
-                        <YAxis stroke="#8A948C" fontSize={12} allowDecimals={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#DEDAD2" vertical={false} />
+                        <XAxis dataKey="name" stroke="#A3A69F" fontSize={12} />
+                        <YAxis stroke="#A3A69F" fontSize={12} allowDecimals={false} />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend wrapperStyle={{ fontSize: 12 }} />
                         <Bar dataKey="planned" name="Planerade" fill="#D2E4D5" radius={[6, 6, 0, 0]} />
@@ -232,18 +232,18 @@ export default function Statistik() {
           </section>
 
           <section>
-            <h2 className="font-serif-display text-2xl text-[#2D312E] mb-3">Per klass</h2>
+            <h2 className="font-serif-display text-2xl text-[#293330] mb-3">Per klass</h2>
             {stats.byClass.length === 0 ? (
-              <div className="text-sm text-[#8A948C]">Inga klasser registrerade.</div>
+              <div className="text-sm text-[#A3A69F]">Inga klasser registrerade.</div>
             ) : (
-              <Card className="border-[#E6E1DA] shadow-none bg-white">
+              <Card className="border-[#DEDAD2] shadow-none bg-white">
                 <CardContent className="p-5" data-testid="chart-per-class">
                   <div className="grid md:grid-cols-[1fr,180px] gap-6 items-start">
                     <ResponsiveContainer width="100%" height={280}>
                       <BarChart data={filteredClass} layout="vertical" barGap={4}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E6E1DA" horizontal={false} />
-                        <XAxis type="number" stroke="#8A948C" fontSize={12} allowDecimals={false} />
-                        <YAxis type="category" dataKey="name" stroke="#8A948C" fontSize={12} width={70} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#DEDAD2" horizontal={false} />
+                        <XAxis type="number" stroke="#A3A69F" fontSize={12} allowDecimals={false} />
+                        <YAxis type="category" dataKey="name" stroke="#A3A69F" fontSize={12} width={70} />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend wrapperStyle={{ fontSize: 12 }} />
                         <Bar dataKey="planned" name="Planerade" fill="#D2E4D5" radius={[0, 6, 6, 0]} />
@@ -269,21 +269,21 @@ export default function Statistik() {
           </section>
 
           <section>
-            <h2 className="font-serif-display text-2xl text-[#2D312E] mb-3">Trend – senaste 12 veckorna</h2>
-            <Card className="border-[#E6E1DA] shadow-none bg-white">
+            <h2 className="font-serif-display text-2xl text-[#293330] mb-3">Trend – senaste 12 veckorna</h2>
+            <Card className="border-[#DEDAD2] shadow-none bg-white">
               <CardContent className="p-5" data-testid="chart-trend">
                 <ResponsiveContainer width="100%" height={260}>
                   <LineChart data={weeklyTrend} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E6E1DA" vertical={false} />
-                    <XAxis dataKey="week" stroke="#8A948C" fontSize={12} tickFormatter={(w) => `v${w}`} />
-                    <YAxis stroke="#8A948C" fontSize={12} allowDecimals={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#DEDAD2" vertical={false} />
+                    <XAxis dataKey="week" stroke="#A3A69F" fontSize={12} tickFormatter={(w) => `v${w}`} />
+                    <YAxis stroke="#A3A69F" fontSize={12} allowDecimals={false} />
                     <Tooltip content={<CustomTooltip />} labelFormatter={(w) => `Vecka ${w}`} />
                     <Legend wrapperStyle={{ fontSize: 12 }} />
-                    <Line type="monotone" dataKey="lessons" name="Genomförda lektioner" stroke="#3D5A45" strokeWidth={2.5} dot={{ r: 3, fill: "#3D5A45" }} activeDot={{ r: 5 }} />
+                    <Line type="monotone" dataKey="lessons" name="Genomförda lektioner" stroke="#718A7F" strokeWidth={2.5} dot={{ r: 3, fill: "#718A7F" }} activeDot={{ r: 5 }} />
                     <Line type="monotone" dataKey="tasks" name="Klarade uppgifter" stroke="#9E4A3B" strokeWidth={2.5} dot={{ r: 3, fill: "#9E4A3B" }} activeDot={{ r: 5 }} strokeDasharray="4 4" />
                   </LineChart>
                 </ResponsiveContainer>
-                <div className="text-[11px] text-[#8A948C] mt-2">Rytmen av lektioner och avklarade uppgifter över terminen.</div>
+                <div className="text-[11px] text-[#A3A69F] mt-2">Rytmen av lektioner och avklarade uppgifter över terminen.</div>
               </CardContent>
             </Card>
           </section>

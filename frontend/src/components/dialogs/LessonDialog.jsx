@@ -40,22 +40,22 @@ const SamtalTemplateSuggestion = ({ planner, onApply }) => {
         <Sparkles className="h-4 w-4" />
       </div>
       <div className="flex-1">
-        <div className="text-sm font-semibold text-[#2D312E]">Använd en färdig samtalsmall?</div>
-        <div className="text-xs text-[#656E67] mt-0.5">Vi kan lägga till en klassisk utvecklingssamtalstruktur med rubriker som du kan bygga vidare på.</div>
+        <div className="text-sm font-semibold text-[#293330]">Använd en färdig samtalsmall?</div>
+        <div className="text-xs text-[#78817D] mt-0.5">Vi kan lägga till en klassisk utvecklingssamtalstruktur med rubriker som du kan bygga vidare på.</div>
         <div className="flex gap-2 mt-2">
           <button
             onClick={install}
-            className="text-xs px-3 py-1.5 rounded-lg bg-[#3D5A45] text-white hover:bg-[#2F4736]"
+            className="text-xs px-3 py-1.5 rounded-lg bg-[#718A7F] text-white hover:bg-[#5C7267]"
             data-testid="samtal-template-install"
           >Ja tack, använd mallen</button>
           <button
             onClick={later}
-            className="text-xs px-3 py-1.5 rounded-lg text-[#656E67] hover:bg-white/60"
+            className="text-xs px-3 py-1.5 rounded-lg text-[#78817D] hover:bg-white/60"
             data-testid="samtal-template-dismiss"
           >Nej tack</button>
         </div>
       </div>
-      <button onClick={later} className="text-[#8A948C] hover:text-[#2D312E]" aria-label="Stäng">
+      <button onClick={later} className="text-[#A3A69F] hover:text-[#293330]" aria-label="Stäng">
         <X className="h-4 w-4" />
       </button>
     </div>
@@ -161,7 +161,7 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
 
         <div className="space-y-4">
           <div>
-            <Label className="text-xs uppercase tracking-widest text-[#656E67]">Typ</Label>
+            <Label className="text-xs uppercase tracking-widest text-[#78817D]">Typ</Label>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger data-testid="event-type-select" className="mt-1"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -174,11 +174,11 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs uppercase tracking-widest text-[#656E67]">Tid</Label>
+              <Label className="text-xs uppercase tracking-widest text-[#78817D]">Tid</Label>
               <Input data-testid="event-time-input" type="time" value={time} onChange={(e) => setTime(e.target.value)} className="mt-1" />
             </div>
             <div>
-              <Label className="text-xs uppercase tracking-widest text-[#656E67]">Rubrik</Label>
+              <Label className="text-xs uppercase tracking-widest text-[#78817D]">Rubrik</Label>
               <Input data-testid="event-title-input" value={title} onChange={(e) => setTitle(e.target.value)} className="mt-1" placeholder="T.ex. Bråk" />
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
           {type === "lesson" && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Klass</Label>
+                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Klass</Label>
                 <Select value={classId} onValueChange={setClassId}>
                   <SelectTrigger data-testid="event-class-select" className="mt-1"><SelectValue placeholder="Välj klass" /></SelectTrigger>
                   <SelectContent>
@@ -195,7 +195,7 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
                 </Select>
               </div>
               <div>
-                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Ämne</Label>
+                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Ämne</Label>
                 <Select value={subjectId} onValueChange={setSubjectId}>
                   <SelectTrigger data-testid="event-subject-select" className="mt-1"><SelectValue placeholder="Välj ämne" /></SelectTrigger>
                   <SelectContent>
@@ -205,7 +205,7 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
               </div>
               {planner.units.length > 0 && (
                 <div className="col-span-2">
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Arbetsområde (valfritt)</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Arbetsområde (valfritt)</Label>
                   <Select value={unitId} onValueChange={setUnitId}>
                     <SelectTrigger data-testid="event-unit-select" className="mt-1"><SelectValue placeholder="Inget" /></SelectTrigger>
                     <SelectContent>
@@ -221,11 +221,11 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
           {type === "meeting" && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Möteskategori</Label>
+                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Möteskategori</Label>
                 <Input data-testid="meeting-type-input" value={meetingType} onChange={(e) => setMeetingType(e.target.value)} className="mt-1" placeholder="Arbetslag, etc." />
               </div>
               <div>
-                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Deltagare</Label>
+                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Deltagare</Label>
                 <Input data-testid="meeting-participants-input" value={participants} onChange={(e) => setParticipants(e.target.value)} className="mt-1" />
               </div>
             </div>
@@ -239,7 +239,7 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
               }} />
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Elev</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Elev</Label>
                   <Select value={studentId} onValueChange={setStudentId}>
                     <SelectTrigger data-testid="samtal-student-select" className="mt-1"><SelectValue placeholder="Välj elev" /></SelectTrigger>
                     <SelectContent>
@@ -248,11 +248,11 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Deltagare</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Deltagare</Label>
                   <Input data-testid="samtal-participants-input" value={participants} onChange={(e) => setParticipants(e.target.value)} placeholder="Vårdnadshavare…" className="mt-1" />
                 </div>
               </div>
-              <label className="flex items-center gap-2 text-sm text-[#656E67]">
+              <label className="flex items-center gap-2 text-sm text-[#78817D]">
                 <Checkbox data-testid="samtal-prep-check" checked={addPrepTask} onCheckedChange={(v) => setAddPrepTask(!!v)} />
                 Lägg till förberedelse i Att göra
               </label>
@@ -260,14 +260,14 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
           )}
 
           <div>
-            <Label className="text-xs uppercase tracking-widest text-[#656E67]">Anteckningar</Label>
+            <Label className="text-xs uppercase tracking-widest text-[#78817D]">Anteckningar</Label>
             <Textarea data-testid="event-notes-input" value={notes} onChange={(e) => setNotes(e.target.value)} className="mt-1" rows={3} />
           </div>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} data-testid="lesson-cancel-btn">Avbryt</Button>
-          <Button onClick={save} data-testid="lesson-save-btn" className="bg-[#3D5A45] hover:bg-[#2F4736]">Spara</Button>
+          <Button onClick={save} data-testid="lesson-save-btn" className="bg-[#718A7F] hover:bg-[#5C7267]">Spara</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -20,6 +20,7 @@ const emptyState = {
   autoCompletedSlots: [],
   meetingTemplates: [],
   hasSeenSamtalSuggestion: false,
+  userName: "",
 };
 
 const PlannerContext = createContext(null);
@@ -338,6 +339,9 @@ export const PlannerProvider = ({ children }) => {
   const dismissSamtalSuggestion = () =>
     setState((s) => ({ ...s, hasSeenSamtalSuggestion: true }));
 
+  const setUserName = (name) =>
+    setState((s) => ({ ...s, userName: (name || "").trim() }));
+
   // ------- Backup -------
   const exportBackup = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -372,6 +376,7 @@ export const PlannerProvider = ({ children }) => {
       setStudentAdaptation, setStudentSupport,
       addMeetingTemplate, deleteMeetingTemplate,
       dismissSamtalSuggestion,
+      setUserName,
       exportBackup, importBackup, clearAll,
       update,
     }),

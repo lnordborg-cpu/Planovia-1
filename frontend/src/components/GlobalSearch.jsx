@@ -38,7 +38,7 @@ export default function GlobalSearch({ open, onOpenChange }) {
                 <CommandItem key={s.id} value={`elev ${s.name} ${klass?.name || ""}`} onSelect={() => go(`/elever/${s.id}`)} data-testid={`search-student-${s.id}`}>
                   <Users className="h-4 w-4 text-[#2C5282]" />
                   <span>{s.name}</span>
-                  <span className="text-xs text-[#8A948C] ml-2">{klass?.name}</span>
+                  <span className="text-xs text-[#A3A69F] ml-2">{klass?.name}</span>
                 </CommandItem>
               );
             })}
@@ -54,7 +54,7 @@ export default function GlobalSearch({ open, onOpenChange }) {
                 <CommandItem key={e.id} value={`lektion ${e.title} ${e.subjectName || ""} ${e.className || ""} ${e.date}`} onSelect={() => go(`/vecka`)} data-testid={`search-event-${e.id}`}>
                   <BookOpen className="h-4 w-4" style={{ color: color?.text || "#2D5A3A" }} />
                   <span>{e.title || "(utan rubrik)"}</span>
-                  <span className="text-xs text-[#8A948C] ml-2">{e.subjectName} · {e.className} · {formatDateShort(fromISODate(e.date))}</span>
+                  <span className="text-xs text-[#A3A69F] ml-2">{e.subjectName} · {e.className} · {formatDateShort(fromISODate(e.date))}</span>
                 </CommandItem>
               );
             })}
@@ -66,8 +66,8 @@ export default function GlobalSearch({ open, onOpenChange }) {
             {planner.tasks.map((t) => (
               <CommandItem key={t.id} value={`uppgift ${t.title} ${t.category}`} onSelect={() => go("/oversikt")} data-testid={`search-task-${t.id}`}>
                 <ClipboardList className="h-4 w-4 text-[#9E4A3B]" />
-                <span className={t.completed ? "line-through text-[#8A948C]" : ""}>{t.title}</span>
-                <span className="text-xs text-[#8A948C] ml-2">{t.category}{t.deadline ? ` · ${formatDateShort(fromISODate(t.deadline))}` : ""}</span>
+                <span className={t.completed ? "line-through text-[#A3A69F]" : ""}>{t.title}</span>
+                <span className="text-xs text-[#A3A69F] ml-2">{t.category}{t.deadline ? ` · ${formatDateShort(fromISODate(t.deadline))}` : ""}</span>
               </CommandItem>
             ))}
           </CommandGroup>
@@ -81,7 +81,7 @@ export default function GlobalSearch({ open, onOpenChange }) {
                 <CommandItem key={u.id} value={`arbetsomrade ${u.title} ${subj?.name || ""}`} onSelect={() => go("/lasar")} data-testid={`search-unit-${u.id}`}>
                   <GraduationCap className="h-4 w-4 text-[#5A3B8B]" />
                   <span>{u.title}</span>
-                  <span className="text-xs text-[#8A948C] ml-2">{subj?.name}</span>
+                  <span className="text-xs text-[#A3A69F] ml-2">{subj?.name}</span>
                 </CommandItem>
               );
             })}

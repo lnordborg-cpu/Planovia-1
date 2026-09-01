@@ -20,8 +20,8 @@ export default function LasarTermin() {
   return (
     <div className="space-y-8" data-testid="page-lasar">
       <header>
-        <div className="text-[11px] tracking-[0.2em] uppercase text-[#8A948C] font-semibold">Läsår / Termin</div>
-        <h1 className="font-serif-display text-4xl mt-1 text-[#2D312E]">Terminsöversikt</h1>
+        <div className="text-[11px] tracking-[0.2em] uppercase text-[#A3A69F] font-semibold">Läsår / Termin</div>
+        <h1 className="font-serif-display text-4xl mt-1 text-[#293330]">Terminsöversikt</h1>
       </header>
 
       <UnitsSection planner={planner} />
@@ -48,61 +48,61 @@ const UnitsSection = ({ planner }) => {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-serif-display text-2xl text-[#2D312E]">Arbetsområden</h2>
+        <h2 className="font-serif-display text-2xl text-[#293330]">Arbetsområden</h2>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button data-testid="unit-new-btn" className="bg-[#3D5A45] hover:bg-[#2F4736]"><Plus className="h-4 w-4 mr-1" /> Nytt arbetsområde</Button>
+            <Button data-testid="unit-new-btn" className="bg-[#718A7F] hover:bg-[#5C7267]"><Plus className="h-4 w-4 mr-1" /> Nytt arbetsområde</Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg" data-testid="unit-dialog">
             <DialogHeader><DialogTitle className="font-serif-display text-2xl">Nytt arbetsområde</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div>
-                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Titel</Label>
+                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Titel</Label>
                 <Input data-testid="unit-title-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="mt-1" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Klass</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Klass</Label>
                   <Select value={form.classId} onValueChange={(v) => setForm({ ...form, classId: v })}>
                     <SelectTrigger data-testid="unit-class-select" className="mt-1"><SelectValue placeholder="Välj klass" /></SelectTrigger>
                     <SelectContent>{planner.classes.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Ämne</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Ämne</Label>
                   <Select value={form.subjectId} onValueChange={(v) => setForm({ ...form, subjectId: v })}>
                     <SelectTrigger data-testid="unit-subject-select" className="mt-1"><SelectValue placeholder="Välj ämne" /></SelectTrigger>
                     <SelectContent>{planner.subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Startvecka</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Startvecka</Label>
                   <Input data-testid="unit-start-input" type="number" min="1" max="53" value={form.startWeek} onChange={(e) => setForm({ ...form, startWeek: e.target.value })} className="mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Slutvecka</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Slutvecka</Label>
                   <Input data-testid="unit-end-input" type="number" min="1" max="53" value={form.endWeek} onChange={(e) => setForm({ ...form, endWeek: e.target.value })} className="mt-1" />
                 </div>
               </div>
               <div>
-                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Mål</Label>
+                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Mål</Label>
                 <Textarea data-testid="unit-goals-input" value={form.goals} onChange={(e) => setForm({ ...form, goals: e.target.value })} rows={2} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Anteckningar</Label>
+                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Anteckningar</Label>
                 <Textarea data-testid="unit-notes-input" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} className="mt-1" />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Avbryt</Button>
-              <Button onClick={save} data-testid="unit-save-btn" className="bg-[#3D5A45] hover:bg-[#2F4736]">Spara</Button>
+              <Button onClick={save} data-testid="unit-save-btn" className="bg-[#718A7F] hover:bg-[#5C7267]">Spara</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
       {planner.units.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[#E6E1DA] p-10 text-center text-sm text-[#8A948C]">Inga arbetsområden ännu.</div>
+        <div className="rounded-2xl border border-dashed border-[#DEDAD2] p-10 text-center text-sm text-[#A3A69F]">Inga arbetsområden ännu.</div>
       ) : (
         <div className="grid md:grid-cols-2 gap-3">
           {planner.units.map((u) => {
@@ -112,7 +112,7 @@ const UnitsSection = ({ planner }) => {
             const { done, total } = unitProgress(u, planner.events);
             const pct = total > 0 ? Math.round((done / total) * 100) : 0;
             return (
-              <Card key={u.id} className="border-[#E6E1DA] shadow-none bg-white" data-testid={`unit-card-${u.id}`}>
+              <Card key={u.id} className="border-[#DEDAD2] shadow-none bg-white" data-testid={`unit-card-${u.id}`}>
                 <CardContent className="p-5">
                   <div className="flex items-start justify-between">
                     <div>
@@ -123,25 +123,25 @@ const UnitsSection = ({ planner }) => {
                             {subj.name}
                           </span>
                         )}
-                        {klass && <span className="text-xs text-[#656E67]">{klass.name}</span>}
+                        {klass && <span className="text-xs text-[#78817D]">{klass.name}</span>}
                       </div>
-                      <h3 className="font-serif-display text-lg text-[#2D312E]">{u.title}</h3>
+                      <h3 className="font-serif-display text-lg text-[#293330]">{u.title}</h3>
                       {(u.startWeek || u.endWeek) && (
-                        <div className="text-xs text-[#8A948C] mt-1">Vecka {u.startWeek || "?"}–{u.endWeek || "?"}</div>
+                        <div className="text-xs text-[#A3A69F] mt-1">Vecka {u.startWeek || "?"}–{u.endWeek || "?"}</div>
                       )}
                     </div>
-                    <button onClick={() => planner.deleteUnit(u.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`unit-delete-${u.id}`}>
+                    <button onClick={() => planner.deleteUnit(u.id)} className="text-[#A3A69F] hover:text-[#9E4A3B]" data-testid={`unit-delete-${u.id}`}>
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
-                  {u.goals && <p className="text-sm text-[#656E67] mt-3 whitespace-pre-wrap">{u.goals}</p>}
+                  {u.goals && <p className="text-sm text-[#78817D] mt-3 whitespace-pre-wrap">{u.goals}</p>}
                   <div className="mt-4">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-[#656E67]">Framsteg</span>
-                      <span className="text-[#2D312E] font-semibold tabular-nums">{done} / {total}</span>
+                      <span className="text-[#78817D]">Framsteg</span>
+                      <span className="text-[#293330] font-semibold tabular-nums">{done} / {total}</span>
                     </div>
-                    <div className="h-1.5 bg-[#F3EFEA] rounded-full mt-2 overflow-hidden">
-                      <div className="h-full bg-[#3D5A45] transition-all" style={{ width: `${pct}%` }} />
+                    <div className="h-1.5 bg-[#EFEAE1] rounded-full mt-2 overflow-hidden">
+                      <div className="h-full bg-[#718A7F] transition-all" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
                 </CardContent>
@@ -167,20 +167,20 @@ const ExceptionsSection = ({ planner }) => {
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-serif-display text-2xl text-[#2D312E]">Kalenderavvikelser</h2>
+        <h2 className="font-serif-display text-2xl text-[#293330]">Kalenderavvikelser</h2>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button data-testid="exception-new-btn" variant="outline" className="border-[#E6E1DA]"><Plus className="h-4 w-4 mr-1" /> Lägg till</Button>
+            <Button data-testid="exception-new-btn" variant="outline" className="border-[#DEDAD2]"><Plus className="h-4 w-4 mr-1" /> Lägg till</Button>
           </DialogTrigger>
           <DialogContent className="max-w-md" data-testid="exception-dialog">
             <DialogHeader><DialogTitle className="font-serif-display text-2xl">Kalenderavvikelse</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div>
-                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Rubrik</Label>
+                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Rubrik</Label>
                 <Input data-testid="exception-title-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="mt-1" placeholder="T.ex. Höstlov" />
               </div>
               <div>
-                <Label className="text-xs uppercase tracking-widest text-[#656E67]">Typ</Label>
+                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Typ</Label>
                 <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
                   <SelectTrigger data-testid="exception-type-select" className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{EXCEPTION_TYPES.map((t) => <SelectItem key={t.id} value={t.id}>{t.label}</SelectItem>)}</SelectContent>
@@ -188,11 +188,11 @@ const ExceptionsSection = ({ planner }) => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Startdatum</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Startdatum</Label>
                   <Input data-testid="exception-start-input" type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs uppercase tracking-widest text-[#656E67]">Slutdatum</Label>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Slutdatum</Label>
                   <Input data-testid="exception-end-input" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="mt-1" />
                 </div>
               </div>
@@ -203,25 +203,25 @@ const ExceptionsSection = ({ planner }) => {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Avbryt</Button>
-              <Button onClick={save} data-testid="exception-save-btn" className="bg-[#3D5A45] hover:bg-[#2F4736]">Spara</Button>
+              <Button onClick={save} data-testid="exception-save-btn" className="bg-[#718A7F] hover:bg-[#5C7267]">Spara</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
       {planner.calendarExceptions.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-[#E6E1DA] p-6 text-center text-sm text-[#8A948C]">Inga kalenderavvikelser ännu.</div>
+        <div className="rounded-2xl border border-dashed border-[#DEDAD2] p-6 text-center text-sm text-[#A3A69F]">Inga kalenderavvikelser ännu.</div>
       ) : (
         <div className="space-y-2">
           {planner.calendarExceptions.map((ex) => {
             const t = getExceptionType(ex.type);
             return (
-              <div key={ex.id} className="flex items-center gap-3 rounded-xl border border-[#E6E1DA] bg-white p-3" data-testid={`exception-row-${ex.id}`}>
+              <div key={ex.id} className="flex items-center gap-3 rounded-xl border border-[#DEDAD2] bg-white p-3" data-testid={`exception-row-${ex.id}`}>
                 <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md border font-semibold ${t.badge}`}>{t.label}</span>
-                <span className="text-sm text-[#2D312E] flex-1">{ex.title}</span>
-                <span className="text-xs text-[#656E67] tabular-nums">{formatDateShort(fromISODate(ex.startDate))} – {formatDateShort(fromISODate(ex.endDate))}</span>
-                {ex.hideRegularLessons && <span className="text-[10px] text-[#8A948C]">Dölj ordinarie</span>}
-                <button onClick={() => planner.deleteException(ex.id)} className="text-[#8A948C] hover:text-[#9E4A3B]" data-testid={`exception-delete-${ex.id}`}>
+                <span className="text-sm text-[#293330] flex-1">{ex.title}</span>
+                <span className="text-xs text-[#78817D] tabular-nums">{formatDateShort(fromISODate(ex.startDate))} – {formatDateShort(fromISODate(ex.endDate))}</span>
+                {ex.hideRegularLessons && <span className="text-[10px] text-[#A3A69F]">Dölj ordinarie</span>}
+                <button onClick={() => planner.deleteException(ex.id)} className="text-[#A3A69F] hover:text-[#9E4A3B]" data-testid={`exception-delete-${ex.id}`}>
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>

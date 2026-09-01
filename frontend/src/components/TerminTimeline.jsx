@@ -118,19 +118,19 @@ export default function TerminTimeline() {
   };
 
   return (
-    <div className="rounded-2xl border border-[#E6E1DA] bg-white p-5" data-testid="term-timeline">
+    <div className="rounded-2xl border border-[#DEDAD2] bg-white p-5" data-testid="term-timeline">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
-          <h2 className="font-serif-display text-2xl text-[#2D312E]">Tidslinje</h2>
-          <p className="text-xs text-[#656E67] mt-0.5">Dra ett block för att flytta det, eller kanterna för att ändra veckor.</p>
+          <h2 className="font-serif-display text-2xl text-[#293330]">Tidslinje</h2>
+          <p className="text-xs text-[#78817D] mt-0.5">Dra ett block för att flytta det, eller kanterna för att ändra veckor.</p>
         </div>
-        <div className="inline-flex rounded-lg border border-[#E6E1DA] bg-[#FAF7F2] p-0.5" data-testid="timeline-zoom">
+        <div className="inline-flex rounded-lg border border-[#DEDAD2] bg-[#FFFEFB] p-0.5" data-testid="timeline-zoom">
           {Object.entries(VIEWS).map(([k, v]) => (
             <button
               key={k}
               data-testid={`zoom-${k}`}
               onClick={() => setView(k)}
-              className={`px-3 py-1.5 rounded-md text-xs transition ${view === k ? "bg-white text-[#2D312E] shadow-sm border border-[#E6E1DA]" : "text-[#656E67] hover:text-[#2D312E]"}`}
+              className={`px-3 py-1.5 rounded-md text-xs transition ${view === k ? "bg-white text-[#293330] shadow-sm border border-[#DEDAD2]" : "text-[#78817D] hover:text-[#293330]"}`}
             >
               {v.label}
             </button>
@@ -141,14 +141,14 @@ export default function TerminTimeline() {
       <div className="overflow-x-auto">
         <div className="min-w-full inline-block" ref={gridRef}>
           <div
-            className="grid gap-px bg-[#E6E1DA] rounded-md overflow-hidden"
+            className="grid gap-px bg-[#DEDAD2] rounded-md overflow-hidden"
             style={{ gridTemplateColumns: `140px repeat(${totalWeeks}, minmax(28px, 1fr))` }}
           >
-            <div className="bg-[#FAF7F2] px-3 py-2 text-[10px] uppercase tracking-widest text-[#8A948C] font-semibold">Vecka</div>
+            <div className="bg-[#FFFEFB] px-3 py-2 text-[10px] uppercase tracking-widest text-[#A3A69F] font-semibold">Vecka</div>
             {rangeData.weeks.map((w) => (
               <div
                 key={w.key}
-                className={`bg-[#FAF7F2] px-1 py-2 text-center text-[10px] tabular-nums font-semibold ${w.label === currentWeek ? "text-[#3D5A45]" : "text-[#656E67]"}`}
+                className={`bg-[#FFFEFB] px-1 py-2 text-center text-[10px] tabular-nums font-semibold ${w.label === currentWeek ? "text-[#718A7F]" : "text-[#78817D]"}`}
                 data-testid={`timeline-week-${w.label}`}
               >
                 {w.label}
@@ -166,7 +166,7 @@ export default function TerminTimeline() {
             {Array.from({ length: laneCount }).map((_, i) => (
               <div
                 key={`lbl-${i}`}
-                className="text-[11px] uppercase tracking-widest text-[#8A948C] flex items-center px-3"
+                className="text-[11px] uppercase tracking-widest text-[#A3A69F] flex items-center px-3"
                 style={{ gridColumn: 1, gridRow: i + 1 }}
               >
                 Bana {i + 1}
@@ -176,7 +176,7 @@ export default function TerminTimeline() {
             {rangeData.weeks.map((w, wIdx) => (
               <div
                 key={`col-${w.key}`}
-                className={`border-l ${w.label === currentWeek ? "border-[#3D5A45]" : "border-[#F3EFEA]"}`}
+                className={`border-l ${w.label === currentWeek ? "border-[#718A7F]" : "border-[#EFEAE1]"}`}
                 style={{ gridColumn: wIdx + 2, gridRow: `1 / span ${laneCount}` }}
               />
             ))}
@@ -195,7 +195,7 @@ export default function TerminTimeline() {
               return (
                 <div
                   key={u.id}
-                  className={`group rounded-lg pl-3 pr-3 py-1 border shadow-sm overflow-hidden relative select-none cursor-grab active:cursor-grabbing ${drag?.id === u.id ? "ring-2 ring-[#3D5A45]" : ""}`}
+                  className={`group rounded-lg pl-3 pr-3 py-1 border shadow-sm overflow-hidden relative select-none cursor-grab active:cursor-grabbing ${drag?.id === u.id ? "ring-2 ring-[#718A7F]" : ""}`}
                   style={{
                     gridColumn: `${startCol + 1} / span ${span}`,
                     gridRow: u._lane + 1,
@@ -234,8 +234,8 @@ export default function TerminTimeline() {
           </div>
 
           {currentWeek && (
-            <div className="mt-3 text-[11px] text-[#3D5A45] font-semibold flex items-center gap-1.5">
-              <span className="inline-block h-2 w-2 rounded-full bg-[#3D5A45]" />
+            <div className="mt-3 text-[11px] text-[#718A7F] font-semibold flex items-center gap-1.5">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#718A7F]" />
               Aktuell vecka: {currentWeek}
             </div>
           )}
