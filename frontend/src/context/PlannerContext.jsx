@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
+import { toISODate, dateInRange, weekdayIndex } from "@/lib/dateUtils";
 
 const STORAGE_KEY = "lararplanerare_v1";
 
@@ -16,6 +17,7 @@ const emptyState = {
   meetingNotes: [],
   studentAdaptations: {},
   studentSupport: {},
+  autoCompletedSlots: [],
 };
 
 const PlannerContext = createContext(null);
@@ -36,6 +38,34 @@ export const PlannerProvider = ({ children }) => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) { /* ignore */ }
   }, [state]);
+
+  // Auto-complete yesterday's recurring timetable lessons on mount (and daily while app is open)
+  useEffect(() => {
+    const run = () => {
+      setState((s) => {
+        const now = new Date();
+        const yesterday = new Date(now);
+        yesterday.setDate(now.getDate() - 1);
+        const iso = toISODate(yesterday);
+        const wd = weekdayIndex(yesterday);
+        if (wd > 4) return s; // skip weekends
+        const hidden = s.calendarExceptions.some((e) => e.hideRegularLessons && dateInRange(iso, e.startDate, e.endDate));
+        if (hidden) return s;
+        const already = new Set(s.autoCompletedSlots.map((a) => `${a.slotId}|${a.date}`));
+        const materialised = new Set(s.events.filter((e) => e.timetableId && e.date === iso).map((e) => e.timetableId));
+        const toAdd = s.timetable
+          .filter((t) => t.weekday === wd && !already.has(`${t.id}|${iso}`) && !materialised.has(t.id))
+          .map((t) => ({ slotId: t.id, date: iso }));
+        if (toAdd.length === 0) return s;
+        return { ...s, autoCompletedSlots: [...s.autoCompletedSlots, ...toAdd] };
+      });
+    };
+    run();
+    // Re-run each hour in case app stays open past midnight
+    const iv = setInterval(run, 60 * 60 * 1000);
+    return () => clearInterval(iv);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Generic setters
   const update = useCallback((partial) => setState((s) => ({ ...s, ...partial })), []);

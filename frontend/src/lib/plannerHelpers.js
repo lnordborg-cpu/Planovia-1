@@ -1,12 +1,11 @@
 import { toISODate, getMondayOfISOWeek, getWeekdays, dateInRange, weekdayIndex } from "./dateUtils";
 import { PRIORITY_VALUES } from "./constants";
 
-// For given ISO year+week, return array of 5 day objects:
-// { date, iso, weekdayIndex, dateEvents: [], scheduledSlots: [], followups: [], hidden:boolean }
-// scheduledSlots are timetable slots that render as virtual lessons unless hidden by exceptions or overridden by an event with same timetableId+date
-export const buildWeekData = ({ year, week, timetable, events, calendarExceptions, followups }) => {
+// For given ISO year+week, return array of 5 day objects
+export const buildWeekData = ({ year, week, timetable, events, calendarExceptions, followups, autoCompletedSlots = [] }) => {
   const monday = getMondayOfISOWeek(year, week);
   const days = getWeekdays(monday);
+  const autoSet = new Set(autoCompletedSlots.map((a) => `${a.slotId}|${a.date}`));
   return days.map((date, i) => {
     const iso = toISODate(date);
 
@@ -21,12 +20,8 @@ export const buildWeekData = ({ year, week, timetable, events, calendarException
       ? []
       : timetable
           .filter((t) => t.weekday === i)
-          .filter((t) => {
-            // Suppress slot if there's a materialised event referencing this slot on this date
-            return !dayEvents.some(
-              (ev) => ev.timetableId === t.id,
-            );
-          });
+          .filter((t) => !dayEvents.some((ev) => ev.timetableId === t.id))
+          .map((t) => ({ ...t, autoCompleted: autoSet.has(`${t.id}|${iso}`) }));
 
     const dayFollowups = followups.filter((f) => f.dueDate === iso);
 

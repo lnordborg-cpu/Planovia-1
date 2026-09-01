@@ -4,13 +4,16 @@ import { buildWeekData } from "@/lib/plannerHelpers";
 import { getISOWeek, getMondayOfISOWeek, getWeekdays, toISODate, formatDateShort, todayISO, fromISODate } from "@/lib/dateUtils";
 import { WEEKDAYS, getSubjectColor, getExceptionType } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, Clock, Trash2, Check, Circle, CopyPlus, Printer } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Clock, Trash2, Check, Circle, CopyPlus, Printer, Filter, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import LessonDialog from "@/components/dialogs/LessonDialog";
 import LessonExpandedDialog from "@/components/dialogs/LessonExpandedDialog";
 
 // derive year/week from today
 const initialYW = () => getISOWeek(new Date());
+
+const ALL = "__all__";
 
 export default function Veckoplanering() {
   const planner = usePlanner();
@@ -20,17 +23,38 @@ export default function Veckoplanering() {
   });
   const [dialogState, setDialogState] = useState(null); // { date, prefill }
   const [expandedEventId, setExpandedEventId] = useState(null);
+  const [filterClassId, setFilterClassId] = useState(ALL);
+  const [filterSubjectId, setFilterSubjectId] = useState(ALL);
 
-  const weekData = useMemo(
+  const rawWeekData = useMemo(
     () => buildWeekData({
       year, week,
       timetable: planner.timetable,
       events: planner.events,
       calendarExceptions: planner.calendarExceptions,
       followups: planner.followups,
+      autoCompletedSlots: planner.autoCompletedSlots,
     }),
-    [year, week, planner.timetable, planner.events, planner.calendarExceptions, planner.followups],
+    [year, week, planner.timetable, planner.events, planner.calendarExceptions, planner.followups, planner.autoCompletedSlots],
   );
+
+  const filterActive = filterClassId !== ALL || filterSubjectId !== ALL;
+  const matches = (obj) => {
+    if (filterClassId !== ALL && obj.classId !== filterClassId) return false;
+    if (filterSubjectId !== ALL && obj.subjectId !== filterSubjectId) return false;
+    return true;
+  };
+
+  const weekData = useMemo(() => {
+    if (!filterActive) return rawWeekData;
+    return rawWeekData.map((d) => ({
+      ...d,
+      slots: d.slots.filter(matches),
+      events: d.events.filter((e) => e.type === "lesson" ? matches(e) : filterClassId === ALL && filterSubjectId === ALL),
+      followups: d.followups, // always keep – tied to students, not to class/subject filters
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawWeekData, filterActive, filterClassId, filterSubjectId]);
 
   const monday = getMondayOfISOWeek(year, week);
   const friday = getWeekdays(monday)[4];
@@ -101,6 +125,39 @@ export default function Veckoplanering() {
       <div className="hidden print:block mb-4">
         <div className="text-xs uppercase tracking-widest">Veckoplanering</div>
         <h1 className="font-serif-display text-3xl">Vecka {week} · {formatDateShort(monday)} – {formatDateShort(friday)} · {year}</h1>
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap no-print" data-testid="week-filter-bar">
+        <div className="flex items-center gap-1.5 text-xs text-[#656E67]">
+          <Filter className="h-3.5 w-3.5" /> Filtrera
+        </div>
+        <Select value={filterClassId} onValueChange={setFilterClassId}>
+          <SelectTrigger data-testid="filter-class-select" className="h-8 w-40 bg-white border-[#E6E1DA] text-xs">
+            <SelectValue placeholder="Alla klasser" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Alla klasser</SelectItem>
+            {planner.classes.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={filterSubjectId} onValueChange={setFilterSubjectId}>
+          <SelectTrigger data-testid="filter-subject-select" className="h-8 w-40 bg-white border-[#E6E1DA] text-xs">
+            <SelectValue placeholder="Alla ämnen" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Alla ämnen</SelectItem>
+            {planner.subjects.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        {filterActive && (
+          <button
+            data-testid="filter-clear-btn"
+            onClick={() => { setFilterClassId(ALL); setFilterSubjectId(ALL); }}
+            className="h-8 px-2 rounded-lg border border-[#E6E1DA] bg-white text-xs text-[#656E67] hover:text-[#2D312E] flex items-center gap-1"
+          >
+            <X className="h-3 w-3" /> Rensa filter
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-5 gap-3">
@@ -242,6 +299,7 @@ const LessonCard = ({ row, planner, onExpand, onMaterialise }) => {
 
   const isMeeting = isEvent && data.type === "meeting";
   const isSamtal = isEvent && data.type === "utvecklingssamtal";
+  const isAutoDone = !isEvent && data.autoCompleted;
 
   const handleClick = () => {
     if (isEvent) onExpand();
@@ -268,12 +326,17 @@ const LessonCard = ({ row, planner, onExpand, onMaterialise }) => {
         e.dataTransfer.effectAllowed = "move";
       }}
       data-testid={isEvent ? `event-card-${data.id}` : `slot-card-${data.id}`}
-      className={`w-full text-left rounded-xl border p-2.5 bg-white hover:shadow-sm transition ${isEvent && data.completed ? "opacity-60" : ""} ${!isEvent ? "border-dashed" : "cursor-grab active:cursor-grabbing"}`}
+      className={`w-full text-left rounded-xl border p-2.5 bg-white hover:shadow-sm transition ${isEvent && data.completed ? "opacity-60" : ""} ${isAutoDone ? "opacity-60" : ""} ${!isEvent ? "border-dashed" : "cursor-grab active:cursor-grabbing"}`}
       style={{ borderColor: "#E6E1DA" }}
     >
       <div className="flex items-center gap-2 text-[11px] font-semibold tabular-nums text-[#656E67]">
         <Clock className="h-3 w-3" /> {row.time || "—"}
-        {!isEvent && <span className="ml-auto text-[10px] uppercase tracking-wider text-[#8A948C]">Schema</span>}
+        {!isEvent && !isAutoDone && <span className="ml-auto text-[10px] uppercase tracking-wider text-[#8A948C]">Schema</span>}
+        {isAutoDone && (
+          <span className="ml-auto text-[10px] uppercase tracking-wider text-[#3D5A45] flex items-center gap-1" data-testid={`slot-autodone-${data.id}`}>
+            <Check className="h-3 w-3" /> Genomförd
+          </span>
+        )}
         {isMeeting && <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-[#F0F5FA] text-[#2C5282]">Möte</span>}
         {isSamtal && <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-[#F6F2FB] text-[#5A3B8B]">Samtal</span>}
       </div>

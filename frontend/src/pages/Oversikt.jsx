@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { usePlanner } from "@/context/PlannerContext";
-import { todayISO, formatDateLong, fromISODate, weekdayIndex } from "@/lib/dateUtils";
+import { todayISO, formatDateLong, fromISODate, weekdayIndex, getISOWeek, getMondayOfISOWeek, getWeekdays, toISODate } from "@/lib/dateUtils";
 import { getSubjectColor } from "@/lib/constants";
 import { unitProgress } from "@/lib/plannerHelpers";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, BookOpen, ClipboardList, Sparkles, ArrowRight, Check } from "lucide-react";
+import { Users, BookOpen, ClipboardList, Sparkles, ArrowRight, Check, CheckCircle2 } from "lucide-react";
 
 const Step = ({ done, label, to }) => (
   <Link
@@ -41,7 +41,7 @@ const StatCard = ({ icon: Icon, label, value, hint, tone = "default" }) => (
 );
 
 export default function Oversikt() {
-  const { classes, subjects, students, timetable, events, units, tasks, followups } = usePlanner();
+  const { classes, subjects, students, timetable, events, units, tasks, followups, autoCompletedSlots } = usePlanner();
   const today = todayISO();
 
   const dayIdx = weekdayIndex(new Date());
@@ -55,6 +55,14 @@ export default function Oversikt() {
   const lessonsToday = todaysEvents.filter((e) => e.type === "lesson").length + todaysSlots.length;
   const openTasks = tasks.filter((t) => !t.completed).length;
   const activeUnits = units.length;
+
+  const completedThisWeek = useMemo(() => {
+    const [y, w] = getISOWeek(new Date());
+    const weekDates = new Set(getWeekdays(getMondayOfISOWeek(y, w)).map(toISODate));
+    const completedEvents = events.filter((e) => e.completed && weekDates.has(e.date)).length;
+    const autoDone = (autoCompletedSlots || []).filter((a) => weekDates.has(a.date)).length;
+    return completedEvents + autoDone;
+  }, [events, autoCompletedSlots]);
 
   const isEmpty = classes.length === 0 && subjects.length === 0 && students.length === 0 && timetable.length === 0 && units.length === 0 && events.length === 0;
 
@@ -98,9 +106,9 @@ export default function Oversikt() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={BookOpen} label="Lektioner idag" value={lessonsToday} hint={todayIsWeekday ? "inkl. återkommande" : "Helg"} tone="green" />
+        <StatCard icon={CheckCircle2} label="Genomförda denna vecka" value={completedThisWeek} hint="uppdateras automatiskt" tone="lilac" />
         <StatCard icon={ClipboardList} label="Öppna uppgifter" value={openTasks} tone="clay" />
         <StatCard icon={Users} label="Elever" value={students.length} tone="sky" />
-        <StatCard icon={Sparkles} label="Arbetsområden" value={activeUnits} tone="lilac" />
       </div>
 
       <section className="grid lg:grid-cols-3 gap-6">

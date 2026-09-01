@@ -3,6 +3,7 @@ import { Outlet, NavLink } from "react-router-dom";
 import { LayoutDashboard, CalendarRange, CalendarDays, Users, Folder, Settings, PanelRightClose, PanelRightOpen, Search } from "lucide-react";
 import TodoPanel from "@/components/TodoPanel";
 import GlobalSearch from "@/components/GlobalSearch";
+import QuickNote from "@/components/QuickNote";
 
 const NAV_ITEMS = [
   { to: "/oversikt", label: "Översikt", icon: LayoutDashboard, testId: "nav-oversikt" },
@@ -97,6 +98,7 @@ export default function Layout() {
         )}
       </div>
       <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
+      <QuickNote offsetRight={todoOpen ? "21rem" : "3.5rem"} />
     </div>
   );
 }
