@@ -20,7 +20,7 @@ Build a functional MVP of a digital teacher planner named **Planovia** (formerly
 `classes, subjects, students, timetable, events (lesson|meeting|utvecklingssamtal), units, tasks (with completedAt), followups, calendarExceptions, studentNotes, meetingNotes, studentAdaptations, studentSupport, meetingTemplates, standaloneMaterials, customSubcategories, dayTrends, daySummaries`
 
 ## Implemented
-- Base: Översikt, Läsår/Termin, Veckoplanering, Elevkort, Material, Statistik, Inställningar
+- Base: Översikt, Läsår/Termin, Veckoplanering, Elevkort, Material, Statistik, Inställningar, **Välkomstsida (/valkommen)**
 - Warm "Planova" identity: serif-display greeting, sage/clay/sky/lilac pastels
 - Weekly planner: drag & drop, copy previous week, virtual timetable, exceptions
 - Global search (⌘K), Quick note FAB
@@ -37,6 +37,8 @@ Build a functional MVP of a digital teacher planner named **Planovia** (formerly
 - **[2026-02] File & media storage** – FastAPI backend `/api/uploads` + `/api/files/{id}` backed by **Emergent Object Storage**. Replaces base64-in-localStorage. Files up to 20MB. MongoDB `files` collection tracks metadata with soft-delete. `frontend/src/lib/api.js` provides `uploadFile`/`deleteFile` helpers. Regression tests in `/app/backend/tests/test_uploads.py`.
 - **[2026-02] Reflektion i Kvällsläge** – 25 handplockade svenska kvällscitat, väljs deterministiskt per datum, visas under nattliga rapporten (`EveningReport.jsx`).
 - **[2026-02] Trend Insikter** – Regelbaserad analys av `daySummaries` i `frontend/src/lib/insights.js`. Detekterar tunga veckodagar, stigande/fallande trender och "drömveckor". Visas kompakt (max 2) på Översikt och fullständig på Statistik via `TrendInsights.jsx`.
+- **[2026-02] Välkomstsida (/valkommen)** – `PlanoviaFull` lockup + tagline + Samla · Planera · Inspirera + tre feature-kort + "Kom igång"-CTA. Auto-omdirigering första gången via `hasSeenWelcome`-flag i planner-state.
+- **[2026-02] Kollapsbar sidebar** – Toggle-knapp fäller sidebaren till 64px med enbart trädikon + nav-ikoner. Persisterat i `sidebarCollapsed`. Auto-kollaps under 1024px viewport.
 
 ## Backlog
 - **P1 – Auth (skipped by user's earlier requests):** Emergent-managed Google Sign-in + Email/password login (msg 183 + 211). Must call `integration_playbook_expert_v2` before implementing.

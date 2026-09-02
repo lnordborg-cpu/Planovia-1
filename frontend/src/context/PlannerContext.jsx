@@ -28,6 +28,8 @@ const emptyState = {
   customSubcategories: [], // [{id, subjectId, name}]
   dayTrends: DEFAULT_DAY_TRENDS.map((t) => ({ ...t })), // [{id, name, colorId}]
   daySummaries: [], // [{id, date, values: {trendId: 1-5}, note}]
+  hasSeenWelcome: false,
+  sidebarCollapsed: false,
 };
 
 const PlannerContext = createContext(null);
