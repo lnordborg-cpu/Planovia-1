@@ -1,0 +1,33 @@
+{
+  "summary": "Frontend-only testing of 3 new Planova features: Material drag&drop, Evening Report card, and Sammanfatta dagen (Day Summary + Daily trends). All 3 features work end-to-end. One bug found on /statistik: the 'Dagliga trender' section is hidden when the user has only saved day summaries but no classes/subjects/events, because it's gated behind the general hasAnyData guard.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "Statistik.jsx (DayTrendsSection)",
+        "issue": "section-daytrends-stats is rendered inside the `hasAnyData` branch (hasAnyData = classes || subjects || events). Users who only fill out 'Sammanfatta dagen' without any classes/subjects still see the global empty state 'Inget att visa ännu...' and never see their day-trend charts. Requirement: after saving at least one day summary the section must appear (either charts or empty-hint variant).",
+        "selector": "[data-testid=section-daytrends-stats]",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [
+    "In /app/frontend/src/pages/Statistik.jsx around line 168/180: extend hasAnyData to also consider daySummaries (e.g. `classes.length || subjects.length || events.length || (planner.daySummaries||[]).length`), OR render <DayTrendsSection /> outside the hasAnyData gate so it can show its own empty/charts states independently."
+  ],
+  "critical_code_review_comments": [
+    "Statistik.jsx: DayTrendsSection has its own graceful empty states (no trends / no summaries) but they are unreachable when the page falls into the global 'Inget att visa' branch.",
+    "EveningReport correctly hides when eveningMode is 'off' and shows when 'on'; heuristic 'auto' state depends on wall-clock hour which may be confusing but is per-spec.",
+    "DaySummaryCard prompt -> form -> saved-card flow is clean; Spara button disabled until at least one value chosen — good UX.",
+    "Material drag&drop uses application/planova-material MIME – works with real HTML5 drag and via simulated DataTransfer events. dragOverKey highlight logic is correct."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A", "frontend": "95%"},
+  "seed_data_creation": "Added class '6A' and subject 'Matematik' via /installningar to enable Statistik tests. Uploaded small.txt on /material and moved it to Matematik folder via drag & drop.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "App is frontend-only (localStorage). All new features work: (1) Material drag&drop moves file and shows 'Flyttad: <name>' toast, folders highlight via dragOverKey; (2) EveningReport (data-testid=evening-report) shows/hides correctly on evening-toggle; (3) DaySummaryCard flow prompt→form→card works; day-summary-edit-btn re-opens form. Installningar Dagliga trender section supports add/delete/reset. On /statistik, section-daytrends-stats renders both chart-trend-over-time and chart-trend-weekday when the app has classes/subjects AND a saved summary. BUG: without classes/subjects/events the entire Statistik page short-circuits to empty state and DayTrendsSection never renders — see action_items.",
+  "rca of the issue": "Root cause: in Statistik.jsx (line ~168) hasAnyData = classes.length>0 || subjects.length>0 || events.length>0. daySummaries are not part of this check, so the DayTrendsSection JSX (line 287) is never mounted when only day summaries exist. Mitigation: include daySummaries in the flag, or lift DayTrendsSection out of the ternary."
+}

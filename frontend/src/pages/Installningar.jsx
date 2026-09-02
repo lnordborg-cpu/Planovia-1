@@ -39,6 +39,7 @@ export default function Installningar() {
       <StudentsSection planner={planner} />
       <TimetableSection planner={planner} />
       <MeetingTemplatesSection planner={planner} />
+      <DayTrendsSection planner={planner} />
       <BackupSection planner={planner} />
     </div>
   );
@@ -340,6 +341,96 @@ const MeetingTemplatesSection = ({ planner }) => {
           ))}
         </div>
       )}
+    </Section>
+  );
+};
+
+
+const DayTrendsSection = ({ planner }) => {
+  const [name, setName] = useState("");
+  const [colorId, setColorId] = useState(SUBJECT_COLORS[0].id);
+  const trends = planner.dayTrends || [];
+
+  const add = () => {
+    if (!name.trim()) return;
+    planner.addDayTrend(name, colorId);
+    setName("");
+    toast.success("Trend tillagd");
+  };
+
+  return (
+    <Section
+      title="Dagliga trender"
+      description="Fråga du fyller i via ”Sammanfatta dagen” på Översikt. Standard är Energi, Fokus, Elevernas stämning och Egen känsla. Du kan lägga till egna eller ta bort de du inte vill spåra."
+      testId="section-daytrends"
+    >
+      <div className="flex gap-2 mb-4 flex-wrap">
+        <Input
+          data-testid="daytrend-name-input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Namn på trend (t.ex. Kaffekvot)"
+          className="flex-1 min-w-[200px]"
+          onKeyDown={(e) => e.key === "Enter" && add()}
+        />
+        <Select value={colorId} onValueChange={setColorId}>
+          <SelectTrigger data-testid="daytrend-color-select" className="w-40"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            {SUBJECT_COLORS.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full" style={{ backgroundColor: c.bg, border: `1px solid ${c.border}` }} />
+                  {c.name}
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button data-testid="daytrend-add-btn" onClick={add} className="bg-[#718A7F] hover:bg-[#5C7267]">
+          <Plus className="h-4 w-4 mr-1" /> Lägg till
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => { planner.resetDayTrends(); toast.success("Trender återställda"); }}
+          className="border-[#DEDAD2]"
+          data-testid="daytrend-reset-btn"
+        >
+          <RotateCcw className="h-4 w-4 mr-1" /> Återställ standard
+        </Button>
+      </div>
+
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
+        {trends.length === 0 && <div className="text-sm text-[#A3A69F]">Inga trender – lägg till minst en.</div>}
+        {trends.map((t) => {
+          const col = getSubjectColor(t.colorId);
+          return (
+            <div key={t.id} className="flex items-center justify-between rounded-lg border border-[#DEDAD2] px-3 py-2 bg-[#FFFEFB]" data-testid={`daytrend-row-${t.id}`}>
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <span className="h-3 w-3 rounded-full flex-shrink-0" style={{ backgroundColor: col.text }} />
+                <span className="text-sm truncate">{t.name}</span>
+                <Select value={t.colorId || ""} onValueChange={(v) => planner.updateDayTrend(t.id, { colorId: v })}>
+                  <SelectTrigger data-testid={`daytrend-color-change-${t.id}`} className="h-6 w-6 p-0 border-0 bg-transparent" aria-label="Byt färg">
+                    <span className="sr-only">Byt färg</span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUBJECT_COLORS.map((cc) => (
+                      <SelectItem key={cc.id} value={cc.id}>
+                        <div className="flex items-center gap-2">
+                          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: cc.bg, border: `1px solid ${cc.border}` }} />
+                          {cc.name}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <button onClick={() => planner.deleteDayTrend(t.id)} className="text-[#A3A69F] hover:text-[#9E4A3B]" data-testid={`daytrend-delete-${t.id}`}>
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          );
+        })}
+      </div>
     </Section>
   );
 };

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { toISODate, dateInRange, weekdayIndex } from "@/lib/dateUtils";
+import { DEFAULT_DAY_TRENDS } from "@/lib/constants";
 
 const STORAGE_KEY = "lararplanerare_v1";
 
@@ -25,6 +26,8 @@ const emptyState = {
   eveningMode: "auto", // 'auto' | 'on' | 'off'
   standaloneMaterials: [],
   customSubcategories: [], // [{id, subjectId, name}]
+  dayTrends: DEFAULT_DAY_TRENDS.map((t) => ({ ...t })), // [{id, name, colorId}]
+  daySummaries: [], // [{id, date, values: {trendId: 1-5}, note}]
 };
 
 const PlannerContext = createContext(null);
@@ -35,7 +38,13 @@ export const PlannerProvider = ({ children }) => {
   const [state, setState] = useState(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) return { ...emptyState, ...JSON.parse(raw) };
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        // Backfill defaults introduced later
+        if (!parsed.dayTrends || parsed.dayTrends.length === 0) parsed.dayTrends = DEFAULT_DAY_TRENDS.map((t) => ({ ...t }));
+        if (!parsed.daySummaries) parsed.daySummaries = [];
+        return { ...emptyState, ...parsed };
+      }
     } catch (e) { /* ignore */ }
     return emptyState;
   });
@@ -250,6 +259,7 @@ export const PlannerProvider = ({ children }) => {
       const task = s.tasks.find((t) => t.id === id);
       if (!task) return s;
       const newCompleted = !task.completed;
+      const completedAt = newCompleted ? new Date().toISOString() : null;
       let followups = s.followups;
       // Sync followup completion if linked
       if (task.sourceType === "followup" && task.sourceId) {
@@ -257,7 +267,7 @@ export const PlannerProvider = ({ children }) => {
       }
       return {
         ...s,
-        tasks: s.tasks.map((t) => (t.id === id ? { ...t, completed: newCompleted } : t)),
+        tasks: s.tasks.map((t) => (t.id === id ? { ...t, completed: newCompleted, completedAt } : t)),
         followups,
       };
     });
@@ -387,6 +397,44 @@ export const PlannerProvider = ({ children }) => {
   const deleteCustomSubcategory = (id) =>
     setState((s) => ({ ...s, customSubcategories: (s.customSubcategories || []).filter((c) => c.id !== id) }));
 
+  // ------- Day trends & summaries -------
+  const addDayTrend = (name, colorId) => {
+    const obj = { id: uid(), name: name.trim(), colorId: colorId || "sage" };
+    setState((s) => ({ ...s, dayTrends: [...(s.dayTrends || []), obj] }));
+    return obj;
+  };
+  const updateDayTrend = (id, patch) =>
+    setState((s) => ({ ...s, dayTrends: (s.dayTrends || []).map((t) => (t.id === id ? { ...t, ...patch } : t)) }));
+  const deleteDayTrend = (id) =>
+    setState((s) => ({
+      ...s,
+      dayTrends: (s.dayTrends || []).filter((t) => t.id !== id),
+      daySummaries: (s.daySummaries || []).map((sum) => {
+        const values = { ...sum.values };
+        delete values[id];
+        return { ...sum, values };
+      }),
+    }));
+  const resetDayTrends = () =>
+    setState((s) => ({ ...s, dayTrends: DEFAULT_DAY_TRENDS.map((t) => ({ ...t })) }));
+
+  const upsertDaySummary = ({ date, values, note }) =>
+    setState((s) => {
+      const existing = (s.daySummaries || []).find((d) => d.date === date);
+      if (existing) {
+        return {
+          ...s,
+          daySummaries: s.daySummaries.map((d) => (d.date === date ? { ...d, values: { ...d.values, ...values }, note: note ?? d.note, updatedAt: new Date().toISOString() } : d)),
+        };
+      }
+      return {
+        ...s,
+        daySummaries: [...(s.daySummaries || []), { id: uid(), date, values: values || {}, note: note || "", updatedAt: new Date().toISOString() }],
+      };
+    });
+  const deleteDaySummary = (date) =>
+    setState((s) => ({ ...s, daySummaries: (s.daySummaries || []).filter((d) => d.date !== date) }));
+
   // ------- Backup -------
   const exportBackup = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -425,6 +473,8 @@ export const PlannerProvider = ({ children }) => {
       setActiveTerm, setEveningMode,
       addStandaloneMaterial, updateStandaloneMaterial, deleteStandaloneMaterial,
       moveMaterialToFolder, addCustomSubcategory, deleteCustomSubcategory,
+      addDayTrend, updateDayTrend, deleteDayTrend, resetDayTrends,
+      upsertDaySummary, deleteDaySummary,
       exportBackup, importBackup, clearAll,
       update,
     }),

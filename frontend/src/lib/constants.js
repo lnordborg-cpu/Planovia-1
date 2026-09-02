@@ -89,6 +89,22 @@ export const getTermWeeks = (termId) => {
 // Material subcategories – fixed defaults
 export const MATERIAL_SUBCATEGORIES = ["Presentationer", "Läxor", "Arbetsblad", "Prov", "Övrigt"];
 
+// Day summary trend defaults (customisable in settings)
+export const DEFAULT_DAY_TRENDS = [
+  { id: "energi", name: "Energi", colorId: "sage" },
+  { id: "fokus", name: "Fokus", colorId: "sky" },
+  { id: "stamning", name: "Elevernas stämning", colorId: "lilac" },
+  { id: "egen", name: "Egen känsla", colorId: "clay" },
+];
+
+export const TREND_SCALE_LABELS = {
+  1: "Väldigt låg",
+  2: "Låg",
+  3: "Ok",
+  4: "Bra",
+  5: "Toppen",
+};
+
 export const autoClassifyMaterial = (name = "") => {
   const n = name.toLowerCase();
   if (/(prov|test|tenta)/i.test(n)) return "Prov";

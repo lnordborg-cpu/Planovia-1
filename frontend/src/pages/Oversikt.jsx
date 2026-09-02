@@ -7,6 +7,8 @@ import { ClassDot } from "@/components/ClassDot";
 import { unitProgress } from "@/lib/plannerHelpers";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, BookOpen, ClipboardList, Sparkles, ArrowRight, Check, CheckCircle2, Sun, Cloud, Moon } from "lucide-react";
+import EveningReport from "@/components/EveningReport";
+import DaySummaryCard from "@/components/DaySummaryCard";
 
 const getGreeting = (name) => {
   const h = new Date().getHours();
@@ -106,6 +108,8 @@ export default function Oversikt() {
         </div>
       </header>
 
+      <EveningReport />
+
       {isEmpty && (
         <Card className="border-[#DEDAD2] bg-white shadow-none" data-testid="onboarding-card">
           <CardContent className="p-8">
@@ -136,6 +140,8 @@ export default function Oversikt() {
         <StatCard icon={ClipboardList} label="Öppna uppgifter" value={openTasks} tone="clay" />
         <StatCard icon={Users} label="Elever" value={students.length} tone="sky" />
       </div>
+
+      <DaySummaryCard />
 
       <section className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-3">

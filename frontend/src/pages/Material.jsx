@@ -32,6 +32,7 @@ export default function Material() {
   const [previewMaterial, setPreviewMaterial] = useState(null);
   const [newFolderInput, setNewFolderInput] = useState({ subjectId: null, name: "" });
   const [uploadTarget, setUploadTarget] = useState({ subjectId: null, subcategory: "Övrigt" });
+  const [dragOverKey, setDragOverKey] = useState(null);
   const fileRef = useRef(null);
 
   const toggle = (key) => setExpanded((s) => {
@@ -120,6 +121,52 @@ export default function Material() {
     planner.moveMaterialToFolder(ref, newSubjectId, newSubcategory);
   };
 
+  // ------- Drag & Drop of a material row onto a folder -------
+  const onMaterialDragStart = (e, m) => {
+    const payload = m.source === "event"
+      ? { source: "event", eventId: m.eventId, materialId: m.materialId, id: m.id, name: m.name }
+      : { source: "standalone", standaloneId: m.standaloneId, id: m.id, name: m.name };
+    e.dataTransfer.setData("application/planova-material", JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const parsePathToTarget = (path) => {
+    if (path === ROOT) return null; // dropping on "Alla material" is a no-op
+    const parts = path.split("/");
+    const sid = parts[0].split(":")[1];
+    return { subjectId: sid === "none" ? null : sid, subcategory: parts[1] || "Övrigt" };
+  };
+
+  const onFolderDrop = (e, path) => {
+    e.preventDefault();
+    setDragOverKey(null);
+    const raw = e.dataTransfer.getData("application/planova-material");
+    if (!raw) return;
+    const target = parsePathToTarget(path);
+    if (!target) return;
+    try {
+      const payload = JSON.parse(raw);
+      const ref = payload.source === "event"
+        ? { source: "event", eventId: payload.eventId, materialId: payload.materialId }
+        : { source: "standalone", standaloneId: payload.standaloneId };
+      planner.moveMaterialToFolder(ref, target.subjectId, target.subcategory);
+      toast.success(`Flyttad: ${payload.name || "Fil"}`);
+    } catch { /* ignore */ }
+  };
+
+  const onFolderDragOver = (e, path) => {
+    // Only allow drop if we're carrying our material payload
+    if (!e.dataTransfer.types.includes("application/planova-material")) return;
+    if (path === ROOT) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverKey !== path) setDragOverKey(path);
+  };
+
+  const onFolderDragLeave = (path) => {
+    if (dragOverKey === path) setDragOverKey(null);
+  };
+
   const deleteMaterial = (m) => {
     if (m.source === "standalone") planner.deleteStandaloneMaterial(m.standaloneId);
     else planner.removeMaterialFromEvent(m.eventId, m.materialId);
@@ -139,7 +186,7 @@ export default function Material() {
         <div className="text-[11px] tracking-[0.2em] uppercase text-[#A3A69F] font-semibold">Materialbank</div>
         <h1 className="font-serif-display text-4xl mt-1 text-[#293330]">Material</h1>
         <p className="text-sm text-[#78817D] mt-2 max-w-xl">
-          Filer sorteras automatiskt in i rätt ämne och kategori. Du kan ladda upp fler filer eller skapa egna mappar.
+          Filer sorteras automatiskt in i rätt ämne och kategori. Du kan ladda upp fler filer, skapa egna mappar eller <em className="text-[#293330] not-italic font-medium">dra en fil direkt in i en mapp</em> i sidoträdet.
         </p>
       </header>
 
@@ -181,6 +228,10 @@ export default function Material() {
                     chevron={isOpen ? "down" : "right"}
                     testId={`folder-${subj.id}`}
                     depth={0}
+                    isDragOver={dragOverKey === key}
+                    onDrop={(e) => onFolderDrop(e, key)}
+                    onDragOver={(e) => onFolderDragOver(e, key)}
+                    onDragLeave={() => onFolderDragLeave(key)}
                   />
                   {isOpen && (
                     <div className="ml-3 border-l border-[#DEDAD2] pl-1 mt-0.5">
@@ -196,6 +247,10 @@ export default function Material() {
                             onClick={() => setSelectedPath(scKey)}
                             depth={1}
                             testId={`folder-${subj.id}-${sc}`}
+                            isDragOver={dragOverKey === scKey}
+                            onDrop={(e) => onFolderDrop(e, scKey)}
+                            onDragOver={(e) => onFolderDragOver(e, scKey)}
+                            onDragLeave={() => onFolderDragLeave(scKey)}
                           />
                         );
                       })}
@@ -265,7 +320,13 @@ export default function Material() {
                 const color = subj ? getSubjectColor(subj.colorId) : null;
                 const previewable = canPreview(m);
                 return (
-                  <div key={m.id} className="rounded-xl border border-[#DEDAD2] bg-[#FFFEFB] p-4 group" data-testid={`material-row-${m.id}`}>
+                  <div
+                    key={m.id}
+                    draggable
+                    onDragStart={(e) => onMaterialDragStart(e, m)}
+                    className="rounded-xl border border-[#DEDAD2] bg-[#FFFEFB] p-4 group cursor-grab active:cursor-grabbing"
+                    data-testid={`material-row-${m.id}`}
+                  >
                     <div className="flex items-center gap-2 mb-2">
                       {subj && color && (
                         <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-md border font-semibold"
@@ -316,11 +377,20 @@ export default function Material() {
   );
 }
 
-const FolderNode = ({ icon: Icon, label, count, active, onClick, accentColor, chevron, depth = 0, testId }) => (
+const FolderNode = ({ icon: Icon, label, count, active, onClick, accentColor, chevron, depth = 0, testId, isDragOver, onDrop, onDragOver, onDragLeave }) => (
   <button
     onClick={onClick}
+    onDrop={onDrop}
+    onDragOver={onDragOver}
+    onDragLeave={onDragLeave}
     data-testid={testId}
-    className={`w-full text-left flex items-center gap-2 pr-2 py-1.5 rounded-lg transition ${active ? "bg-[#DFE9E2] text-[#293330]" : "text-[#78817D] hover:bg-[#EFEAE1] hover:text-[#293330]"}`}
+    className={`w-full text-left flex items-center gap-2 pr-2 py-1.5 rounded-lg transition ${
+      isDragOver
+        ? "bg-[#DFE9E2] ring-2 ring-[#718A7F] ring-offset-1 text-[#293330]"
+        : active
+        ? "bg-[#DFE9E2] text-[#293330]"
+        : "text-[#78817D] hover:bg-[#EFEAE1] hover:text-[#293330]"
+    }`}
     style={{ paddingLeft: 8 + depth * 4 }}
   >
     {chevron === "down" && <ChevronDown className="h-3 w-3" />}

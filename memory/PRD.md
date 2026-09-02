@@ -1,33 +1,43 @@
-# Lärarplaneraren – PRD
+# Planova – PRD
 
 ## Original problem statement
-Build a functional MVP of a digital teacher planner. Swedish UI. Warm off-white / muted pastel Canva+Notion aesthetic. Frontend-only React + localStorage. Starts completely empty. No auth, no backend, no external APIs. Central principle: **enter information once, display it everywhere it is relevant.**
+Build a functional MVP of a digital teacher planner named **Planova**. Swedish UI. Warm off-white / muted pastel Canva+Notion aesthetic. Frontend-only React + localStorage. Starts completely empty. No auth/backend at MVP stage. Central principle: **enter information once, display it everywhere it is relevant.**
 
 ## Architecture
-- React 19 + React Router 7 + Tailwind + shadcn/ui + Lucide + Sonner (toasts)
+- React 19 + React Router 7 + Tailwind + shadcn/ui + Lucide + Sonner (toasts) + Recharts
 - Single-source state via `PlannerContext` (`/app/frontend/src/context/PlannerContext.jsx`) persisted to `localStorage` key `lararplanerare_v1`
 - Three-area layout (`Layout.jsx`): sidebar nav, main outlet, persistent collapsible right "Att göra" panel
 - ISO week helpers in `lib/dateUtils.js`; derived data (week, materials, unit progress, task sort) in `lib/plannerHelpers.js`
 
-## Data entities (all in one JSON tree)
-`classes, subjects, students, timetable, events (lesson|meeting|utvecklingssamtal), units, tasks, followups, calendarExceptions, studentNotes, meetingNotes, studentAdaptations, studentSupport`
+## Data entities
+`classes, subjects, students, timetable, events (lesson|meeting|utvecklingssamtal), units, tasks (with completedAt), followups, calendarExceptions, studentNotes, meetingNotes, studentAdaptations, studentSupport, meetingTemplates, standaloneMaterials, customSubcategories, dayTrends, daySummaries`
 
-Follow-up sync: one `followup` object mirrors one linked `task` (sourceType=`followup`) — toggling either updates both. Displayed inline in weekly planner top-of-day column and in Att göra panel. PDF materials optionally spawn a `Skriv ut …` task with the lesson date as deadline.
+## Implemented
+- Base: Översikt, Läsår/Termin, Veckoplanering, Elevkort, Material, Statistik, Inställningar
+- Warm "Planova" identity: serif-display greeting, sage/clay/sky/lilac pastels
+- Weekly planner: drag & drop, copy previous week, virtual timetable, exceptions
+- Global search (⌘K), Quick note FAB
+- PDF preview, file attachments (base64 up to 4MB)
+- Material folder tree (subject × subcategory) with custom folders
+- Statistik: per-subject/class bar charts with color-clickable legend, weekly trend line
+- Term selector (HT/VT + auto), Evening mode (Kvällsläge auto/on/off)
+- Meeting templates in Settings
+- **[2026-02] Drop-zone Material** – drag file rows onto folder tree; drop-target highlight + toast "Flyttad"
+- **[2026-02] Nattlig rapport** – dark card on /oversikt when evening mode active: "Idag klarade du X lektioner och Y uppgifter" + encouragement. Tasks tracked via new `completedAt` field.
+- **[2026-02] Sammanfatta dagen** – Day summary card on /oversikt with 4 default trends (Energi, Fokus, Elevernas stämning, Egen känsla) on 1–5 scale + note. Editable, per-date storage in `daySummaries`.
+- **[2026-02] Trend-statistik** – Dagliga trender on /statistik: line chart over time + bar chart of average per weekday (Mon–Fri).
+- **[2026-02] Anpassbara trender** – Add/rename/color/delete/reset default day trends in /installningar.
 
-## Implemented (v1, 2026-02)
-- Översikt dashboard with empty-state onboarding, 4 stat cards, today's list (mixing recurring slots + events), upcoming follow-ups, active unit progress
-- Veckoplanering: 5-column Mon–Fri, prev/next/this-week nav, virtual timetable slots + materialised events, exceptions banners, follow-up rows
-- Läsår/Termin: Arbetsområden with progress bars; Kalenderavvikelser with "Dölj ordinarie lektioner"
-- Elevkort: search list + tabs (Dagliga notiser, Mötesanteckningar, Anpassningar, Behov & stöd, Uppföljning) — utvecklingssamtal events auto-shown in Mötesanteckningar
-- Material: derived list from all lesson materials
-- Inställningar: klasser, ämnen (pastellpalett), elever, återkommande schema, backup export/import JSON, rensa hela planeraren
-- LessonDialog: create Lektion / Möte / Utvecklingssamtal (+ optional prep task)
-- LessonExpandedDialog: notes, materials with PDF print prompt, genomförd, ta bort
+## Backlog
+- **P1 – Auth (skipped by user's earlier requests):** Emergent-managed Google Sign-in + Email/password login (msg 183 + 211). Must call `integration_playbook_expert_v2` before implementing.
+- **P1 – Reflektion i Kvällsläge**: small encouraging line on /oversikt when kvällsläget aktiveras
+- **P1 – Till lov-knapp**: quick jump between HT/VT first break in Veckoplanering
+- **P2 – Cloud sync** (needs auth + backend + Mongo)
+- **P2 – PWA/offline install prompt**
+- **P2 – Print/export week as PDF**
 
-## Backlog / not yet built
-- Drag-to-move lessons between days
-- Copy previous week's plan
-- Search across everything
-- Multi-teacher / cloud sync (would need auth + backend)
-- PWA/offline install prompt
-- Print/export week as PDF
+## Notes for future agents
+- Language: Swedish always
+- Never modify colors palette without user consent — see `constants.js` SUBJECT_COLORS
+- Evening mode CSS in `index.css` — body class `evening-mode`
+- All new data lists MUST be backfilled on load (see PlannerProvider init) to keep older saves compatible

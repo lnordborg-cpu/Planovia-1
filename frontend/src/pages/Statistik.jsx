@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from "react";
 import { usePlanner } from "@/context/PlannerContext";
-import { getSubjectColor, TERMS, inferCurrentTerm } from "@/lib/constants";
+import { getSubjectColor, TERMS, inferCurrentTerm, TREND_SCALE_LABELS } from "@/lib/constants";
 import { getISOWeek, toISODate, weekdayIndex, fromISODate, getMondayOfISOWeek } from "@/lib/dateUtils";
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line } from "recharts";
-import { BookOpen, CheckCircle2, ListTodo, TrendingUp } from "lucide-react";
+import { BookOpen, CheckCircle2, ListTodo, TrendingUp, Sparkles } from "lucide-react";
 
 const Stat = ({ label, value, hint, icon: Icon, tone = "green" }) => (
   <Card className="border-[#DEDAD2] bg-white shadow-none">
@@ -165,7 +165,7 @@ export default function Statistik() {
     ? stats.byClass.filter((c) => c.id === selectedClass)
     : stats.byClass;
 
-  const hasAnyData = classes.length > 0 || subjects.length > 0 || events.length > 0;
+  const hasAnyData = classes.length > 0 || subjects.length > 0 || events.length > 0 || (planner.daySummaries || []).length > 0;
 
   return (
     <div className="space-y-8" data-testid="page-statistik">
@@ -283,8 +283,159 @@ export default function Statistik() {
               </CardContent>
             </Card>
           </section>
+
+          <DayTrendsSection planner={planner} />
         </>
       )}
     </div>
   );
 }
+
+const WEEKDAY_LABELS = ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"];
+
+const DayTrendsSection = ({ planner }) => {
+  const trends = planner.dayTrends || [];
+  const summaries = planner.daySummaries || [];
+
+  const sorted = useMemo(
+    () => [...summaries].sort((a, b) => a.date.localeCompare(b.date)),
+    [summaries],
+  );
+
+  // Series over time – last 30 entries
+  const timeSeries = useMemo(() => {
+    const items = sorted.slice(-30).map((s) => {
+      const row = { date: s.date, label: s.date.slice(5) };
+      trends.forEach((t) => {
+        if (s.values?.[t.id] != null) row[t.id] = s.values[t.id];
+      });
+      return row;
+    });
+    return items;
+  }, [sorted, trends]);
+
+  // Averages by weekday (Mon..Fri)
+  const weekdayAverages = useMemo(() => {
+    const buckets = Array.from({ length: 5 }, (_, i) => ({ weekday: i, label: WEEKDAY_LABELS[i] }));
+    trends.forEach((t) => {
+      buckets.forEach((b) => { b[`${t.id}_sum`] = 0; b[`${t.id}_count`] = 0; });
+    });
+    summaries.forEach((s) => {
+      const wd = weekdayIndex(s.date);
+      if (wd < 0 || wd > 4) return;
+      const b = buckets[wd];
+      trends.forEach((t) => {
+        const v = s.values?.[t.id];
+        if (v != null) { b[`${t.id}_sum`] += v; b[`${t.id}_count`] += 1; }
+      });
+    });
+    return buckets.map((b) => {
+      const row = { label: b.label };
+      trends.forEach((t) => {
+        const c = b[`${t.id}_count`];
+        row[t.id] = c > 0 ? Number((b[`${t.id}_sum`] / c).toFixed(2)) : null;
+      });
+      return row;
+    });
+  }, [summaries, trends]);
+
+  const lastEntry = sorted.length > 0 ? sorted[sorted.length - 1] : null;
+
+  if (trends.length === 0) {
+    return (
+      <section data-testid="section-daytrends-stats">
+        <h2 className="font-serif-display text-2xl text-[#293330] mb-3">Dagliga trender</h2>
+        <div className="rounded-2xl border border-dashed border-[#DEDAD2] p-8 text-center text-sm text-[#A3A69F]">
+          Inga trender är aktiva. Lägg till dem i Inställningar.
+        </div>
+      </section>
+    );
+  }
+
+  if (summaries.length === 0) {
+    return (
+      <section data-testid="section-daytrends-stats">
+        <h2 className="font-serif-display text-2xl text-[#293330] mb-3">Dagliga trender</h2>
+        <Card className="border-[#DEDAD2] shadow-none bg-white">
+          <CardContent className="p-8 text-center">
+            <div className="inline-flex h-10 w-10 rounded-xl bg-[#F6F2FB] text-[#5A3B8B] items-center justify-center mb-3">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <div className="text-sm text-[#78817D]">Fyll i ”Sammanfatta dagen” på Översikt så börjar dina trender byggas upp här.</div>
+          </CardContent>
+        </Card>
+      </section>
+    );
+  }
+
+  return (
+    <section className="space-y-6" data-testid="section-daytrends-stats">
+      <div>
+        <h2 className="font-serif-display text-2xl text-[#293330] mb-3">Dagliga trender</h2>
+        <Card className="border-[#DEDAD2] shadow-none bg-white">
+          <CardContent className="p-5" data-testid="chart-trend-over-time">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <div className="text-[11px] uppercase tracking-widest text-[#A3A69F] font-semibold">Trender över tid</div>
+                <div className="text-sm text-[#78817D]">Senaste {timeSeries.length} sammanfattade dagar</div>
+              </div>
+              {lastEntry && (
+                <div className="text-[11px] text-[#A3A69F]">Senaste: {lastEntry.date}</div>
+              )}
+            </div>
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart data={timeSeries} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#DEDAD2" vertical={false} />
+                <XAxis dataKey="label" stroke="#A3A69F" fontSize={12} />
+                <YAxis stroke="#A3A69F" fontSize={12} domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                {trends.map((t) => {
+                  const col = getSubjectColor(t.colorId);
+                  return (
+                    <Line
+                      key={t.id}
+                      type="monotone"
+                      dataKey={t.id}
+                      name={t.name}
+                      stroke={col.text}
+                      strokeWidth={2.5}
+                      dot={{ r: 3, fill: col.text }}
+                      activeDot={{ r: 5 }}
+                      connectNulls
+                    />
+                  );
+                })}
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div>
+        <h2 className="font-serif-display text-2xl text-[#293330] mb-3">Mönster per veckodag</h2>
+        <Card className="border-[#DEDAD2] shadow-none bg-white">
+          <CardContent className="p-5" data-testid="chart-trend-weekday">
+            <div className="text-[11px] uppercase tracking-widest text-[#A3A69F] font-semibold mb-2">Medelvärde per dag</div>
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart data={weekdayAverages} barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#DEDAD2" vertical={false} />
+                <XAxis dataKey="label" stroke="#A3A69F" fontSize={12} />
+                <YAxis stroke="#A3A69F" fontSize={12} domain={[0, 5]} ticks={[0, 1, 2, 3, 4, 5]} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                {trends.map((t) => {
+                  const col = getSubjectColor(t.colorId);
+                  return (
+                    <Bar key={t.id} dataKey={t.id} name={t.name} fill={col.text} radius={[6, 6, 0, 0]} />
+                  );
+                })}
+              </BarChart>
+            </ResponsiveContainer>
+            <div className="text-[11px] text-[#A3A69F] mt-2">Se om vissa veckodagar är särskilt energigivande eller tunga.</div>
+          </CardContent>
+        </Card>
+      </div>
+    </section>
+  );
+};
