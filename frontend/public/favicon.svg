@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect x="0" y="0" width="64" height="64" rx="14" fill="#FFFEFB"/>
+  <path d="M32 34 C 32 44, 30 50, 26 56 L 38 56 C 34 50, 32 44, 32 34 Z" fill="#47594E"/>
+  <path d="M22 56 L 42 56" stroke="#47594E" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="20" cy="30" r="7.5" fill="#8FA69A"/>
+  <circle cx="44" cy="30" r="7.5" fill="#A5A867"/>
+  <circle cx="26" cy="34" r="6.5" fill="#D9C7A6"/>
+  <circle cx="38" cy="34" r="6.5" fill="#EFE3D2"/>
+  <circle cx="16" cy="22" r="7" fill="#A5A867"/>
+  <circle cx="48" cy="22" r="7" fill="#8FA69A"/>
+  <circle cx="24" cy="20" r="7" fill="#EFE3D2"/>
+  <circle cx="40" cy="20" r="7" fill="#D9C7A6"/>
+  <circle cx="32" cy="14" r="7" fill="#E7C8C8"/>
+  <circle cx="22" cy="14" r="6" fill="#8FA69A"/>
+  <circle cx="42" cy="14" r="6" fill="#A5A867"/>
+  <path d="M32 32.5 C 32 30.5, 30 28.5, 27.8 28.5 C 25.6 28.5, 24 30.2, 24 32.3 C 24 35.5, 27.5 37.8, 32 40.5 C 36.5 37.8, 40 35.5, 40 32.3 C 40 30.2, 38.4 28.5, 36.2 28.5 C 34 28.5, 32 30.5, 32 32.5 Z" fill="#D89A9A"/>
+</svg>

@@ -49,7 +49,7 @@ export default function TrendInsights({ compact = false, max = null, className =
             <Sparkles className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-[#293330]">Planova märker snart mönster</div>
+            <div className="text-sm font-semibold text-[#293330]">Planovia märker snart mönster</div>
             <div className="text-xs text-[#78817D] mt-0.5">Fyll i ”Sammanfatta dagen” {needed} gång{needed > 1 ? "er" : ""} till så börjar dina insikter dyka upp här.</div>
           </div>
         </div>
@@ -63,7 +63,7 @@ export default function TrendInsights({ compact = false, max = null, className =
         <div className="h-7 w-7 rounded-lg bg-[#F6F2FB] text-[#5A3B8B] flex items-center justify-center">
           <Sparkles className="h-3.5 w-3.5" />
         </div>
-        <div className="text-[11px] uppercase tracking-widest text-[#A3A69F] font-semibold">Planova märker</div>
+        <div className="text-[11px] uppercase tracking-widest text-[#A3A69F] font-semibold">Planovia märker</div>
       </div>
       <div className={compact ? "grid gap-2" : "grid md:grid-cols-2 gap-3"}>
         {shown.map((ins) => {

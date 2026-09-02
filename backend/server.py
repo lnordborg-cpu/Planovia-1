@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 STORAGE_BASE = (os.environ.get("INTEGRATION_PROXY_URL") or "").strip() or "https://integrations.emergentagent.com"
 STORAGE_URL = STORAGE_BASE.rstrip("/") + "/objstore/api/v1/storage"
 EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY")
-APP_NAME = "planova"
+APP_NAME = "planovia"
 
 MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 MIME_BY_EXT = {
@@ -141,7 +141,7 @@ class UploadResponse(BaseModel):
 # ------------------------------------------------------------------
 @api_router.get("/")
 async def root():
-    return {"message": "Planova backend"}
+    return {"message": "Planovia backend"}
 
 
 @api_router.post("/status", response_model=StatusCheck)

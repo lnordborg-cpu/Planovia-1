@@ -4,6 +4,7 @@ import { LayoutDashboard, CalendarRange, CalendarDays, Users, Folder, Settings, 
 import TodoPanel from "@/components/TodoPanel";
 import GlobalSearch from "@/components/GlobalSearch";
 import QuickNote from "@/components/QuickNote";
+import { PlanoviaMark } from "@/components/PlanoviaLogo";
 import { usePlanner } from "@/context/PlannerContext";
 import { TERMS, inferCurrentTerm } from "@/lib/constants";
 
@@ -19,10 +20,15 @@ const NAV_ITEMS = [
 
 const Sidebar = () => (
   <aside className="w-60 flex-shrink-0 bg-[#EFEAE1] border-r border-[#DEDAD2] flex flex-col p-4" data-testid="sidebar">
-    <div className="px-2 pt-5 pb-6">
-      <div className="flex items-center gap-2">
-        <span className="inline-block h-6 w-6 rounded-lg bg-[#DFE9E2] border border-[#C7D6CB]" aria-hidden="true" />
-        <div className="font-display text-2xl leading-none text-[#293330] tracking-tight font-bold">Planova</div>
+    <div className="px-2 pt-5 pb-6" data-testid="sidebar-brand">
+      <div className="flex items-center gap-2.5">
+        <PlanoviaMark size={30} />
+        <span className="font-display text-2xl leading-none tracking-tight font-bold" style={{ color: "#3B4A44" }}>
+          Planovia
+        </span>
+      </div>
+      <div className="mt-2 pl-[38px] text-[11px] tracking-wide" style={{ color: "#5E6B65" }}>
+        Din digitala lärarplanerare
       </div>
     </div>
     <nav className="flex flex-col gap-0.5 flex-1">

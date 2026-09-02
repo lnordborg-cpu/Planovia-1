@@ -1,7 +1,14 @@
-# Planova – PRD
+# Planovia – PRD
 
 ## Original problem statement
-Build a functional MVP of a digital teacher planner named **Planova**. Swedish UI. Warm off-white / muted pastel Canva+Notion aesthetic. Frontend-only React + localStorage. Starts completely empty. No auth/backend at MVP stage. Central principle: **enter information once, display it everywhere it is relevant.**
+Build a functional MVP of a digital teacher planner named **Planovia** (formerly Planova, rebranded 2026-02). Swedish UI. Warm off-white / muted pastel Canva+Notion aesthetic. Frontend-only React + localStorage. Starts completely empty. No auth/backend at MVP stage. Central principle: **enter information once, display it everywhere it is relevant.**
+
+## Brand identity (2026-02)
+- Name: **Planovia**
+- Tagline: *Din digitala lärarplanerare*
+- Core words: **Samla · Planera · Inspirera** (login/welcome only, muted sage / dusty rose / warm gold)
+- Logo: stylised knowledge-tree with a dusty-rose heart in the canopy, deep sage trunk. Leaves: muted sage, olive, warm beige, cream, dusty rose. Component `/app/frontend/src/components/PlanoviaLogo.jsx` exports `PlanoviaMark` (icon), `PlanoviaCompact` (sidebar), `PlanoviaStandard` (headers), `PlanoviaFull` (login/welcome).
+- Favicon: `/app/frontend/public/favicon.svg` (tree+heart on cream #FFFEFB).
 
 ## Architecture
 - React 19 + React Router 7 + Tailwind + shadcn/ui + Lucide + Sonner (toasts) + Recharts

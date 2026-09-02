@@ -232,7 +232,7 @@ const MotenTab = ({ student, planner }) => {
   .note .body { font-size: 13px; white-space: pre-wrap; margin-top: 8px; }
   .footer { color: #A3A69F; font-size: 11px; margin-top: 32px; border-top: 1px solid #DEDAD2; padding-top: 12px; }
 </style></head><body>
-  <div class="meta">Planova – Mötesanteckningar</div>
+  <div class="meta">Planovia – Mötesanteckningar</div>
   <h1>${student.name}</h1>
   <div class="sub">${klass?.name || ""}${klass?.name ? " · " : ""}Utskrivet ${new Date().toLocaleDateString("sv-SE")}</div>
   ${selectedItems.map((m) => `
@@ -245,7 +245,7 @@ const MotenTab = ({ student, planner }) => {
       ${m.notes ? `<div class="body">${m.notes.replace(/</g, "&lt;")}</div>` : ""}
     </div>
   `).join("")}
-  <div class="footer">Sammanställt via Planova. Denna sammanställning kan sparas som PDF från utskriftsdialogen.</div>
+  <div class="footer">Sammanställt via Planovia. Denna sammanställning kan sparas som PDF från utskriftsdialogen.</div>
 </body></html>`;
     const win = window.open("", "_blank", "width=900,height=1100");
     if (!win) { toast.error("Popup blockerades av webbläsaren."); return; }
