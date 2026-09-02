@@ -5,6 +5,7 @@ import { getISOWeek, toISODate, weekdayIndex, fromISODate, getMondayOfISOWeek } 
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line } from "recharts";
 import { BookOpen, CheckCircle2, ListTodo, TrendingUp, Sparkles } from "lucide-react";
+import TrendInsights from "@/components/TrendInsights";
 
 const Stat = ({ label, value, hint, icon: Icon, tone = "green" }) => (
   <Card className="border-[#DEDAD2] bg-white shadow-none">
@@ -370,6 +371,8 @@ const DayTrendsSection = ({ planner }) => {
 
   return (
     <section className="space-y-6" data-testid="section-daytrends-stats">
+      <TrendInsights />
+
       <div>
         <h2 className="font-serif-display text-2xl text-[#293330] mb-3">Dagliga trender</h2>
         <Card className="border-[#DEDAD2] shadow-none bg-white">

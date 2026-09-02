@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Users, BookOpen, ClipboardList, Sparkles, ArrowRight, Check, CheckCircle2, Sun, Cloud, Moon } from "lucide-react";
 import EveningReport from "@/components/EveningReport";
 import DaySummaryCard from "@/components/DaySummaryCard";
+import TrendInsights from "@/components/TrendInsights";
 
 const getGreeting = (name) => {
   const h = new Date().getHours();
@@ -142,6 +143,8 @@ export default function Oversikt() {
       </div>
 
       <DaySummaryCard />
+
+      <TrendInsights compact max={2} />
 
       <section className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-3">

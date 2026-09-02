@@ -3,6 +3,42 @@ import { usePlanner } from "@/context/PlannerContext";
 import { todayISO, weekdayIndex } from "@/lib/dateUtils";
 import { Moon } from "lucide-react";
 
+// Handpicked Swedish evening reflections. Rotates deterministically per date.
+const EVENING_REFLECTIONS = [
+  "Dagen behöver inte vara perfekt för att vara värdefull.",
+  "Du har fyllt dagen med det som mattrar. Nu är det din tur.",
+  "Även små steg är rörelse framåt.",
+  "Det är okej att stänga av. Eleverna finns kvar imorgon.",
+  "En lärare som vilar är en lärare som lär bättre.",
+  "Du har gjort ditt bästa idag – det är alltid nog.",
+  "Andas ut. Skuldrorna får också sluta för dagen.",
+  "Den bästa planeringen är den som lämnar plats för dig själv.",
+  "Kvällen är inte en fortsättning på arbetsdagen.",
+  "Tack för allt du gav idag. Nu tar vi hand om dig.",
+  "Ingen läroplan mäter det goda du sådde idag.",
+  "Ge dig själv samma vänlighet du gav dina elever.",
+  "En kopp te, en stund utan skärm – det är också planering.",
+  "Du är mer än det du hann med idag.",
+  "Det finns inget rätt sätt att avsluta en skoldag – bara ditt.",
+  "Reflektera gärna, men grubbla inte. Godnattstunden är för lugn.",
+  "Även på tröga dagar plockar barn upp mer än vi tror.",
+  "Slut ögonen ett ögonblick. Bara vara.",
+  "Morgondagen väntar utan att kräva något av dig just nu.",
+  "Du är någon som betyder något för någon.",
+  "Vardagsmagi räknas – även när ingen ser den.",
+  "Läggen bort dagens brus. Det får sortera sig självt.",
+  "Du bär tunga stunder med varsam hand. Det är fint gjort.",
+  "Fötterna upp. Blicken mjuk. Kvällen är din.",
+  "Det bästa du kan planera nu är sömn.",
+];
+
+// Deterministic index from an ISO date string
+const dateHash = (iso) => {
+  let h = 0;
+  for (let i = 0; i < iso.length; i += 1) h = (h * 31 + iso.charCodeAt(i)) >>> 0;
+  return h;
+};
+
 // Determines whether evening mode is *actively* on for the user right now
 export const useIsEveningActive = () => {
   const planner = usePlanner();
@@ -62,6 +98,8 @@ export default function EveningReport() {
     ? "Idag noterades inga avklarade lektioner eller uppgifter."
     : `Idag klarade du ${parts.join(" och ")}.`;
 
+  const reflection = EVENING_REFLECTIONS[dateHash(today) % EVENING_REFLECTIONS.length];
+
   return (
     <div
       className="rounded-2xl border border-[#3B4A5A] p-5 flex items-start gap-4 shadow-none"
@@ -78,6 +116,15 @@ export default function EveningReport() {
         <div className="text-[11px] uppercase tracking-[0.2em] font-semibold" style={{ color: "#B8B0A3" }}>Nattlig rapport</div>
         <div className="font-serif-display text-2xl mt-1" style={{ color: "#F1EBDD" }}>{summary}</div>
         <div className="text-sm mt-2" style={{ color: "#B8B0A3" }}>{encouragement}</div>
+        <div
+          className="mt-4 pt-4 border-t italic text-[15px] leading-relaxed"
+          style={{ borderColor: "rgba(232,229,222,0.18)", color: "#D8D1BF" }}
+          data-testid="evening-reflection"
+        >
+          <span aria-hidden="true" style={{ color: "#B8B0A3" }}>“</span>
+          {reflection}
+          <span aria-hidden="true" style={{ color: "#B8B0A3" }}>”</span>
+        </div>
       </div>
     </div>
   );
