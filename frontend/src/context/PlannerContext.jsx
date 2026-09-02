@@ -21,6 +21,10 @@ const emptyState = {
   meetingTemplates: [],
   hasSeenSamtalSuggestion: false,
   userName: "",
+  activeTerm: "auto", // 'auto' | 'ht' | 'vt'
+  eveningMode: "auto", // 'auto' | 'on' | 'off'
+  standaloneMaterials: [],
+  customSubcategories: [], // [{id, subjectId, name}]
 };
 
 const PlannerContext = createContext(null);
@@ -342,6 +346,47 @@ export const PlannerProvider = ({ children }) => {
   const setUserName = (name) =>
     setState((s) => ({ ...s, userName: (name || "").trim() }));
 
+  const setActiveTerm = (term) => setState((s) => ({ ...s, activeTerm: term }));
+  const setEveningMode = (mode) => setState((s) => ({ ...s, eveningMode: mode }));
+
+  // Standalone materials + folders
+  const addStandaloneMaterial = (data) => {
+    const obj = { id: uid(), createdAt: new Date().toISOString(), ...data };
+    setState((s) => ({ ...s, standaloneMaterials: [...(s.standaloneMaterials || []), obj] }));
+    return obj;
+  };
+  const updateStandaloneMaterial = (id, patch) =>
+    setState((s) => ({ ...s, standaloneMaterials: (s.standaloneMaterials || []).map((m) => (m.id === id ? { ...m, ...patch } : m)) }));
+  const deleteStandaloneMaterial = (id) =>
+    setState((s) => ({ ...s, standaloneMaterials: (s.standaloneMaterials || []).filter((m) => m.id !== id) }));
+
+  const moveMaterialToFolder = (ref, subjectId, subcategory) => {
+    // ref: { source: 'event'|'standalone', eventId?, materialId, standaloneId? }
+    setState((s) => {
+      if (ref.source === "event") {
+        return {
+          ...s,
+          events: s.events.map((e) => e.id !== ref.eventId ? e : {
+            ...e,
+            materials: (e.materials || []).map((m) => m.id === ref.materialId ? { ...m, subjectId: subjectId || null, subcategory: subcategory || "Övrigt" } : m),
+          }),
+        };
+      }
+      return {
+        ...s,
+        standaloneMaterials: (s.standaloneMaterials || []).map((m) => m.id === ref.standaloneId ? { ...m, subjectId: subjectId || null, subcategory: subcategory || "Övrigt" } : m),
+      };
+    });
+  };
+
+  const addCustomSubcategory = (subjectId, name) => {
+    const obj = { id: uid(), subjectId: subjectId || null, name: name.trim() };
+    setState((s) => ({ ...s, customSubcategories: [...(s.customSubcategories || []), obj] }));
+    return obj;
+  };
+  const deleteCustomSubcategory = (id) =>
+    setState((s) => ({ ...s, customSubcategories: (s.customSubcategories || []).filter((c) => c.id !== id) }));
+
   // ------- Backup -------
   const exportBackup = () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -377,6 +422,9 @@ export const PlannerProvider = ({ children }) => {
       addMeetingTemplate, deleteMeetingTemplate,
       dismissSamtalSuggestion,
       setUserName,
+      setActiveTerm, setEveningMode,
+      addStandaloneMaterial, updateStandaloneMaterial, deleteStandaloneMaterial,
+      moveMaterialToFolder, addCustomSubcategory, deleteCustomSubcategory,
       exportBackup, importBackup, clearAll,
       update,
     }),

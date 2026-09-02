@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { usePlanner } from "@/context/PlannerContext";
-import { getSubjectColor } from "@/lib/constants";
+import { getSubjectColor, autoClassifyMaterial } from "@/lib/constants";
 import { formatDateLong, fromISODate } from "@/lib/dateUtils";
 import { Trash2, Link as LinkIcon, X, Paperclip, FileText, Upload, StickyNote, Eye } from "lucide-react";
 import { toast } from "sonner";
@@ -60,12 +60,15 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
           continue;
         }
         const dataUrl = await readFileAsDataUrl(file);
+        const subcategory = autoClassifyMaterial(file.name);
         planner.addMaterialToEvent(event.id, {
           name: file.name,
           url: dataUrl,
           isFile: true,
           mimeType: file.type,
           size: file.size,
+          subjectId: event.subjectId || null,
+          subcategory,
         });
         addedNames.push(file.name);
       } catch (err) {

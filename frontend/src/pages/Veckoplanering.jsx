@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { usePlanner } from "@/context/PlannerContext";
 import { buildWeekData } from "@/lib/plannerHelpers";
 import { getISOWeek, getMondayOfISOWeek, getWeekdays, toISODate, formatDateShort, todayISO, fromISODate } from "@/lib/dateUtils";
-import { WEEKDAYS, getSubjectColor, getExceptionType } from "@/lib/constants";
+import { WEEKDAYS, getSubjectColor, getExceptionType, TERMS, inferCurrentTerm } from "@/lib/constants";
 import { ClassDot } from "@/components/ClassDot";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus, Clock, Trash2, Check, Circle, CopyPlus, Printer, Filter, X } from "lucide-react";
@@ -41,6 +41,19 @@ export default function Veckoplanering() {
     try { localStorage.setItem(FILTER_KEY, JSON.stringify({ classId: filterClassId, subjectId: filterSubjectId })); }
     catch (e) { /* ignore */ }
   }, [filterClassId, filterSubjectId]);
+
+  // Sync to active term: when term changes, jump to first week of that term
+  const activeTermId = planner.activeTerm === "auto" ? inferCurrentTerm() : planner.activeTerm;
+  const prevTermRef = React.useRef(activeTermId);
+  React.useEffect(() => {
+    if (prevTermRef.current !== activeTermId) {
+      const [start] = TERMS[activeTermId].weeks;
+      const [, curW] = getISOWeek(new Date());
+      const targetYear = activeTermId === "vt" && curW >= 26 ? new Date().getFullYear() + 1 : new Date().getFullYear();
+      setYW({ year: targetYear, week: start });
+      prevTermRef.current = activeTermId;
+    }
+  }, [activeTermId]);
 
   const rawWeekData = useMemo(
     () => buildWeekData({

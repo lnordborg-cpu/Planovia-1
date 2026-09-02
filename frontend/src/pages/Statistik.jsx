@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { usePlanner } from "@/context/PlannerContext";
-import { getSubjectColor } from "@/lib/constants";
-import { getISOWeek, toISODate, weekdayIndex, fromISODate } from "@/lib/dateUtils";
+import { getSubjectColor, TERMS, inferCurrentTerm } from "@/lib/constants";
+import { getISOWeek, toISODate, weekdayIndex, fromISODate, getMondayOfISOWeek } from "@/lib/dateUtils";
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend, LineChart, Line } from "recharts";
 import { BookOpen, CheckCircle2, ListTodo, TrendingUp } from "lucide-react";
@@ -77,7 +77,8 @@ const ColorLegend = ({ title, items, testIdPrefix, selectedId, onSelect }) => (
 );
 
 export default function Statistik() {
-  const { classes, subjects, events, tasks, followups, timetable, autoCompletedSlots = [] } = usePlanner();
+  const planner = usePlanner();
+  const { classes, subjects, events, tasks, followups, timetable, autoCompletedSlots = [] } = planner;
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedClass, setSelectedClass] = useState(null);
 
@@ -127,20 +128,15 @@ export default function Statistik() {
     };
   }, [events, subjects, classes, tasks, followups, timetable, autoCompletedSlots]);
 
-  // Weekly trend: for the past 12 weeks (including current), count completed lessons and completed tasks by week
+  // Weekly trend for the active term (falls back to last 12 weeks if term hasn't started yet)
   const weeklyTrend = useMemo(() => {
-    const now = new Date();
+    const activeTermId = planner.activeTerm === "auto" ? inferCurrentTerm() : planner.activeTerm;
+    const [wStart, wEnd] = TERMS[activeTermId].weeks;
     const items = [];
-    for (let i = 11; i >= 0; i -= 1) {
-      const d = new Date(now);
-      d.setDate(now.getDate() - i * 7);
-      const [, w] = getISOWeek(d);
-      items.push({ week: w, key: `y${d.getFullYear()}-w${w}`, lessons: 0, tasks: 0 });
-    }
+    for (let w = wStart; w <= wEnd; w += 1) items.push({ week: w, key: `w${w}`, lessons: 0, tasks: 0 });
     const keyForDate = (iso) => {
       const [, w] = getISOWeek(fromISODate(iso));
-      const y = fromISODate(iso).getFullYear();
-      return `y${y}-w${w}`;
+      return `w${w}`;
     };
     const map = Object.fromEntries(items.map((it) => [it.key, it]));
     events.forEach((e) => {
@@ -160,7 +156,7 @@ export default function Statistik() {
       }
     });
     return items;
-  }, [events, tasks, autoCompletedSlots]);
+  }, [events, tasks, autoCompletedSlots, planner.activeTerm]);
 
   const filteredSubject = selectedSubject
     ? stats.bySubject.filter((s) => s.id === selectedSubject)
@@ -269,7 +265,7 @@ export default function Statistik() {
           </section>
 
           <section>
-            <h2 className="font-serif-display text-2xl text-[#293330] mb-3">Trend – senaste 12 veckorna</h2>
+            <h2 className="font-serif-display text-2xl text-[#293330] mb-3">Trend – {(planner.activeTerm === "auto" ? inferCurrentTerm() : planner.activeTerm) === "ht" ? "höstterminen" : "vårterminen"}</h2>
             <Card className="border-[#DEDAD2] shadow-none bg-white">
               <CardContent className="p-5" data-testid="chart-trend">
                 <ResponsiveContainer width="100%" height={260}>

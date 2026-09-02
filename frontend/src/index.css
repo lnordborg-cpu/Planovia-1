@@ -73,6 +73,24 @@ body {
     button[draggable] { cursor: default !important; }
 }
 
+/* Evening mode: warm dark theme via attribute overrides on inline Tailwind arbitrary classes */
+body.evening-mode { background-color: #1c211e !important; color: #E5E1D5 !important; }
+body.evening-mode ::-webkit-scrollbar-thumb { background: #3A3E3B; }
+body.evening-mode [class*="bg-[#F6F3EE"] { background-color: #1c211e !important; }
+body.evening-mode [class*="bg-[#FFFEFB"] { background-color: #262b28 !important; }
+body.evening-mode [class*="bg-[#EFEAE1"] { background-color: #232825 !important; }
+body.evening-mode aside[data-testid="sidebar"] { background-color: #1F2421 !important; border-color: #333833 !important; }
+body.evening-mode [class*="bg-white"]:not([class*="bg-white/"]) { background-color: #262b28 !important; }
+body.evening-mode [class*="border-[#DEDAD2"] { border-color: #3A3E3B !important; }
+body.evening-mode [class*="text-[#293330"] { color: #E5E1D5 !important; }
+body.evening-mode [class*="text-[#78817D"] { color: #A8AFA4 !important; }
+body.evening-mode [class*="text-[#A3A69F"] { color: #86897F !important; }
+body.evening-mode input, body.evening-mode textarea, body.evening-mode select { background-color: #262b28 !important; color: #E5E1D5 !important; border-color: #3A3E3B !important; }
+body.evening-mode [role="dialog"] { background-color: #262b28 !important; color: #E5E1D5 !important; }
+body.evening-mode [class*="bg-[#DFE9E2"] { background-color: #2E3B35 !important; }
+body.evening-mode kbd { background-color: #232825 !important; color: #A8AFA4 !important; border-color: #3A3E3B !important; }
+
+
 @layer base {
     [data-debug-wrapper="true"] {
         display: contents !important;

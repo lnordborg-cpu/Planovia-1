@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import { usePlanner } from "@/context/PlannerContext";
-import { getSubjectColor } from "@/lib/constants";
+import { getSubjectColor, TERMS, inferCurrentTerm } from "@/lib/constants";
 import { unitProgress } from "@/lib/plannerHelpers";
 import { getISOWeek } from "@/lib/dateUtils";
 import { Button } from "@/components/ui/button";
@@ -31,9 +31,12 @@ const VIEWS = {
 
 export default function TerminTimeline() {
   const planner = usePlanner();
-  const [view, setView] = useState("auto");
+  const termFromApp = planner.activeTerm === "auto" ? inferCurrentTerm() : planner.activeTerm;
+  const [view, setView] = useState(termFromApp);
   const [drag, setDrag] = useState(null);
   const gridRef = useRef(null);
+
+  React.useEffect(() => { setView(termFromApp); }, [termFromApp]);
 
   const usable = useMemo(
     () => planner.units.filter((u) => u.startWeek && u.endWeek),

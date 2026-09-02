@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, NavLink } from "react-router-dom";
-import { LayoutDashboard, CalendarRange, CalendarDays, Users, Folder, Settings, PanelRightClose, PanelRightOpen, Search, BarChart3 } from "lucide-react";
+import { LayoutDashboard, CalendarRange, CalendarDays, Users, Folder, Settings, PanelRightClose, PanelRightOpen, Search, BarChart3, Moon, Sun } from "lucide-react";
 import TodoPanel from "@/components/TodoPanel";
 import GlobalSearch from "@/components/GlobalSearch";
 import QuickNote from "@/components/QuickNote";
+import { usePlanner } from "@/context/PlannerContext";
+import { TERMS, inferCurrentTerm } from "@/lib/constants";
 
 const NAV_ITEMS = [
   { to: "/oversikt", label: "Översikt", icon: LayoutDashboard, testId: "nav-oversikt" },
@@ -52,8 +54,32 @@ const Sidebar = () => (
 );
 
 export default function Layout() {
+  const planner = usePlanner();
   const [todoOpen, setTodoOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const activeTermId = planner.activeTerm === "auto" ? inferCurrentTerm() : planner.activeTerm;
+  const isEveningActive = React.useMemo(() => {
+    if (planner.eveningMode === "on") return true;
+    if (planner.eveningMode === "off") return false;
+    const h = new Date().getHours();
+    return h >= 20 || h < 5;
+  }, [planner.eveningMode]);
+
+  useEffect(() => {
+    document.body.classList.toggle("evening-mode", isEveningActive);
+    return () => document.body.classList.remove("evening-mode");
+  }, [isEveningActive]);
+
+  useEffect(() => {
+    if (planner.eveningMode !== "auto") return;
+    const iv = setInterval(() => {
+      const h = new Date().getHours();
+      const should = h >= 20 || h < 5;
+      document.body.classList.toggle("evening-mode", should);
+    }, 60 * 1000);
+    return () => clearInterval(iv);
+  }, [planner.eveningMode]);
 
   useEffect(() => {
     const handler = (e) => {
@@ -70,7 +96,35 @@ export default function Layout() {
     <div className="flex h-screen w-screen overflow-hidden bg-[#F6F3EE] text-[#293330]">
       <Sidebar />
       <main className="flex-1 min-w-0 overflow-y-auto">
-        <div className="max-w-6xl mx-auto px-8 pt-6 pb-2 flex justify-end no-print">
+        <div className="max-w-6xl mx-auto px-8 pt-6 pb-2 flex items-center gap-3 no-print">
+          <div className="inline-flex rounded-xl border border-[#DEDAD2] bg-[#FFFEFB] p-0.5 text-xs" data-testid="term-selector">
+            {["ht", "vt"].map((k) => (
+              <button
+                key={k}
+                data-testid={`term-${k}`}
+                onClick={() => planner.setActiveTerm(k)}
+                className={`px-3 py-1.5 rounded-lg transition ${activeTermId === k ? "bg-[#DFE9E2] text-[#293330] font-semibold" : "text-[#78817D] hover:text-[#293330]"}`}
+                title={TERMS[k].label}
+              >{TERMS[k].short}</button>
+            ))}
+            {planner.activeTerm !== "auto" && (
+              <button
+                data-testid="term-auto"
+                onClick={() => planner.setActiveTerm("auto")}
+                className="px-2 py-1.5 rounded-lg text-[10px] text-[#78817D] hover:text-[#293330]"
+                title="Följ dagens datum"
+              >auto</button>
+            )}
+          </div>
+          <button
+            data-testid="evening-toggle"
+            onClick={() => planner.setEveningMode(isEveningActive ? "off" : "on")}
+            className="h-8 w-8 rounded-lg border border-[#DEDAD2] bg-[#FFFEFB] flex items-center justify-center text-[#78817D] hover:text-[#293330]"
+            title={isEveningActive ? "Avsluta kvällsläge" : "Kvällsläge"}
+          >
+            {isEveningActive ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </button>
+          <div className="flex-1" />
           <button
             data-testid="global-search-btn"
             onClick={() => setSearchOpen(true)}

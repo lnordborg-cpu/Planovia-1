@@ -76,13 +76,14 @@ export const unitProgress = (unit, events) => {
   return { done, total: linked.length };
 };
 
-// Derived materials: aggregate all materials across events
-export const allMaterials = (events, classes, subjects) => {
+// Derived materials: aggregate all materials across events + standalone
+export const allMaterials = (events, classes, subjects, standaloneMaterials = []) => {
   const list = [];
   events.forEach((ev) => {
     (ev.materials || []).forEach((m) => {
       list.push({
         id: `${ev.id}:${m.id}`,
+        source: "event",
         eventId: ev.id,
         materialId: m.id,
         name: m.name,
@@ -92,9 +93,27 @@ export const allMaterials = (events, classes, subjects) => {
         size: m.size,
         date: ev.date,
         classId: ev.classId,
-        subjectId: ev.subjectId,
+        subjectId: m.subjectId || ev.subjectId,
+        subcategory: m.subcategory || null,
         eventTitle: ev.title,
       });
+    });
+  });
+  standaloneMaterials.forEach((m) => {
+    list.push({
+      id: `standalone:${m.id}`,
+      source: "standalone",
+      standaloneId: m.id,
+      name: m.name,
+      url: m.url,
+      isFile: m.isFile,
+      mimeType: m.mimeType,
+      size: m.size,
+      date: (m.createdAt || "").slice(0, 10),
+      classId: null,
+      subjectId: m.subjectId || null,
+      subcategory: m.subcategory || "Övrigt",
+      eventTitle: null,
     });
   });
   return list;

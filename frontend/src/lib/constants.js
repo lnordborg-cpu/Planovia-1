@@ -62,3 +62,38 @@ export const EXCEPTION_TYPES = [
 
 export const getExceptionType = (id) =>
   EXCEPTION_TYPES.find((t) => t.id === id) || EXCEPTION_TYPES[0];
+
+// Terms: HT weeks 33..52, VT weeks 2..24 (approximate Swedish school calendar)
+export const TERMS = {
+  ht: { id: "ht", label: "Hösttermin", short: "HT", weeks: [33, 52] },
+  vt: { id: "vt", label: "Vårtermin", short: "VT", weeks: [2, 24] },
+};
+
+export const inferCurrentTerm = (date = new Date()) => {
+  const [, w] = (() => {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const day = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - day);
+    const yStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return [d.getUTCFullYear(), Math.ceil(((d - yStart) / 86400000 + 1) / 7)];
+  })();
+  return w >= 26 ? "ht" : "vt";
+};
+
+export const getTermWeeks = (termId) => {
+  if (termId === "ht") return TERMS.ht.weeks;
+  if (termId === "vt") return TERMS.vt.weeks;
+  return TERMS[inferCurrentTerm()].weeks;
+};
+
+// Material subcategories – fixed defaults
+export const MATERIAL_SUBCATEGORIES = ["Presentationer", "Läxor", "Arbetsblad", "Prov", "Övrigt"];
+
+export const autoClassifyMaterial = (name = "") => {
+  const n = name.toLowerCase();
+  if (/(prov|test|tenta)/i.test(n)) return "Prov";
+  if (/(läxa|hemläxa|homework)/i.test(n)) return "Läxor";
+  if (/\.pptx?(\?|#|$)|(presentation|slides|föredrag)/i.test(n)) return "Presentationer";
+  if (/(arbetsblad|worksheet|övning|uppgift)/i.test(n)) return "Arbetsblad";
+  return "Övrigt";
+};
