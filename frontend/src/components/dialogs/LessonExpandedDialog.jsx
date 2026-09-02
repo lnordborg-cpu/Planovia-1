@@ -9,17 +9,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { usePlanner } from "@/context/PlannerContext";
 import { getSubjectColor, autoClassifyMaterial } from "@/lib/constants";
 import { formatDateLong, fromISODate } from "@/lib/dateUtils";
-import { Trash2, Link as LinkIcon, X, Paperclip, FileText, Upload, StickyNote, Eye } from "lucide-react";
+import { uploadFile, deleteFile } from "@/lib/api";
+import { Trash2, Link as LinkIcon, X, Paperclip, FileText, Upload, StickyNote, Eye, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import MaterialPreview, { canPreview } from "@/components/dialogs/MaterialPreview";
 
 const PRINTABLE_RE = /\.(pdf|docx?|odt|pptx?|xlsx?|rtf|txt|png|jpe?g)(\?|#|$)/i;
-const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
-  const r = new FileReader();
-  r.onload = () => resolve(r.result);
-  r.onerror = reject;
-  r.readAsDataURL(file);
-});
 
 export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
   const planner = usePlanner();
@@ -29,6 +24,7 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
   const [confirmPrint, setConfirmPrint] = useState(null); // pending pdf mat name
   const [notes, setNotes] = useState(event?.notes || "");
   const [previewMaterial, setPreviewMaterial] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
   React.useEffect(() => { setNotes(event?.notes || ""); }, [event?.id, event?.notes]);
@@ -51,30 +47,27 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
 
   const handleFilesSelected = async (files) => {
     if (!files || files.length === 0) return;
+    setUploading(true);
     const addedNames = [];
     for (const file of Array.from(files)) {
       try {
-        // Limit to ~4MB per file to keep localStorage healthy
-        if (file.size > 4 * 1024 * 1024) {
-          toast.error(`${file.name} är för stor (max 4MB för lokal lagring).`);
+        if (file.size > 20 * 1024 * 1024) {
+          toast.error(`${file.name} är för stor (max 20MB).`);
           continue;
         }
-        const dataUrl = await readFileAsDataUrl(file);
+        const uploaded = await uploadFile(file);
         const subcategory = autoClassifyMaterial(file.name);
         planner.addMaterialToEvent(event.id, {
-          name: file.name,
-          url: dataUrl,
-          isFile: true,
-          mimeType: file.type,
-          size: file.size,
+          ...uploaded,
           subjectId: event.subjectId || null,
           subcategory,
         });
         addedNames.push(file.name);
       } catch (err) {
-        toast.error(`Kunde inte läsa ${file.name}`);
+        toast.error(`Kunde inte ladda upp ${file.name}: ${err.message || ""}`);
       }
     }
+    setUploading(false);
     // Auto-create print tasks for printable-looking files
     addedNames.forEach((name) => {
       if (PRINTABLE_RE.test(name)) {
@@ -90,7 +83,11 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const removeMaterial = (id) => planner.removeMaterialFromEvent(event.id, id);
+  const removeMaterial = (id) => {
+    const m = (event.materials || []).find((x) => x.id === id);
+    if (m && m.fileId) deleteFile(m.fileId);
+    planner.removeMaterialFromEvent(event.id, id);
+  };
   const remove = () => { planner.deleteEvent(event.id); onOpenChange(false); };
   const saveNotes = () => planner.upsertEvent({ ...event, notes });
 
@@ -180,10 +177,15 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
                     type="button"
                     variant="outline"
                     onClick={() => fileInputRef.current?.click()}
+                    disabled={uploading}
                     className="border-[#DEDAD2] text-[#718A7F] hover:bg-[#DFE9E2]"
                     data-testid="material-file-btn"
                   >
-                    <Paperclip className="h-4 w-4 mr-2" /> Bifoga fil…
+                    {uploading ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Laddar upp…</>
+                    ) : (
+                      <><Paperclip className="h-4 w-4 mr-2" /> Bifoga fil…</>
+                    )}
                   </Button>
                   <span className="text-[11px] text-[#A3A69F]">Skapar automatiskt "Skriv ut"-uppgift för utskriftsbara filer.</span>
                 </div>

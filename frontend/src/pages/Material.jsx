@@ -3,19 +3,13 @@ import { usePlanner } from "@/context/PlannerContext";
 import { getSubjectColor, MATERIAL_SUBCATEGORIES, autoClassifyMaterial } from "@/lib/constants";
 import { fromISODate, formatDateLong } from "@/lib/dateUtils";
 import { allMaterials } from "@/lib/plannerHelpers";
-import { Link as LinkIcon, Folder, FolderOpen, FileText, Eye, Upload, ChevronRight, ChevronDown, Plus, Trash2, X, ArrowRight } from "lucide-react";
+import { uploadFile, deleteFile } from "@/lib/api";
+import { Link as LinkIcon, Folder, FolderOpen, FileText, Eye, Upload, ChevronRight, ChevronDown, Plus, Trash2, X, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import MaterialPreview, { canPreview } from "@/components/dialogs/MaterialPreview";
-
-const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
-  const r = new FileReader();
-  r.onload = () => resolve(r.result);
-  r.onerror = reject;
-  r.readAsDataURL(file);
-});
 
 // Path convention: "subject:<id>" or "subject:<id>/<subcategory>" or "root"
 const ROOT = "root";
@@ -33,6 +27,7 @@ export default function Material() {
   const [newFolderInput, setNewFolderInput] = useState({ subjectId: null, name: "" });
   const [uploadTarget, setUploadTarget] = useState({ subjectId: null, subcategory: "Övrigt" });
   const [dragOverKey, setDragOverKey] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const fileRef = useRef(null);
 
   const toggle = (key) => setExpanded((s) => {
@@ -82,23 +77,27 @@ export default function Material() {
 
   const handleUpload = async (files, targetSubjectId, targetSubcategory) => {
     if (!files || files.length === 0) return;
+    setUploading(true);
+    let ok = 0;
+    let fail = 0;
     for (const file of Array.from(files)) {
       try {
-        if (file.size > 4 * 1024 * 1024) { toast.error(`${file.name} är för stor (max 4MB).`); continue; }
-        const url = await readFileAsDataUrl(file);
+        if (file.size > 20 * 1024 * 1024) { toast.error(`${file.name} är för stor (max 20MB).`); fail += 1; continue; }
+        const uploaded = await uploadFile(file);
         const subcategory = targetSubcategory || autoClassifyMaterial(file.name);
         planner.addStandaloneMaterial({
-          name: file.name,
-          url,
-          isFile: true,
-          mimeType: file.type,
-          size: file.size,
+          ...uploaded,
           subjectId: targetSubjectId || null,
           subcategory,
         });
-      } catch { toast.error(`Kunde inte läsa ${file.name}`); }
+        ok += 1;
+      } catch (e) {
+        toast.error(`Kunde inte ladda upp ${file.name}: ${e.message || ""}`);
+        fail += 1;
+      }
     }
-    toast.success(`${files.length} fil${files.length > 1 ? "er" : ""} tillagd${files.length > 1 ? "a" : ""}`);
+    setUploading(false);
+    if (ok > 0) toast.success(`${ok} fil${ok > 1 ? "er" : ""} tillagd${ok > 1 ? "a" : ""}`);
     if (fileRef.current) fileRef.current.value = "";
   };
 
@@ -168,6 +167,7 @@ export default function Material() {
   };
 
   const deleteMaterial = (m) => {
+    if (m.fileId) deleteFile(m.fileId);
     if (m.source === "standalone") planner.deleteStandaloneMaterial(m.standaloneId);
     else planner.removeMaterialFromEvent(m.eventId, m.materialId);
   };
@@ -186,7 +186,7 @@ export default function Material() {
         <div className="text-[11px] tracking-[0.2em] uppercase text-[#A3A69F] font-semibold">Materialbank</div>
         <h1 className="font-serif-display text-4xl mt-1 text-[#293330]">Material</h1>
         <p className="text-sm text-[#78817D] mt-2 max-w-xl">
-          Filer sorteras automatiskt in i rätt ämne och kategori. Du kan ladda upp fler filer, skapa egna mappar eller <em className="text-[#293330] not-italic font-medium">dra en fil direkt in i en mapp</em> i sidoträdet.
+          Filer sorteras automatiskt in i rätt ämne och kategori. Du kan ladda upp filer (upp till 20MB), skapa egna mappar eller <em className="text-[#293330] not-italic font-medium">dra en fil direkt in i en mapp</em> i sidoträdet. Filerna lagras säkert i molnet.
         </p>
       </header>
 
@@ -300,10 +300,15 @@ export default function Material() {
                 const sc = parts[1] || null;
                 openUploadFor(sid === "none" ? null : sid, sc || "Övrigt");
               }}
+              disabled={uploading}
               className="bg-[#718A7F] hover:bg-[#5C7267]"
               data-testid="material-upload-btn"
             >
-              <Upload className="h-4 w-4 mr-2" /> Ladda upp
+              {uploading ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Laddar upp…</>
+              ) : (
+                <><Upload className="h-4 w-4 mr-2" /> Ladda upp</>
+              )}
             </Button>
           </div>
 

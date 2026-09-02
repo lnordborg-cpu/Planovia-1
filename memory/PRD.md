@@ -27,6 +27,7 @@ Build a functional MVP of a digital teacher planner named **Planova**. Swedish U
 - **[2026-02] Sammanfatta dagen** – Day summary card on /oversikt with 4 default trends (Energi, Fokus, Elevernas stämning, Egen känsla) on 1–5 scale + note. Editable, per-date storage in `daySummaries`.
 - **[2026-02] Trend-statistik** – Dagliga trender on /statistik: line chart over time + bar chart of average per weekday (Mon–Fri).
 - **[2026-02] Anpassbara trender** – Add/rename/color/delete/reset default day trends in /installningar.
+- **[2026-02] File & media storage** – FastAPI backend `/api/uploads` + `/api/files/{id}` backed by **Emergent Object Storage**. Replaces base64-in-localStorage. Files up to 20MB. MongoDB `files` collection tracks metadata with soft-delete. `frontend/src/lib/api.js` provides `uploadFile`/`deleteFile` helpers. Regression tests in `/app/backend/tests/test_uploads.py`.
 
 ## Backlog
 - **P1 – Auth (skipped by user's earlier requests):** Emergent-managed Google Sign-in + Email/password login (msg 183 + 211). Must call `integration_playbook_expert_v2` before implementing.
