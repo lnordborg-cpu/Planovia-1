@@ -5,6 +5,7 @@ import TodoPanel from "@/components/TodoPanel";
 import GlobalSearch from "@/components/GlobalSearch";
 import QuickNote from "@/components/QuickNote";
 import { PlanoviaMark } from "@/components/PlanoviaLogo";
+import UserMenu from "@/components/UserMenu";
 import { usePlanner } from "@/context/PlannerContext";
 import { TERMS, inferCurrentTerm } from "@/lib/constants";
 
@@ -77,9 +78,13 @@ const Sidebar = ({ collapsed, onToggle }) => (
         );
       })}
     </nav>
-    {!collapsed && (
-      <div className="text-[11px] text-[#A3A69F] px-3 py-2 leading-relaxed">
-        All data sparas lokalt i din webbläsare.
+    {!collapsed ? (
+      <div className="space-y-2 mt-2">
+        <UserMenu />
+      </div>
+    ) : (
+      <div className="mt-2 flex flex-col items-center">
+        <UserMenu collapsed />
       </div>
     )}
   </aside>

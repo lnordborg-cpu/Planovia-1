@@ -227,8 +227,8 @@ const DayColumn = ({ label, day, planner, onAdd, onExpand }) => {
   const [dragOver, setDragOver] = React.useState(false);
   // Merge slots + events sorted by time; followups appear on top
   const rows = useMemo(() => {
-    const slotRows = day.slots.map((s) => ({ kind: "slot", time: s.time, data: s, id: `slot-${s.id}` }));
-    const eventRows = day.events.map((e) => ({ kind: "event", time: e.time, data: e, id: e.id }));
+    const slotRows = day.slots.map((s) => ({ kind: "slot", time: s.time, endTime: s.endTime, data: s, id: `slot-${s.id}` }));
+    const eventRows = day.events.map((e) => ({ kind: "event", time: e.time, endTime: e.endTime, data: e, id: e.id }));
     return [...slotRows, ...eventRows].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
   }, [day.slots, day.events]);
 
@@ -359,7 +359,7 @@ const LessonCard = ({ row, planner, onExpand, onMaterialise }) => {
       style={{ borderColor: "#DEDAD2" }}
     >
       <div className="flex items-center gap-2 text-[11px] font-semibold tabular-nums text-[#78817D]">
-        <Clock className="h-3 w-3" /> {row.time || "—"}
+        <Clock className="h-3 w-3" /> {row.time ? (row.endTime ? `${row.time}–${row.endTime}` : row.time) : "—"}
         {!isEvent && !isAutoDone && <span className="ml-auto text-[10px] uppercase tracking-wider text-[#A3A69F]">Schema</span>}
         {isAutoDone && (
           <span className="ml-auto text-[10px] uppercase tracking-wider text-[#718A7F] flex items-center gap-1" data-testid={`slot-autodone-${data.id}`}>

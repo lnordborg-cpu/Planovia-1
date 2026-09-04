@@ -221,10 +221,25 @@ const StudentsSection = ({ planner }) => {
 const TimetableSection = ({ planner }) => {
   const [weekday, setWeekday] = useState("0");
   const [time, setTime] = useState("08:20");
+  const [endTime, setEndTime] = useState("09:20");
   const [classId, setClassId] = useState("");
   const [subjectId, setSubjectId] = useState("");
   const [defaultTitle, setDefaultTitle] = useState("");
-  const canAdd = classId && subjectId && time;
+  const canAdd = classId && subjectId && time && endTime && time < endTime;
+
+  const onStartChange = (v) => {
+    const [ph, pm] = time.split(":").map(Number);
+    const [eh, em] = endTime.split(":").map(Number);
+    const dur = (eh * 60 + em) - (ph * 60 + pm);
+    setTime(v);
+    if (dur > 0) {
+      const [nh, nm] = v.split(":").map(Number);
+      const total = nh * 60 + nm + dur;
+      const hh = String(Math.floor(total / 60) % 24).padStart(2, "0");
+      const mm = String(total % 60).padStart(2, "0");
+      setEndTime(`${hh}:${mm}`);
+    }
+  };
 
   return (
     <Section title="Återkommande schema" description="Dessa lektioner visas automatiskt varje relevant vecka." testId="section-timetable">
@@ -232,14 +247,15 @@ const TimetableSection = ({ planner }) => {
         <div className="text-sm text-[#A3A69F]">Skapa minst en klass och ett ämne först.</div>
       ) : (
         <>
-          <div className="grid md:grid-cols-6 gap-2 mb-4">
+          <div className="grid md:grid-cols-7 gap-2 mb-4">
             <Select value={weekday} onValueChange={setWeekday}>
               <SelectTrigger data-testid="tt-weekday-select"><SelectValue /></SelectTrigger>
               <SelectContent>
                 {WEEKDAYS.map((d, i) => <SelectItem key={i} value={String(i)}>{d}</SelectItem>)}
               </SelectContent>
             </Select>
-            <Input data-testid="tt-time-input" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+            <Input data-testid="tt-time-input" type="time" value={time} onChange={(e) => onStartChange(e.target.value)} placeholder="Start" />
+            <Input data-testid="tt-end-time-input" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} placeholder="Slut" />
             <Select value={classId} onValueChange={setClassId}>
               <SelectTrigger data-testid="tt-class-select"><SelectValue placeholder="Klass" /></SelectTrigger>
               <SelectContent>{planner.classes.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
@@ -252,7 +268,12 @@ const TimetableSection = ({ planner }) => {
             <Button
               disabled={!canAdd}
               data-testid="tt-add-btn"
-              onClick={() => { planner.addTimetableSlot({ weekday: Number(weekday), time, classId, subjectId, defaultTitle }); setDefaultTitle(""); toast.success("Schemarad tillagd"); }}
+              onClick={() => {
+                if (time >= endTime) { toast.error("Sluttiden måste vara efter starttiden."); return; }
+                planner.addTimetableSlot({ weekday: Number(weekday), time, endTime, classId, subjectId, defaultTitle });
+                setDefaultTitle("");
+                toast.success("Schemarad tillagd");
+              }}
               className="bg-[#718A7F] hover:bg-[#5C7267]"
             ><Plus className="h-4 w-4 mr-1" /> Lägg till</Button>
           </div>
@@ -269,7 +290,7 @@ const TimetableSection = ({ planner }) => {
                 return (
                   <div key={t.id} className="flex items-center gap-3 rounded-lg border border-[#DEDAD2] px-3 py-2 bg-[#FFFEFB]" data-testid={`tt-row-${t.id}`}>
                     <span className="text-xs uppercase tracking-widest text-[#A3A69F] font-semibold w-20">{WEEKDAYS[t.weekday]}</span>
-                    <span className="text-sm font-semibold tabular-nums w-12">{t.time}</span>
+                    <span className="text-sm font-semibold tabular-nums w-24">{t.time}{t.endTime ? `–${t.endTime}` : ""}</span>
                     {subj && (
                       <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-md border font-semibold" style={{ backgroundColor: col.bg, color: col.text, borderColor: col.border }}>
                         {subj.name}

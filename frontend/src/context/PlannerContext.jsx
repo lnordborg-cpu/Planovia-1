@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { toISODate, dateInRange, weekdayIndex } from "@/lib/dateUtils";
 import { DEFAULT_DAY_TRENDS } from "@/lib/constants";
+import { addMinutes, isValidTime, DEFAULT_LESSON_MINUTES } from "@/lib/timeUtils";
 
 const STORAGE_KEY = "lararplanerare_v1";
 
@@ -45,6 +46,14 @@ export const PlannerProvider = ({ children }) => {
         // Backfill defaults introduced later
         if (!parsed.dayTrends || parsed.dayTrends.length === 0) parsed.dayTrends = DEFAULT_DAY_TRENDS.map((t) => ({ ...t }));
         if (!parsed.daySummaries) parsed.daySummaries = [];
+        // Backfill endTime on events + timetable slots (default = start + 60 min)
+        const backfill = (arr) => (Array.isArray(arr) ? arr.map((it) => {
+          if (!it || !isValidTime(it.time)) return it;
+          if (it.endTime && isValidTime(it.endTime)) return it;
+          return { ...it, endTime: addMinutes(it.time, DEFAULT_LESSON_MINUTES) };
+        }) : arr);
+        parsed.events = backfill(parsed.events);
+        parsed.timetable = backfill(parsed.timetable);
         return { ...emptyState, ...parsed };
       }
     } catch (e) { /* ignore */ }
@@ -136,6 +145,9 @@ export const PlannerProvider = ({ children }) => {
   // ------- Timetable -------
   const addTimetableSlot = (slot) => {
     const obj = { id: uid(), ...slot };
+    if (isValidTime(obj.time) && !isValidTime(obj.endTime)) {
+      obj.endTime = addMinutes(obj.time, DEFAULT_LESSON_MINUTES);
+    }
     setState((s) => ({ ...s, timetable: [...s.timetable, obj] }));
     return obj;
   };
@@ -143,9 +155,12 @@ export const PlannerProvider = ({ children }) => {
     setState((s) => ({ ...s, timetable: s.timetable.filter((t) => t.id !== id) }));
 
   // ------- Events (lessons, meetings, utvecklingssamtal) -------
-  // Event fields: id, type, date, time, classId?, subjectId?, title, notes, completed, materials, unitId?, studentId?, participants?, timetableId? (for materialised)
+  // Event fields: id, type, date, time (=start), endTime, classId?, subjectId?, title, notes, completed, materials, unitId?, studentId?, participants?, timetableId?, recurrence?, seriesId?
   const upsertEvent = (event) => {
-    const withId = event.id ? event : { id: uid(), ...event };
+    const withId = event.id ? { ...event } : { id: uid(), ...event };
+    if (isValidTime(withId.time) && !isValidTime(withId.endTime)) {
+      withId.endTime = addMinutes(withId.time, DEFAULT_LESSON_MINUTES);
+    }
     setState((s) => {
       const exists = s.events.some((e) => e.id === withId.id);
       return {

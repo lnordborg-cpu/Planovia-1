@@ -10,7 +10,8 @@ import { usePlanner } from "@/context/PlannerContext";
 import { getSubjectColor, autoClassifyMaterial } from "@/lib/constants";
 import { formatDateLong, fromISODate } from "@/lib/dateUtils";
 import { uploadFile, deleteFile } from "@/lib/api";
-import { Trash2, Link as LinkIcon, X, Paperclip, FileText, Upload, StickyNote, Eye, Loader2 } from "lucide-react";
+import { addMinutes, validateTimePair, formatTimeRange, DEFAULT_LESSON_MINUTES } from "@/lib/timeUtils";
+import { Trash2, Link as LinkIcon, X, Paperclip, FileText, Upload, StickyNote, Eye, Loader2, Clock, Check } from "lucide-react";
 import { toast } from "sonner";
 import MaterialPreview, { canPreview } from "@/components/dialogs/MaterialPreview";
 
@@ -25,7 +26,28 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
   const [notes, setNotes] = useState(event?.notes || "");
   const [previewMaterial, setPreviewMaterial] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [editingTime, setEditingTime] = useState(false);
+  const [start, setStart] = useState(event?.time || "08:20");
+  const [end, setEnd] = useState(event?.endTime || addMinutes(event?.time || "08:20", DEFAULT_LESSON_MINUTES));
+  const [timeError, setTimeError] = useState("");
   const fileInputRef = useRef(null);
+
+  React.useEffect(() => {
+    if (event) {
+      setStart(event.time || "08:20");
+      setEnd(event.endTime || addMinutes(event.time || "08:20", DEFAULT_LESSON_MINUTES));
+      setTimeError("");
+    }
+  }, [event]);
+
+  const saveTime = () => {
+    const v = validateTimePair(start, end);
+    if (!v.ok) { setTimeError(v.message); return; }
+    setTimeError("");
+    planner.upsertEvent({ ...event, time: v.start, endTime: v.end });
+    setEditingTime(false);
+    toast.success("Tid uppdaterad");
+  };
 
   React.useEffect(() => { setNotes(event?.notes || ""); }, [event?.id, event?.notes]);
 
@@ -104,12 +126,45 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
                 </span>
               )}
               {klass && <span className="text-xs text-[#78817D]">{klass.name}</span>}
-              <span className="text-xs text-[#A3A69F] ml-auto">{formatDateLong(fromISODate(event.date))} · {event.time}</span>
+              <span className="text-xs text-[#A3A69F] ml-auto">{formatDateLong(fromISODate(event.date))} · {formatTimeRange(event.time, event.endTime)}</span>
             </div>
             <DialogTitle className="font-serif-display text-2xl">{event.title}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-5">
+            <div className="rounded-xl border border-[#DEDAD2] bg-[#FFFEFB] p-3">
+              {!editingTime ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-[#293330]">
+                    <Clock className="h-4 w-4 text-[#718A7F]" />
+                    <span className="font-medium">{formatTimeRange(event.time, event.endTime)}</span>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setEditingTime(true)} className="text-[#78817D] hover:text-[#293330]" data-testid="expanded-edit-time-btn">
+                    Ändra tid
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2" data-testid="expanded-time-editor">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-[10px] uppercase tracking-widest text-[#78817D]">Starttid</Label>
+                      <Input data-testid="expanded-start-input" type="time" value={start} onChange={(e) => setStart(e.target.value)} className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] uppercase tracking-widest text-[#78817D]">Sluttid</Label>
+                      <Input data-testid="expanded-end-input" type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="mt-1" />
+                    </div>
+                  </div>
+                  {timeError && <div className="text-xs text-[#9E4A3B]" data-testid="expanded-time-error">{timeError}</div>}
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" size="sm" onClick={() => { setEditingTime(false); setTimeError(""); }} className="border-[#DEDAD2]">Avbryt</Button>
+                    <Button size="sm" onClick={saveTime} className="bg-[#718A7F] hover:bg-[#5C7267]" data-testid="expanded-time-save">
+                      <Check className="h-3.5 w-3.5 mr-1" /> Spara tid
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
             <div>
               <Label className="text-xs uppercase tracking-widest text-[#78817D]">Anteckningar</Label>
               <Textarea

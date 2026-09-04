@@ -1,0 +1,23 @@
+{
+  "summary": "Full frontend E2E testing of Planovia auth + cloud sync. All 10 requested flows pass. Registration, login, session persistence (cookie survives reload), wrong-password error, guest mode, merge dialog (behåll min planerare), sync push (add class -> persists via cloud after logout/re-login), Google button (no crash), UserMenu in expanded + collapsed sidebar, and regression navigation across all 7 sidebar pages – all green.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "AuthContext initial /me returns 401 for guests -> logged as console error (expected, harmless, but produces noise in console). Could be silenced by treating 401 as expected on the guest path in authApi.js req().",
+    "CloudSync.jsx debounced push effect depends on the entire `planner` object; because usePlanner() returns a fresh object each render this may fire more often than needed. Not a correctness bug; consider depending on a serialized planner snapshot or a version counter."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (pytest 11/11 already green)", "frontend": "100% (10/10 flows)"},
+  "test_credentials": "lisa@example.com / Test1234 (existing). Created during test: pytest.<ts>@example.com and merge.<ts>@example.com with Secret1234.",
+  "seed_data_creation": "Added and deleted transient class TEST_SYNC_<ts> under lisa's cloud state to verify sync push (cleanup performed). Added GUEST_LOCAL_<ts> class as guest, merged into new account merge.<ts>@example.com.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Sidebar auto-collapses on viewports < 1024px AND state persists in localStorage (planner.sidebarCollapsed). If a previous test set collapsed=true, UserMenu will render user-menu-avatar + user-menu-logout-icon instead of user-menu + user-menu-logout even at >1024px viewports. Handle both selector variants when clicking logout. Also, when clearing state, remember to clear cookies via context.clear_cookies() AND localStorage/sessionStorage via page.evaluate. The Toaster is bottom-right (sonner). Merge dialog uses radix AlertDialog and does NOT auto-dismiss – must click keep or start-fresh testid.",
+  "rca of the issue": "No issues found."
+}

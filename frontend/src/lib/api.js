@@ -9,7 +9,7 @@ if (!API) {
 export const uploadFile = async (file) => {
   const fd = new FormData();
   fd.append("file", file);
-  const res = await fetch(`${API}/api/uploads`, { method: "POST", body: fd });
+  const res = await fetch(`${API}/api/uploads`, { method: "POST", body: fd, credentials: "include" });
   if (!res.ok) {
     let msg = "Uppladdning misslyckades";
     try {
@@ -33,6 +33,6 @@ export const uploadFile = async (file) => {
 export const deleteFile = async (fileId) => {
   if (!fileId) return;
   try {
-    await fetch(`${API}/api/files/${fileId}`, { method: "DELETE" });
+    await fetch(`${API}/api/files/${fileId}`, { method: "DELETE", credentials: "include" });
   } catch { /* soft-fail: file record stays in storage but planner reference is removed */ }
 };

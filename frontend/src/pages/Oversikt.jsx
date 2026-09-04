@@ -189,8 +189,8 @@ const TodayList = ({ todaysEvents, todaysSlots }) => {
   if (total === 0)
     return <div className="rounded-xl border border-dashed border-[#DEDAD2] p-6 text-sm text-[#A3A69F]">Inget planerat för idag.</div>;
   const rows = [
-    ...todaysSlots.map((s) => ({ time: s.time, title: s.defaultTitle || "", classId: s.classId, subjectId: s.subjectId, virtual: true, id: `s-${s.id}` })),
-    ...todaysEvents.map((e) => ({ time: e.time, title: e.title, classId: e.classId, subjectId: e.subjectId, id: e.id, type: e.type })),
+    ...todaysSlots.map((s) => ({ time: s.time, endTime: s.endTime, title: s.defaultTitle || "", classId: s.classId, subjectId: s.subjectId, virtual: true, id: `s-${s.id}` })),
+    ...todaysEvents.map((e) => ({ time: e.time, endTime: e.endTime, title: e.title, classId: e.classId, subjectId: e.subjectId, id: e.id, type: e.type })),
   ].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
   return (
     <div className="space-y-2">
@@ -199,7 +199,7 @@ const TodayList = ({ todaysEvents, todaysSlots }) => {
         const color = subj ? getSubjectColor(subj.colorId) : null;
         return (
           <div key={r.id} className="flex items-center gap-4 rounded-xl border border-[#DEDAD2] bg-white p-3">
-            <div className="w-14 text-sm font-semibold tabular-nums text-[#293330]">{r.time || "—"}</div>
+            <div className="w-24 text-sm font-semibold tabular-nums text-[#293330]">{r.time ? (r.endTime ? `${r.time}–${r.endTime}` : r.time) : "—"}</div>
             {subj && (
               <span className="text-[10px] uppercase tracking-wider px-2 py-1 rounded-md border font-semibold"
                 style={{ backgroundColor: color.bg, color: color.text, borderColor: color.border }}>
