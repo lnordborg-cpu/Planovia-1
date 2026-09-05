@@ -75,6 +75,15 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
   const [preparation, setPreparation] = useState("");
   const [homework, setHomework] = useState("");
   const [assessment, setAssessment] = useState("");
+  // Meeting-only
+  const [location, setLocation] = useState("");
+  const [participants, setParticipants] = useState("");
+  const [agenda, setAgenda] = useState("");
+  const [decisions, setDecisions] = useState("");
+  const [followupInput, setFollowupInput] = useState("");
+  // Templates
+  const [savingTemplate, setSavingTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState("");
 
   // Material states
   const [matName, setMatName] = useState("");
@@ -102,6 +111,13 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
     setPreparation(event.preparation || "");
     setHomework(event.homework || "");
     setAssessment(event.assessment || "");
+    setLocation(event.location || "");
+    setParticipants(event.participants || "");
+    setAgenda(event.agenda || "");
+    setDecisions(event.decisions || "");
+    setFollowupInput("");
+    setSavingTemplate(false);
+    setTemplateName(event.title || "");
     setTimeError("");
     setMetaEdit(false);
     setEditingTime(false);
@@ -128,7 +144,7 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
   const persist = (patch) => {
     if (isSeries) {
       // Free-text section auto-saves apply to the WHOLE series (they're shared metadata)
-      const shareable = ["goals", "plan", "notes", "preparation", "homework", "assessment"];
+      const shareable = ["goals", "plan", "notes", "preparation", "homework", "assessment", "location", "participants", "agenda", "decisions"];
       const isShareable = Object.keys(patch).every((k) => shareable.includes(k));
       if (isShareable) {
         planner.updateEventInSeries(event, patch, "all");
@@ -240,6 +256,51 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
     planner.removeMaterialFromEvent(templateId, id);
   };
 
+  const isMeeting = event?.type === "meeting";
+  const isSamtal = event?.type === "utvecklingssamtal";
+  const eventFollowups = planner.followups.filter((f) => f.linkedEventId === templateId);
+  const templatesForSubject = (planner.lessonTemplates || []).filter(
+    (t) => !t.subjectId || t.subjectId === event?.subjectId,
+  );
+
+  const saveAsTemplate = () => {
+    if (!templateName.trim()) return;
+    planner.addLessonTemplate({
+      name: templateName.trim(),
+      subjectId: event.subjectId || null,
+      goals, plan, preparation, homework, assessment,
+    });
+    setSavingTemplate(false);
+    toast.success("Sparat som mall");
+  };
+
+  const applyTemplate = (tplId) => {
+    planner.applyLessonTemplate(templateId, tplId);
+    const tpl = (planner.lessonTemplates || []).find((t) => t.id === tplId);
+    if (tpl) {
+      setGoals(tpl.goals || "");
+      setPlan(tpl.plan || "");
+      setPreparation(tpl.preparation || "");
+      setHomework(tpl.homework || "");
+      setAssessment(tpl.assessment || "");
+    }
+    toast.success("Mall tillämpad");
+  };
+
+  const addFollowup = () => {
+    if (!followupInput.trim()) return;
+    planner.addFollowup({
+      description: followupInput.trim(),
+      linkedEventId: templateId,
+      linkedEventTitle: event.title,
+      studentId: null,
+      completed: false,
+      priority: "normal",
+    });
+    setFollowupInput("");
+    toast.success("Uppföljning tillagd");
+  };
+
   // ---- render -------------------------------------------------------------
   return (
     <>
@@ -303,15 +364,42 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
                 aria-label="Stäng"
               ><X className="h-4 w-4" /></button>
               {!metaEdit ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setMetaEdit(true)}
-                  className="border-[#DEDAD2] text-[#293330]"
-                  data-testid="expanded-edit-lesson-btn"
-                >
-                  <Pencil className="h-3.5 w-3.5 mr-1.5" /> Redigera lektion
-                </Button>
+                <div className="flex flex-col items-end gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMetaEdit(true)}
+                    className="border-[#DEDAD2] text-[#293330]"
+                    data-testid="expanded-edit-lesson-btn"
+                  >
+                    <Pencil className="h-3.5 w-3.5 mr-1.5" /> {isMeeting ? "Redigera möte" : "Redigera lektion"}
+                  </Button>
+                  {!isMeeting && !isSamtal && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      {templatesForSubject.length > 0 && (
+                        <Select value="" onValueChange={applyTemplate}>
+                          <SelectTrigger data-testid="template-picker" className="h-8 text-xs w-40 border-[#DEDAD2] bg-white">
+                            <SelectValue placeholder="Använd mall…" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {templatesForSubject.map((t) => (
+                              <SelectItem key={t.id} value={t.id} data-testid={`template-item-${t.id}`}>{t.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSavingTemplate(true)}
+                        className="border-[#DEDAD2] text-[#78817D] h-8 text-xs"
+                        data-testid="template-save-btn"
+                      >
+                        <Sparkles className="h-3 w-3 mr-1" /> Spara som mall
+                      </Button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="flex gap-1.5">
                   <Button size="sm" variant="ghost" onClick={() => setMetaEdit(false)} className="text-[#78817D]">Avbryt</Button>
@@ -405,38 +493,88 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
 
         {/* Sections */}
         <div className="px-6 py-6 space-y-6">
-          <Section icon={BookOpen} label="Arbetsområde" testId="section-unit">
-            {unit ? (
-              <div className="text-sm bg-[#F6F2FB] border border-[#E2D5F3] rounded-lg px-3 py-2 text-[#293330]">
-                <div className="font-semibold">{unit.title}</div>
-                {unit.description && <div className="text-[#78817D] text-xs mt-0.5">{unit.description}</div>}
-              </div>
-            ) : (
-              <div className="text-xs text-[#A3A69F]">Inget arbetsområde kopplat. Klicka "Redigera lektion" för att koppla ett.</div>
-            )}
-          </Section>
+          {!isMeeting && (
+            <>
+              <Section icon={BookOpen} label="Arbetsområde" testId="section-unit">
+                {unit ? (
+                  <div className="text-sm bg-[#F6F2FB] border border-[#E2D5F3] rounded-lg px-3 py-2 text-[#293330]">
+                    <div className="font-semibold">{unit.title}</div>
+                    {unit.description && <div className="text-[#78817D] text-xs mt-0.5">{unit.description}</div>}
+                  </div>
+                ) : (
+                  <div className="text-xs text-[#A3A69F]">Inget arbetsområde kopplat. Klicka "Redigera lektion" för att koppla ett.</div>
+                )}
+              </Section>
 
-          <Section icon={Target} label="Mål" hint="Vad ska eleverna lära sig?" testId="section-goals">
-            <AutoTextarea
-              testId="expanded-goals"
-              value={goals}
-              onChange={setGoals}
-              onBlur={() => persist({ goals })}
-              placeholder="T.ex. Kunna beräkna procent av ett tal…"
-              rows={2}
-            />
-          </Section>
+              <Section icon={Target} label="Mål" hint="Vad ska eleverna lära sig?" testId="section-goals">
+                <AutoTextarea
+                  testId="expanded-goals"
+                  value={goals}
+                  onChange={setGoals}
+                  onBlur={() => persist({ goals })}
+                  placeholder="T.ex. Kunna beräkna procent av ett tal…"
+                  rows={2}
+                />
+              </Section>
 
-          <Section icon={ListChecks} label="Lektionsplan" hint="Start · genomgång · aktivitet · exit ticket" testId="section-plan">
-            <AutoTextarea
-              testId="expanded-plan"
-              value={plan}
-              onChange={setPlan}
-              onBlur={() => persist({ plan })}
-              placeholder={`1. Repetition från förra lektionen\n2. Genomgång – bråkform till decimalform\n3. Elevaktivitet – arbeta i par\n4. Exit ticket`}
-              rows={5}
-            />
-          </Section>
+              <Section icon={ListChecks} label="Lektionsplan" hint="Start · genomgång · aktivitet · exit ticket" testId="section-plan">
+                <AutoTextarea
+                  testId="expanded-plan"
+                  value={plan}
+                  onChange={setPlan}
+                  onBlur={() => persist({ plan })}
+                  placeholder={`1. Repetition från förra lektionen\n2. Genomgång – bråkform till decimalform\n3. Elevaktivitet – arbeta i par\n4. Exit ticket`}
+                  rows={5}
+                />
+              </Section>
+            </>
+          )}
+
+          {isMeeting && (
+            <>
+              <Section icon={Target} label="Möteskategori & plats" testId="section-meeting-meta">
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    data-testid="meeting-meta-type"
+                    value={event.meetingType || ""}
+                    onChange={(e) => planner.upsertEvent({ ...event, meetingType: e.target.value })}
+                    placeholder="T.ex. Arbetslagsmöte"
+                    className="bg-white/70"
+                  />
+                  <Input
+                    data-testid="meeting-meta-location"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    onBlur={() => persist({ location })}
+                    placeholder="Plats (t.ex. Personalrum)"
+                    className="bg-white/70"
+                  />
+                </div>
+              </Section>
+
+              <Section icon={ListChecks} label="Deltagare" testId="section-participants">
+                <AutoTextarea
+                  testId="expanded-participants"
+                  value={participants}
+                  onChange={setParticipants}
+                  onBlur={() => persist({ participants })}
+                  placeholder="Namn, roller eller lag"
+                  rows={2}
+                />
+              </Section>
+
+              <Section icon={BookOpen} label="Agenda" testId="section-agenda">
+                <AutoTextarea
+                  testId="expanded-agenda"
+                  value={agenda}
+                  onChange={setAgenda}
+                  onBlur={() => persist({ agenda })}
+                  placeholder={`1. Uppföljning från förra mötet\n2. Punkt X\n3. Övrigt`}
+                  rows={4}
+                />
+              </Section>
+            </>
+          )}
 
           <Section icon={Pencil} label="Anteckningar" testId="section-notes">
             <AutoTextarea
@@ -520,7 +658,7 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
             </div>
           </Section>
 
-          <Section icon={ClipboardList} label="Förberedelser" hint="Vad behöver du fixa innan lektionen?" testId="section-preparation">
+          <Section icon={ClipboardList} label="Förberedelser" hint="Vad behöver du fixa innan?" testId="section-preparation">
             <AutoTextarea
               testId="expanded-preparation"
               value={preparation}
@@ -531,27 +669,74 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
             />
           </Section>
 
-          <Section icon={GraduationCap} label="Läxa" testId="section-homework">
-            <AutoTextarea
-              testId="expanded-homework"
-              value={homework}
-              onChange={setHomework}
-              onBlur={() => persist({ homework })}
-              placeholder="T.ex. Uppgift 12–17 till nästa gång"
-              rows={2}
-            />
-          </Section>
+          {!isMeeting && (
+            <>
+              <Section icon={GraduationCap} label="Läxa" testId="section-homework">
+                <AutoTextarea
+                  testId="expanded-homework"
+                  value={homework}
+                  onChange={setHomework}
+                  onBlur={() => persist({ homework })}
+                  placeholder="T.ex. Uppgift 12–17 till nästa gång"
+                  rows={2}
+                />
+              </Section>
 
-          <Section icon={Award} label="Bedömning" testId="section-assessment">
-            <AutoTextarea
-              testId="expanded-assessment"
-              value={assessment}
-              onChange={setAssessment}
-              onBlur={() => persist({ assessment })}
-              placeholder="T.ex. Formativ – exit ticket. Betygsstöd Ma7.C.1"
-              rows={2}
-            />
-          </Section>
+              <Section icon={Award} label="Bedömning" testId="section-assessment">
+                <AutoTextarea
+                  testId="expanded-assessment"
+                  value={assessment}
+                  onChange={setAssessment}
+                  onBlur={() => persist({ assessment })}
+                  placeholder="T.ex. Formativ – exit ticket. Betygsstöd Ma7.C.1"
+                  rows={2}
+                />
+              </Section>
+            </>
+          )}
+
+          {isMeeting && (
+            <>
+              <Section icon={Award} label="Beslut" hint="Vad landade mötet i?" testId="section-decisions">
+                <AutoTextarea
+                  testId="expanded-decisions"
+                  value={decisions}
+                  onChange={setDecisions}
+                  onBlur={() => persist({ decisions })}
+                  placeholder="Punkter som beslutades under mötet."
+                  rows={3}
+                />
+              </Section>
+
+              <Section icon={GraduationCap} label="Uppföljningar" testId="section-followups">
+                <div className="space-y-2">
+                  {eventFollowups.length === 0 && (
+                    <div className="text-xs text-[#A3A69F]">Inga uppföljningar kopplade.</div>
+                  )}
+                  {eventFollowups.map((f) => (
+                    <div key={f.id} className={`flex items-start gap-2 rounded-lg border border-[#DEDAD2] bg-white px-3 py-1.5 ${f.completed ? "opacity-60" : ""}`} data-testid={`meeting-followup-${f.id}`}>
+                      <Checkbox checked={!!f.completed} onCheckedChange={() => planner.toggleFollowupCompleted(f.id)} />
+                      <span className="text-sm flex-1 text-[#293330]">{f.description}</span>
+                      <button onClick={() => planner.deleteFollowup(f.id)} className="text-[#A3A69F] hover:text-[#9E4A3B]">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="flex gap-2">
+                    <Input
+                      data-testid="followup-input"
+                      value={followupInput}
+                      onChange={(e) => setFollowupInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && addFollowup()}
+                      placeholder="Ny uppföljning…"
+                      className="flex-1"
+                    />
+                    <Button onClick={addFollowup} className="bg-[#718A7F] hover:bg-[#5C7267]" data-testid="followup-add-btn">Lägg till</Button>
+                  </div>
+                </div>
+              </Section>
+            </>
+          )}
 
           {linkedNotes.length > 0 && (
             <Section icon={StickyNote} label="Elevnoteringar från denna lektion" testId="linked-notes-section">
@@ -599,6 +784,37 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
         mode={seriesAction?.mode}
         onChoose={applySeriesChoice}
       />
+
+      <AlertDialog open={savingTemplate} onOpenChange={(v) => !v && setSavingTemplate(false)}>
+        <AlertDialogContent data-testid="template-save-dialog" className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-serif-display">Spara som lektionsmall</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm text-[#78817D]">
+              Sparar mål, plan, förberedelser, läxa och bedömning som en mall du kan återanvända i {planner.subjects.find((s) => s.id === event?.subjectId)?.name || "detta ämne"}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="mt-2">
+            <Label className="text-[10px] uppercase tracking-widest text-[#78817D]">Namn på mall</Label>
+            <Input
+              data-testid="template-name-input"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              className="mt-1"
+              placeholder="T.ex. Grundlektion Matematik"
+              autoFocus
+            />
+          </div>
+          <AlertDialogFooter className="mt-3">
+            <AlertDialogCancel data-testid="template-cancel">Avbryt</AlertDialogCancel>
+            <AlertDialogAction
+              data-testid="template-confirm"
+              onClick={saveAsTemplate}
+              className="bg-[#718A7F] hover:bg-[#5C7267]"
+              disabled={!templateName.trim()}
+            >Spara mall</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!confirmPrint} onOpenChange={(v) => !v && setConfirmPrint(null)}>
         <AlertDialogContent data-testid="print-confirm-dialog">

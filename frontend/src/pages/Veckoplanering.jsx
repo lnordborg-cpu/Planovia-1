@@ -5,7 +5,7 @@ import { getISOWeek, getMondayOfISOWeek, getWeekdays, toISODate, formatDateShort
 import { WEEKDAYS, getSubjectColor, getExceptionType, TERMS, inferCurrentTerm } from "@/lib/constants";
 import { ClassDot } from "@/components/ClassDot";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, Clock, Trash2, Check, Circle, CopyPlus, Printer, Filter, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Clock, Trash2, Check, Circle, CopyPlus, Printer, Filter, X, Rows2, Rows3, Rows4 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import LessonDialog from "@/components/dialogs/LessonDialog";
@@ -149,6 +149,10 @@ export default function Veckoplanering() {
           <Button data-testid="next-week-btn" variant="outline" size="sm" onClick={() => gotoWeek(1)} className="border-[#DEDAD2] bg-white">
             Nästa <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
+          <ZoomToggle
+            value={planner.timetableZoom || 80}
+            onChange={(v) => planner.update({ timetableZoom: v })}
+          />
         </div>
       </header>
 
@@ -193,6 +197,7 @@ export default function Veckoplanering() {
       <WeekTimetable
         weekData={weekData}
         planner={planner}
+        pxPerHour={planner.timetableZoom || 80}
         onAdd={(date, prefill) => setDialogState({ date, prefill })}
         onExpandEvent={(ev) => setExpandedEvent(ev)}
         onMaterialiseSlot={(prefill) => {
@@ -224,3 +229,31 @@ export default function Veckoplanering() {
     </div>
   );
 }
+
+const ZOOM_LEVELS = [
+  { value: 60, label: "Kompakt", icon: Rows4 },
+  { value: 80, label: "Normal", icon: Rows3 },
+  { value: 100, label: "Rymlig", icon: Rows2 },
+];
+
+const ZoomToggle = ({ value, onChange }) => (
+  <div className="hidden md:flex items-center rounded-lg border border-[#DEDAD2] bg-white overflow-hidden" data-testid="timetable-zoom">
+    {ZOOM_LEVELS.map((lvl) => {
+      const Icon = lvl.icon;
+      const active = value === lvl.value;
+      return (
+        <button
+          key={lvl.value}
+          onClick={() => onChange(lvl.value)}
+          className={`px-2 py-1.5 text-[11px] flex items-center gap-1 border-l first:border-l-0 border-[#DEDAD2] transition ${
+            active ? "bg-[#DFE9E2] text-[#293330] font-semibold" : "text-[#78817D] hover:bg-[#F6F3EE]"
+          }`}
+          title={lvl.label}
+          data-testid={`zoom-${lvl.value}`}
+        >
+          <Icon className="h-3 w-3" /> {lvl.label}
+        </button>
+      );
+    })}
+  </div>
+);

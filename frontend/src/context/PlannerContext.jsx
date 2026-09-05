@@ -31,6 +31,8 @@ const emptyState = {
   daySummaries: [], // [{id, date, values: {trendId: 1-5}, note}]
   hasSeenWelcome: false,
   sidebarCollapsed: false,
+  timetableZoom: 80, // px per hour
+  lessonTemplates: [], // [{id, name, subjectId?, goals, plan, preparation, homework, assessment}]
 };
 
 const PlannerContext = createContext(null);
@@ -169,6 +171,49 @@ export const PlannerProvider = ({ children }) => {
       };
     });
     return withId;
+  };
+
+  const duplicateEvent = (idOrOccurrence) => {
+    const src = typeof idOrOccurrence === "string"
+      ? state.events.find((e) => e.id === idOrOccurrence)
+      : { ...idOrOccurrence };
+    if (!src) return null;
+    const clone = {
+      ...src,
+      id: uid(),
+      title: src.title,
+      completed: false,
+      recurrence: undefined,
+      seriesId: undefined,
+      _seriesTemplateId: undefined,
+      _isSeriesOccurrence: undefined,
+    };
+    delete clone._seriesTemplateId;
+    delete clone._isSeriesOccurrence;
+    delete clone.recurrence;
+    delete clone.seriesId;
+    setState((s) => ({ ...s, events: [...s.events, clone] }));
+    return clone;
+  };
+
+  // Lesson templates
+  const addLessonTemplate = (tpl) => {
+    const obj = { id: uid(), ...tpl };
+    setState((s) => ({ ...s, lessonTemplates: [...(s.lessonTemplates || []), obj] }));
+    return obj;
+  };
+  const deleteLessonTemplate = (id) =>
+    setState((s) => ({ ...s, lessonTemplates: (s.lessonTemplates || []).filter((t) => t.id !== id) }));
+  const applyLessonTemplate = (eventId, templateId) => {
+    setState((s) => {
+      const tpl = (s.lessonTemplates || []).find((t) => t.id === templateId);
+      if (!tpl) return s;
+      const { id, name, subjectId, ...fields } = tpl; // eslint-disable-line no-unused-vars
+      return {
+        ...s,
+        events: s.events.map((e) => (e.id === eventId ? { ...e, ...fields } : e)),
+      };
+    });
   };
   const deleteEvent = (id) =>
     setState((s) => ({
@@ -397,8 +442,8 @@ export const PlannerProvider = ({ children }) => {
   };
 
   // ------- Followups (synchronised with tasks) -------
-  const addFollowup = ({ studentId, description, dueDate }) => {
-    const followup = { id: uid(), studentId, description, dueDate, completed: false };
+  const addFollowup = ({ studentId, description, dueDate, linkedEventId, linkedEventTitle }) => {
+    const followup = { id: uid(), studentId, description, dueDate, completed: false, linkedEventId, linkedEventTitle };
     const task = {
       id: uid(),
       title: description,
@@ -580,8 +625,9 @@ export const PlannerProvider = ({ children }) => {
       addSubject, deleteSubject,
       addStudent, deleteStudent,
       addTimetableSlot, deleteTimetableSlot,
-      upsertEvent, deleteEvent, toggleEventCompleted,
+      upsertEvent, deleteEvent, toggleEventCompleted, duplicateEvent,
       deleteEventInSeries, updateEventInSeries,
+      addLessonTemplate, deleteLessonTemplate, applyLessonTemplate,
       addMaterialToEvent, removeMaterialFromEvent, addPrintTaskForMaterial,
       moveEventToDate, copyEventsBetweenDates,
       addUnit, updateUnit, deleteUnit,

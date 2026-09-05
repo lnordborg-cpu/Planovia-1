@@ -4,14 +4,13 @@ import { ClassDot } from "@/components/ClassDot";
 import { todayISO, formatDateShort } from "@/lib/dateUtils";
 import { layoutTimetable } from "@/lib/timetableLayout";
 import { toMinutes } from "@/lib/timeUtils";
+import CardActionsMenu from "@/components/CardActionsMenu";
 import { Plus, Check, Circle } from "lucide-react";
 
 const START_HOUR = 8;
 const END_HOUR = 17;
-const PX_PER_HOUR = 80;
-const PX_PER_MIN = PX_PER_HOUR / 60;
+const DEFAULT_PX_PER_HOUR = 80;
 const TOTAL_MIN = (END_HOUR - START_HOUR) * 60;
-const TOTAL_HEIGHT = TOTAL_MIN * PX_PER_MIN;
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
@@ -27,7 +26,10 @@ export default function WeekTimetable({
   onMaterialiseSlot,
   onAdd,
   onMoveEvent,
+  pxPerHour = DEFAULT_PX_PER_HOUR,
 }) {
+  const pxPerMin = pxPerHour / 60;
+  const totalHeight = TOTAL_MIN * pxPerMin;
   return (
     <div
       className="grid rounded-2xl overflow-hidden border border-[#DEDAD2] bg-[#FFFEFB]"
@@ -41,7 +43,7 @@ export default function WeekTimetable({
       ))}
 
       {/* Content row */}
-      <TimeAxis />
+      <TimeAxis pxPerHour={pxPerHour} totalHeight={totalHeight} />
       {weekData.map((day) => (
         <DayColumn
           key={day.iso}
@@ -51,6 +53,9 @@ export default function WeekTimetable({
           onMaterialiseSlot={onMaterialiseSlot}
           onAdd={onAdd}
           onMoveEvent={onMoveEvent}
+          pxPerHour={pxPerHour}
+          pxPerMin={pxPerMin}
+          totalHeight={totalHeight}
         />
       ))}
     </div>
@@ -84,13 +89,13 @@ const DayHeader = ({ label, day, onAdd }) => {
   );
 };
 
-const TimeAxis = () => (
-  <div className="relative border-r border-[#DEDAD2] bg-[#F6F3EE]/40" style={{ height: TOTAL_HEIGHT }}>
+const TimeAxis = ({ pxPerHour, totalHeight }) => (
+  <div className="relative border-r border-[#DEDAD2] bg-[#F6F3EE]/40" style={{ height: totalHeight }}>
     {hours.map((h, i) => (
       <div
         key={h}
         className="absolute right-1.5 text-[10px] tabular-nums text-[#A3A69F] font-semibold"
-        style={{ top: i * PX_PER_HOUR - 6 }}
+        style={{ top: i * pxPerHour - 6 }}
       >
         {fmtHour(h)}
       </div>
@@ -98,7 +103,7 @@ const TimeAxis = () => (
   </div>
 );
 
-const DayColumn = ({ day, planner, onExpandEvent, onMaterialiseSlot, onAdd, onMoveEvent }) => {
+const DayColumn = ({ day, planner, onExpandEvent, onMaterialiseSlot, onAdd, onMoveEvent, pxPerHour, pxPerMin, totalHeight }) => {
   const isToday = day.iso === todayISO();
   const [dragOver, setDragOver] = useState(false);
   const [nowMin, setNowMin] = useState(() => {
@@ -166,7 +171,7 @@ const DayColumn = ({ day, planner, onExpandEvent, onMaterialiseSlot, onAdd, onMo
   return (
     <div
       className={`relative border-l ${dragOver ? "bg-[#DFE9E2]/50" : isToday ? "bg-white" : "bg-[#FFFEFB]"} border-[#DEDAD2]`}
-      style={{ height: TOTAL_HEIGHT }}
+      style={{ height: totalHeight }}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
@@ -175,7 +180,7 @@ const DayColumn = ({ day, planner, onExpandEvent, onMaterialiseSlot, onAdd, onMo
         if (e.target !== e.currentTarget) return;
         const rect = e.currentTarget.getBoundingClientRect();
         const y = e.clientY - rect.top;
-        const min = Math.floor(y / PX_PER_MIN / 5) * 5; // snap to 5-min
+        const min = Math.floor(y / pxPerMin / 5) * 5; // snap to 5-min
         const startMin = START_HOUR * 60 + min;
         const hh = String(Math.floor(startMin / 60)).padStart(2, "0");
         const mm = String(startMin % 60).padStart(2, "0");
@@ -188,7 +193,7 @@ const DayColumn = ({ day, planner, onExpandEvent, onMaterialiseSlot, onAdd, onMo
         <div
           key={h}
           className={`absolute left-0 right-0 ${i === 0 ? "" : "border-t"} border-[#EFEAE1]`}
-          style={{ top: i * PX_PER_HOUR }}
+          style={{ top: i * pxPerHour }}
         />
       ))}
       {/* Half-hour ticks (lighter) */}
@@ -196,7 +201,7 @@ const DayColumn = ({ day, planner, onExpandEvent, onMaterialiseSlot, onAdd, onMo
         <div
           key={`half-${h}`}
           className="absolute left-0 right-0 border-t border-dashed border-[#F0EBE2]"
-          style={{ top: i * PX_PER_HOUR + PX_PER_HOUR / 2 }}
+          style={{ top: i * pxPerHour + pxPerHour / 2 }}
         />
       ))}
 
@@ -236,7 +241,7 @@ const DayColumn = ({ day, planner, onExpandEvent, onMaterialiseSlot, onAdd, onMo
       {showNowLine && (
         <div
           className="absolute left-0 right-0 flex items-center gap-1 pointer-events-none z-30"
-          style={{ top: nowMin * PX_PER_MIN }}
+          style={{ top: nowMin * pxPerMin }}
           data-testid="now-line"
         >
           <span className="h-2 w-2 rounded-full bg-[#B98B8B] ml-0.5" />
@@ -257,13 +262,14 @@ const DayColumn = ({ day, planner, onExpandEvent, onMaterialiseSlot, onAdd, onMo
           planner={planner}
           onExpandEvent={onExpandEvent}
           onMaterialiseSlot={onMaterialiseSlot}
+          pxPerMin={pxPerMin}
         />
       ))}
     </div>
   );
 };
 
-const TimetableCard = ({ item, planner, onExpandEvent, onMaterialiseSlot }) => {
+const TimetableCard = ({ item, planner, onExpandEvent, onMaterialiseSlot, pxPerMin }) => {
   const { classes, subjects } = planner;
   const data = item.data;
   const isEvent = item.kind === "event";
@@ -279,8 +285,8 @@ const TimetableCard = ({ item, planner, onExpandEvent, onMaterialiseSlot }) => {
   // Position
   const startMin = clamp(item.startMin - START_HOUR * 60, 0, TOTAL_MIN);
   const endMin = clamp(item.endMin - START_HOUR * 60, 0, TOTAL_MIN);
-  const top = startMin * PX_PER_MIN;
-  const height = Math.max(20, (endMin - startMin) * PX_PER_MIN - 2);
+  const top = startMin * pxPerMin;
+  const height = Math.max(20, (endMin - startMin) * pxPerMin - 2);
 
   // Lane width
   const laneWidthPct = 100 / (item.laneCount || 1);
@@ -303,54 +309,63 @@ const TimetableCard = ({ item, planner, onExpandEvent, onMaterialiseSlot }) => {
   const compact = durationMin < 45;
 
   return (
-    <button
-      onClick={handleClick}
-      draggable={isEvent && !data._isSeriesOccurrence}
-      onDragStart={(e) => {
-        if (!isEvent || data._isSeriesOccurrence) return;
-        e.dataTransfer.setData("text/x-event-id", data.id);
-        e.dataTransfer.effectAllowed = "move";
-      }}
-      data-testid={isEvent ? `event-card-${data.id}` : `slot-card-${data.id}`}
-      className={`absolute rounded-lg border shadow-sm text-left overflow-hidden transition-shadow hover:shadow ${
-        isEvent && data.completed ? "opacity-60" : ""
-      } ${isAutoDone ? "opacity-60" : ""} ${!isEvent ? "border-dashed" : "cursor-grab active:cursor-grabbing"}`}
+    <div
+      className="absolute group"
       style={{
         top,
         height,
         left: `calc(${leftPct}% + 3px)`,
         width: `calc(${laneWidthPct}% - 6px)`,
-        borderColor: color?.border || "#DEDAD2",
-        backgroundColor: color?.bg || "#FFFEFB",
-        color: color?.text || "#293330",
-        padding: compact ? "3px 6px" : "5px 8px",
         zIndex: 10,
       }}
     >
-      <div className="flex items-center justify-between text-[10px] tabular-nums font-semibold" style={{ color: color?.text || "#78817D" }}>
-        <span>
-          {data.time || item.startTime}
-          {(item.endTime || data.endTime) ? `–${item.endTime || data.endTime}` : ""}
-        </span>
-        {isMeeting && <span className="text-[9px] px-1 rounded bg-white/70 uppercase tracking-wider">Möte</span>}
-        {isSamtal && <span className="text-[9px] px-1 rounded bg-white/70 uppercase tracking-wider">Samtal</span>}
-        {isRecurring && <span className="text-[9px] px-1 rounded bg-white/70" title="Återkommande" data-testid={`recurring-badge-${data.id}`}>↻</span>}
-        {isAutoDone && <span className="text-[9px] flex items-center gap-0.5"><Check className="h-2.5 w-2.5" /></span>}
-      </div>
-      {!compact && (
-        <div className="mt-0.5 flex items-center gap-1.5 text-[9.5px] uppercase tracking-wider font-semibold" style={{ color: color?.text || "#78817D" }}>
-          {subject && <span>{subject.name}</span>}
-          {klass && (
-            <span className="flex items-center gap-1 opacity-80">
-              <ClassDot colorId={klass.colorId} size={6} />
-              {klass.name}
-            </span>
-          )}
+      <button
+        onClick={handleClick}
+        draggable={isEvent && !data._isSeriesOccurrence}
+        onDragStart={(e) => {
+          if (!isEvent || data._isSeriesOccurrence) return;
+          e.dataTransfer.setData("text/x-event-id", data.id);
+          e.dataTransfer.effectAllowed = "move";
+        }}
+        data-testid={isEvent ? `event-card-${data.id}` : `slot-card-${data.id}`}
+        className={`w-full h-full rounded-lg border shadow-sm text-left overflow-hidden transition-shadow hover:shadow ${
+          isEvent && data.completed ? "opacity-60" : ""
+        } ${isAutoDone ? "opacity-60" : ""} ${!isEvent ? "border-dashed" : "cursor-grab active:cursor-grabbing"}`}
+        style={{
+          borderColor: color?.border || "#DEDAD2",
+          backgroundColor: color?.bg || "#FFFEFB",
+          color: color?.text || "#293330",
+          padding: compact ? "3px 6px" : "5px 8px",
+        }}
+      >
+        <div className="flex items-center justify-between text-[10px] tabular-nums font-semibold pr-4" style={{ color: color?.text || "#78817D" }}>
+          <span>
+            {data.time || item.startTime}
+            {(item.endTime || data.endTime) ? `–${item.endTime || data.endTime}` : ""}
+          </span>
+          {isMeeting && <span className="text-[9px] px-1 rounded bg-white/70 uppercase tracking-wider">Möte</span>}
+          {isSamtal && <span className="text-[9px] px-1 rounded bg-white/70 uppercase tracking-wider">Samtal</span>}
+          {isRecurring && <span className="text-[9px] px-1 rounded bg-white/70" title="Återkommande" data-testid={`recurring-badge-${data.id}`}>↻</span>}
+          {isAutoDone && <span className="text-[9px] flex items-center gap-0.5"><Check className="h-2.5 w-2.5" /></span>}
         </div>
+        {!compact && (
+          <div className="mt-0.5 flex items-center gap-1.5 text-[9.5px] uppercase tracking-wider font-semibold" style={{ color: color?.text || "#78817D" }}>
+            {subject && <span>{subject.name}</span>}
+            {klass && (
+              <span className="flex items-center gap-1 opacity-80">
+                <ClassDot colorId={klass.colorId} size={6} />
+                {klass.name}
+              </span>
+            )}
+          </div>
+        )}
+        <div className={`text-[12px] font-semibold ${compact ? "line-clamp-1 mt-0" : "line-clamp-2 mt-0.5"}`} style={{ color: "#293330" }}>
+          {isEvent ? data.title : (data.defaultTitle || "Klicka för att planera")}
+        </div>
+      </button>
+      {isEvent && (
+        <CardActionsMenu event={data} onOpen={() => onExpandEvent(data)} />
       )}
-      <div className={`text-[12px] font-semibold ${compact ? "line-clamp-1 mt-0" : "line-clamp-2 mt-0.5"}`} style={{ color: "#293330" }}>
-        {isEvent ? data.title : (data.defaultTitle || "Klicka för att planera")}
-      </div>
-    </button>
+    </div>
   );
 };
