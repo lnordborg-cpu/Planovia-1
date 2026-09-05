@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import LessonDialog from "@/components/dialogs/LessonDialog";
 import LessonExpandedDialog from "@/components/dialogs/LessonExpandedDialog";
+import WeekTimetable from "@/components/WeekTimetable";
 
 // derive year/week from today
 const initialYW = () => getISOWeek(new Date());
@@ -189,18 +190,21 @@ export default function Veckoplanering() {
         )}
       </div>
 
-      <div className="grid grid-cols-5 gap-3">
-        {weekData.map((day, i) => (
-          <DayColumn
-            key={day.iso}
-            label={WEEKDAYS[i]}
-            day={day}
-            planner={planner}
-            onAdd={(prefill) => setDialogState({ date: day.iso, prefill })}
-            onExpand={(id) => setExpandedEventId(id)}
-          />
-        ))}
-      </div>
+      <WeekTimetable
+        weekData={weekData}
+        planner={planner}
+        onAdd={(date, prefill) => setDialogState({ date, prefill })}
+        onExpandEvent={(id) => setExpandedEventId(id)}
+        onMaterialiseSlot={(prefill) => {
+          // Same behaviour as clicking a slot: open LessonDialog on the slot's date
+          // The slot's date is embedded in the day it comes from; we open it via the
+          // day the slot belongs to (which is already the currently rendered day).
+          // Find the date from the timetable slot in weekData.
+          const day = weekData.find((d) => d.slots.some((s) => s.id === prefill.timetableId));
+          if (day) setDialogState({ date: day.iso, prefill });
+        }}
+        onMoveEvent={(id, iso) => planner.moveEventToDate(id, iso)}
+      />
 
       {dialogState && (
         <LessonDialog
@@ -220,175 +224,3 @@ export default function Veckoplanering() {
     </div>
   );
 }
-
-const DayColumn = ({ label, day, planner, onAdd, onExpand }) => {
-  const today = todayISO();
-  const isToday = day.iso === today;
-  const [dragOver, setDragOver] = React.useState(false);
-  // Merge slots + events sorted by time; followups appear on top
-  const rows = useMemo(() => {
-    const slotRows = day.slots.map((s) => ({ kind: "slot", time: s.time, endTime: s.endTime, data: s, id: `slot-${s.id}` }));
-    const eventRows = day.events.map((e) => ({ kind: "event", time: e.time, endTime: e.endTime, data: e, id: e.id }));
-    return [...slotRows, ...eventRows].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
-  }, [day.slots, day.events]);
-
-  const onDragOver = (e) => {
-    if (e.dataTransfer.types.includes("text/x-event-id")) {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = "move";
-      if (!dragOver) setDragOver(true);
-    }
-  };
-  const onDragLeave = () => setDragOver(false);
-  const onDrop = (e) => {
-    const id = e.dataTransfer.getData("text/x-event-id");
-    setDragOver(false);
-    if (!id) return;
-    const ev = planner.events.find((x) => x.id === id);
-    if (!ev || ev.date === day.iso) return;
-    planner.moveEventToDate(id, day.iso);
-  };
-
-  return (
-    <div
-      className={`rounded-2xl border ${dragOver ? "border-[#718A7F] bg-[#DFE9E2]/60" : isToday ? "border-[#718A7F]" : "border-[#DEDAD2]"} bg-[#FFFEFB]/40 flex flex-col min-h-[500px] transition-colors`}
-      data-testid={`day-column-${label.toLowerCase()}`}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
-    >
-      <div className="p-3 border-b border-[#DEDAD2] flex items-center justify-between">
-        <div>
-          <div className="text-[11px] uppercase tracking-widest text-[#A3A69F] font-semibold">{label}</div>
-          <div className={`text-sm font-serif-display ${isToday ? "text-[#718A7F]" : "text-[#293330]"}`}>{formatDateShort(day.date)}</div>
-        </div>
-        <button
-          data-testid={`add-day-${label.toLowerCase()}`}
-          onClick={() => onAdd({})}
-          className="p-1.5 rounded-lg hover:bg-white text-[#78817D]"
-        >
-          <Plus className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="p-2 flex-1 space-y-2 overflow-y-auto">
-        {day.exceptions.map((ex) => {
-          const t = getExceptionType(ex.type);
-          return (
-            <div key={ex.id} className={`text-[11px] px-2 py-1.5 rounded-lg border ${t.badge}`} data-testid={`exception-${ex.id}`}>
-              <span className="font-semibold">{t.label}:</span> {ex.title}
-            </div>
-          );
-        })}
-        {day.followups.map((f) => (
-          <FollowupRow key={f.id} f={f} onToggle={() => planner.toggleFollowupCompleted(f.id)} students={planner.students} />
-        ))}
-        {rows.length === 0 && day.followups.length === 0 && !day.hideRegular && (
-          <div className="text-xs text-[#A3A69F] px-2 py-6 text-center">Inga lektioner</div>
-        )}
-        {rows.map((r) => (
-          <LessonCard
-            key={r.id}
-            row={r}
-            planner={planner}
-            onExpand={() => r.kind === "event" && onExpand(r.data.id)}
-            onMaterialise={(prefill) => onAdd(prefill)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
-const FollowupRow = ({ f, onToggle, students }) => {
-  const s = students.find((x) => x.id === f.studentId);
-  return (
-    <button
-      data-testid={`followup-${f.id}`}
-      onClick={onToggle}
-      className={`w-full text-left rounded-lg border border-[#E2D5F3] bg-[#F6F2FB] px-2 py-1.5 text-xs flex gap-2 items-start hover:bg-[#EFE7F8] ${f.completed ? "opacity-60" : ""}`}
-    >
-      {f.completed ? <Check className="h-3.5 w-3.5 text-[#5A3B8B] mt-0.5" /> : <Circle className="h-3.5 w-3.5 text-[#5A3B8B] mt-0.5" />}
-      <span className="flex-1">
-        <div className={`text-[#5A3B8B] font-semibold text-[10px] uppercase tracking-widest`}>Uppföljning</div>
-        <div className={`${f.completed ? "line-through" : ""} text-[#293330]`}>{f.description}</div>
-        {s && <div className="text-[#A3A69F]">{s.name}</div>}
-      </span>
-    </button>
-  );
-};
-
-const LessonCard = ({ row, planner, onExpand, onMaterialise }) => {
-  const { classes, subjects } = planner;
-  const data = row.data;
-  const isEvent = row.kind === "event";
-  const subject = subjects.find((s) => s.id === data.subjectId);
-  const klass = classes.find((c) => c.id === data.classId);
-  const color = subject ? getSubjectColor(subject.colorId) : null;
-
-  const isMeeting = isEvent && data.type === "meeting";
-  const isSamtal = isEvent && data.type === "utvecklingssamtal";
-  const isAutoDone = !isEvent && data.autoCompleted;
-
-  const handleClick = () => {
-    if (isEvent) onExpand();
-    else {
-      // materialise: prefill from slot
-      onMaterialise({
-        time: data.time,
-        classId: data.classId,
-        subjectId: data.subjectId,
-        title: data.defaultTitle || "",
-        type: "lesson",
-        timetableId: data.id,
-      });
-    }
-  };
-
-  return (
-    <button
-      onClick={handleClick}
-      draggable={isEvent}
-      onDragStart={(e) => {
-        if (!isEvent) return;
-        e.dataTransfer.setData("text/x-event-id", data.id);
-        e.dataTransfer.effectAllowed = "move";
-      }}
-      data-testid={isEvent ? `event-card-${data.id}` : `slot-card-${data.id}`}
-      className={`w-full text-left rounded-xl border p-2.5 bg-white hover:shadow-sm transition ${isEvent && data.completed ? "opacity-60" : ""} ${isAutoDone ? "opacity-60" : ""} ${!isEvent ? "border-dashed" : "cursor-grab active:cursor-grabbing"}`}
-      style={{ borderColor: "#DEDAD2" }}
-    >
-      <div className="flex items-center gap-2 text-[11px] font-semibold tabular-nums text-[#78817D]">
-        <Clock className="h-3 w-3" /> {row.time ? (row.endTime ? `${row.time}–${row.endTime}` : row.time) : "—"}
-        {!isEvent && !isAutoDone && <span className="ml-auto text-[10px] uppercase tracking-wider text-[#A3A69F]">Schema</span>}
-        {isAutoDone && (
-          <span className="ml-auto text-[10px] uppercase tracking-wider text-[#718A7F] flex items-center gap-1" data-testid={`slot-autodone-${data.id}`}>
-            <Check className="h-3 w-3" /> Genomförd
-          </span>
-        )}
-        {isMeeting && <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-[#F0F5FA] text-[#2C5282]">Möte</span>}
-        {isSamtal && <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-[#F6F2FB] text-[#5A3B8B]">Samtal</span>}
-      </div>
-      <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
-        {subject && (
-          <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-md border font-semibold"
-            style={{ backgroundColor: color.bg, color: color.text, borderColor: color.border }}>
-            {subject.name}
-          </span>
-        )}
-        {klass && (
-          <span className="text-[10px] text-[#78817D] flex items-center gap-1">
-            <ClassDot colorId={klass.colorId} size={8} />
-            {klass.name}
-          </span>
-        )}
-      </div>
-      <div className="mt-1 text-sm text-[#293330] line-clamp-2">
-        {isEvent ? data.title : (data.defaultTitle || <span className="text-[#A3A69F] italic">Klicka för att planera</span>)}
-      </div>
-      {isEvent && (
-        <div className="text-[10px] text-[#718A7F] mt-1 font-semibold uppercase tracking-wider">Mer →</div>
-      )}
-    </button>
-  );
-};
