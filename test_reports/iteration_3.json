@@ -1,0 +1,33 @@
+{
+  "summary": "Tested all four new Planovia features (Share-with-vikarie link, Lesson Templates settings section, Termin timeline exception bands, Meeting print / Substitute note). Backend: added /app/backend/tests/test_share.py with 10 pytest cases covering create (anon + auth), public GET, unknown-token 404 (svenska), revoke with correct/wrong/missing X-Revoke-Secret, GET-after-revoke 404, and regression on auth/sync/upload. All 21 backend tests (share + auth + uploads) pass. Frontend: end-to-end share flow works (dialog opens, link created with 20-char token, copy button, public /vikarie/{token} shows 5 days without sidebar, invalid token shows 'Länken hittades inte', revoke removes access and shows 'Länken är återkallad' toast). Lesson templates section shows empty-state and, when seeded, renders row + rename + delete testids. TerminTimeline shows lov (beige) and provperiod (pink) bands with distinct colors and correct testids. LessonExpandedDialog: meeting-print-btn appears on meetings only, section-substitute appears on lessons only, expanded-substitute-note auto-saves to planner state on blur. Popup for print was blocked by headless Chromium (expected, listed as observation in the request).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_share.py",
+    "/app/backend/tests/conftest.py",
+    "/app/test_reports/pytest/all_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Backend: /api/share/week/{token} distinguishes 404 (not found / revoked) vs 410 (expired). The frontend Vikarie.jsx should ideally show a distinct copy for 410 ('Länken har gått ut') vs generic 404 ('Länken hittades inte'). Currently both fall into the not-found view based on shareApi.js.",
+    "Backend: revoke uses bcrypt (via hash_password) on a 32-byte random secret. That's overkill for a random token – a plain compare against the stored hex/base64 would be simpler and constant-time via secrets.compare_digest. Not a bug, just complexity.",
+    "Frontend: seeded a lesson template via localStorage manipulation for the test — the app has no UI empty-state guidance pointing users to the 'Spara som mall' button in LessonExpandedDialog. Consider linking the section-lesson-templates empty state to the flow.",
+    "Frontend: Multiple 401 console errors on every page load from /api/auth/me for guest sessions. AuthContext could treat 401 as expected on the guest path to reduce console noise (already flagged in iteration_2).",
+    "Frontend: printMeeting.js opens a popup via window.open. Headless browsers and users' popup blockers will suppress this. Consider generating the print HTML in a hidden iframe as a fallback."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_share.py (new)",
+    "/app/backend/tests/conftest.py (new – loads REACT_APP_BACKEND_URL from /app/frontend/.env so pre-existing test_auth.py sync/upload/me tests can send Secure cookies via the HTTPS ingress)"
+  ],
+  "success_rate": {"backend": "100% (21/21 pytest)", "frontend": "100% (all 4 features end-to-end)"},
+  "test_credentials": "Guest mode was sufficient for all UI flows. Backend tests self-register pytest.<uuid>@example.com / Secret123!.",
+  "seed_data_creation": "Seeded via localStorage on the browser (all TEST_ prefixed and confined to test browser context): lessonTemplates[lt_test_*], calendarExceptions[ex_lov_test, ex_prov_test], events[ev_meet_test, ev_lesson_test]. Backend created and revoked a share for Vecka 36 during the E2E test. Nothing persists to lisa@example.com's account. Anonymous share DB rows remain until the 7-day TTL / manual revoke (test revoked its own).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend test conftest.py loads REACT_APP_BACKEND_URL from /app/frontend/.env – required because auth cookies are Secure; SameSite=None and would fail when tests hit http://localhost:8001. Planner localStorage key is 'lararplanerare_v1'; note the state schema: events use fields 'date' + 'time' + 'endTime' (NOT 'start'/'end'), and calendar exceptions live at state.calendarExceptions (NOT state.exceptions). TerminTimeline only renders when there is at least one unit OR one calendarException. Vikarie.jsx does not differentiate 410 (expired) from 404 (not found) in the UI. Popup print (meeting-print-btn / print-week-btn) is blocked by headless Chromium – treat as an observation.",
+  "rca of the issue": "No issues found."
+}

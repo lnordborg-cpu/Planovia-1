@@ -285,6 +285,31 @@ class SyncStateIn(BaseModel):
     state: Dict[str, Any]
 
 
+# ---- Week share (vikarie) ----
+class ShareWeekIn(BaseModel):
+    week_data: Dict[str, Any]  # Snapshot payload rendered by /vikarie/{token}
+    label: Optional[str] = None  # e.g. "Vecka 12 · 2026"
+
+
+class ShareWeekOut(BaseModel):
+    token: str
+    revoke_secret: str
+    label: Optional[str] = None
+    expires_at: str
+    created_at: str
+
+
+class SharedWeekOut(BaseModel):
+    token: str
+    label: Optional[str] = None
+    week_data: Dict[str, Any]
+    created_at: str
+    expires_at: str
+
+
+SHARE_TTL_DAYS = 7
+
+
 # ------------------------------------------------------------------
 # Auth endpoints
 # ------------------------------------------------------------------
@@ -427,6 +452,82 @@ async def put_state(payload: SyncStateIn, user: dict = Depends(require_user)):
 
 
 # ------------------------------------------------------------------
+# Share endpoints (public week snapshots for substitute teachers)
+# ------------------------------------------------------------------
+def _short_token(n: int = 20) -> str:
+    # URL-safe, no padding; short enough to fit nicely in a link
+    return secrets.token_urlsafe(n).replace("_", "").replace("-", "")[:n]
+
+
+@api_router.post("/share/week", response_model=ShareWeekOut)
+async def create_week_share(payload: ShareWeekIn, request: Request):
+    user = await get_optional_user(request)
+    now = datetime.now(timezone.utc)
+    expires = now + timedelta(days=SHARE_TTL_DAYS)
+    token = _short_token(20)
+    revoke_secret = secrets.token_urlsafe(24)
+    doc = {
+        "token": token,
+        "revoke_secret_hash": hash_password(revoke_secret),
+        "owner_user_id": user["user_id"] if user else None,
+        "label": (payload.label or "").strip() or None,
+        "week_data": payload.week_data,
+        "created_at": now.isoformat(),
+        "expires_at": expires.isoformat(),
+        "revoked": False,
+    }
+    await db.week_shares.insert_one(doc)
+    return ShareWeekOut(
+        token=token,
+        revoke_secret=revoke_secret,
+        label=doc["label"],
+        expires_at=doc["expires_at"],
+        created_at=doc["created_at"],
+    )
+
+
+@api_router.get("/share/week/{token}", response_model=SharedWeekOut)
+async def get_week_share(token: str):
+    doc = await db.week_shares.find_one({"token": token}, {"_id": 0})
+    if not doc or doc.get("revoked"):
+        raise HTTPException(status_code=404, detail="Länken finns inte längre.")
+    expires = doc.get("expires_at")
+    if isinstance(expires, str):
+        expires_dt = datetime.fromisoformat(expires)
+    else:
+        expires_dt = expires
+    if expires_dt and expires_dt.tzinfo is None:
+        expires_dt = expires_dt.replace(tzinfo=timezone.utc)
+    if expires_dt and expires_dt < datetime.now(timezone.utc):
+        raise HTTPException(status_code=410, detail="Länken har gått ut.")
+    return SharedWeekOut(
+        token=doc["token"],
+        label=doc.get("label"),
+        week_data=doc.get("week_data") or {},
+        created_at=doc.get("created_at"),
+        expires_at=doc.get("expires_at"),
+    )
+
+
+@api_router.delete("/share/week/{token}")
+async def revoke_week_share(token: str, request: Request, x_revoke_secret: Optional[str] = Header(None, alias="X-Revoke-Secret")):
+    doc = await db.week_shares.find_one({"token": token}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Länken hittades inte")
+    # Authorised if: signed-in owner OR correct revoke secret
+    user = await get_optional_user(request)
+    authorised = False
+    if user and doc.get("owner_user_id") and doc["owner_user_id"] == user["user_id"]:
+        authorised = True
+    elif x_revoke_secret and verify_password(x_revoke_secret, doc.get("revoke_secret_hash", "")):
+        authorised = True
+    if not authorised:
+        raise HTTPException(status_code=403, detail="Saknar behörighet att återkalla länken.")
+    await db.week_shares.update_one({"token": token}, {"$set": {"revoked": True, "revoked_at": datetime.now(timezone.utc).isoformat()}})
+    return {"ok": True}
+
+
+# ------------------------------------------------------------------
 # Upload / File endpoints (per-user path; guests fall back to "shared")
 # ------------------------------------------------------------------
 @api_router.get("/")
@@ -564,6 +665,8 @@ async def _startup():
         await db.user_sessions.create_index("user_id")
         await db.user_snapshots.create_index("user_id", unique=True)
         await db.login_attempts.create_index("identifier")
+        await db.week_shares.create_index("token", unique=True)
+        await db.week_shares.create_index("owner_user_id")
         logger.info("Auth indexes ready")
     except Exception as e:
         logger.warning(f"Index setup: {e}")

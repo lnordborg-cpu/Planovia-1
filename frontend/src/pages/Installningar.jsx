@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Trash2, Plus, Download, Upload, RotateCcw } from "lucide-react";
+import { Trash2, Plus, Download, Upload, RotateCcw, Sparkles, Pencil, Check } from "lucide-react";
 import { toast } from "sonner";
 
 const Section = ({ title, description, children, testId }) => (
@@ -39,7 +39,9 @@ export default function Installningar() {
       <StudentsSection planner={planner} />
       <TimetableSection planner={planner} />
       <MeetingTemplatesSection planner={planner} />
+      <LessonTemplatesSection planner={planner} />
       <DayTrendsSection planner={planner} />
+      <BackupSection planner={planner} />
       <BackupSection planner={planner} />
     </div>
   );
@@ -360,6 +362,152 @@ const MeetingTemplatesSection = ({ planner }) => {
               {t.notes && <div className="text-xs text-[#A3A69F] mt-1 whitespace-pre-wrap line-clamp-3">{t.notes}</div>}
             </div>
           ))}
+        </div>
+      )}
+    </Section>
+  );
+};
+
+
+const LessonTemplatesSection = ({ planner }) => {
+  const templates = planner.lessonTemplates || [];
+  const [editingId, setEditingId] = useState(null);
+  const [editingName, setEditingName] = useState("");
+
+  const startRename = (t) => {
+    setEditingId(t.id);
+    setEditingName(t.name || "");
+  };
+  const commitRename = () => {
+    const nm = editingName.trim();
+    if (!nm) { setEditingId(null); return; }
+    planner.renameLessonTemplate(editingId, nm);
+    setEditingId(null);
+    toast.success("Mall omdöpt");
+  };
+  const remove = (id) => {
+    planner.deleteLessonTemplate(id);
+    toast.success("Mall borttagen");
+  };
+
+  const previewSnippet = (t) => {
+    const parts = [];
+    if (t.goals) parts.push(`Mål: ${t.goals}`);
+    if (t.plan) parts.push(`Plan: ${t.plan}`);
+    if (t.preparation) parts.push(`Förberedelse: ${t.preparation}`);
+    if (t.homework) parts.push(`Läxa: ${t.homework}`);
+    if (t.assessment) parts.push(`Bedömning: ${t.assessment}`);
+    return parts.join(" · ").slice(0, 220);
+  };
+
+  return (
+    <Section
+      title="Lektionsmallar"
+      description="Återanvändbara lektionsmallar sparas när du klickar ”Spara som mall” inne i en lektion. Här kan du lista, döpa om och ta bort dem."
+      testId="section-lesson-templates"
+    >
+      {templates.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-[#DEDAD2] bg-[#FFFEFB] p-6 text-center">
+          <Sparkles className="h-5 w-5 text-[#B49E6A] mx-auto mb-2" strokeWidth={1.5} />
+          <div className="text-sm text-[#78817D]">Inga lektionsmallar sparade ännu.</div>
+          <div className="text-xs text-[#A3A69F] mt-1">
+            Öppna en lektion i veckoplaneringen och klicka på “Spara som mall” för att skapa din första.
+          </div>
+        </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-3">
+          {templates.map((t) => {
+            const subj = planner.subjects.find((s) => s.id === t.subjectId);
+            const isEditing = editingId === t.id;
+            const preview = previewSnippet(t);
+            return (
+              <div
+                key={t.id}
+                className="rounded-xl border border-[#DEDAD2] bg-[#FFFEFB] p-3 flex flex-col gap-2"
+                data-testid={`lesson-template-row-${t.id}`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    {isEditing ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          data-testid={`lesson-template-rename-input-${t.id}`}
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && commitRename()}
+                          autoFocus
+                          className="h-8 text-sm"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={commitRename}
+                          className="h-8 bg-[#718A7F] hover:bg-[#5C7267]"
+                          data-testid={`lesson-template-rename-save-${t.id}`}
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-sm font-semibold text-[#293330] truncate" data-testid={`lesson-template-name-${t.id}`}>
+                        {t.name}
+                      </div>
+                    )}
+                    {subj && (
+                      <div className="text-[10px] uppercase tracking-widest text-[#A3A69F] mt-0.5">
+                        {subj.name}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {!isEditing && (
+                      <button
+                        onClick={() => startRename(t)}
+                        className="p-1.5 text-[#78817D] hover:text-[#293330] hover:bg-[#F6F3EE] rounded-md"
+                        title="Byt namn"
+                        data-testid={`lesson-template-rename-${t.id}`}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          className="p-1.5 text-[#A3A69F] hover:text-[#9E4A3B] hover:bg-[#FDF2F0] rounded-md"
+                          title="Ta bort"
+                          data-testid={`lesson-template-delete-${t.id}`}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent data-testid={`lesson-template-delete-dialog-${t.id}`}>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Ta bort ”{t.name}”?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Mallen försvinner permanent. Lektioner som tidigare använt den påverkas inte.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Avbryt</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => remove(t.id)}
+                            className="bg-[#9E4A3B] hover:bg-[#7A3627]"
+                            data-testid={`lesson-template-delete-confirm-${t.id}`}
+                          >
+                            Ta bort
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+                {preview && (
+                  <div className="text-xs text-[#78817D] line-clamp-3 whitespace-pre-wrap">
+                    {preview}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </Section>

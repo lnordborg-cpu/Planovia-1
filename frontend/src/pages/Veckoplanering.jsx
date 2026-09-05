@@ -5,12 +5,14 @@ import { getISOWeek, getMondayOfISOWeek, getWeekdays, toISODate, formatDateShort
 import { WEEKDAYS, getSubjectColor, getExceptionType, TERMS, inferCurrentTerm } from "@/lib/constants";
 import { ClassDot } from "@/components/ClassDot";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, Clock, Trash2, Check, Circle, CopyPlus, Printer, Filter, X, Rows2, Rows3, Rows4 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Clock, Trash2, Check, Circle, CopyPlus, Printer, Filter, X, Rows2, Rows3, Rows4, Share2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import LessonDialog from "@/components/dialogs/LessonDialog";
 import LessonExpandedDialog from "@/components/dialogs/LessonExpandedDialog";
+import ShareWeekDialog from "@/components/dialogs/ShareWeekDialog";
 import WeekTimetable from "@/components/WeekTimetable";
+import { buildSubstituteSnapshot, shortWeekLabel } from "@/lib/substituteSnapshot";
 
 // derive year/week from today
 const initialYW = () => getISOWeek(new Date());
@@ -34,6 +36,7 @@ export default function Veckoplanering() {
   });
   const [dialogState, setDialogState] = useState(null); // { date, prefill }
   const [expandedEvent, setExpandedEvent] = useState(null);
+  const [shareOpen, setShareOpen] = useState(false);
   const initialFilter = loadFilter();
   const [filterClassId, setFilterClassId] = useState(initialFilter.classId);
   const [filterSubjectId, setFilterSubjectId] = useState(initialFilter.subjectId);
@@ -136,6 +139,9 @@ export default function Veckoplanering() {
           <Button data-testid="copy-week-btn" variant="outline" size="sm" onClick={copyFromPrevWeek} className="border-[#DEDAD2] bg-white">
             <CopyPlus className="h-4 w-4 mr-1" /> Kopiera föregående
           </Button>
+          <Button data-testid="share-week-btn" variant="outline" size="sm" onClick={() => setShareOpen(true)} className="border-[#DEDAD2] bg-white">
+            <Share2 className="h-4 w-4 mr-1" /> Dela med vikarie
+          </Button>
           <Button data-testid="print-week-btn" variant="outline" size="sm" onClick={printWeek} className="border-[#DEDAD2] bg-white">
             <Printer className="h-4 w-4 mr-1" /> Skriv ut
           </Button>
@@ -226,6 +232,14 @@ export default function Veckoplanering() {
           event={expandedEvent}
         />
       )}
+
+      <ShareWeekDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        weekLabel={shortWeekLabel(year, week)}
+        storageKey={`week-${year}-${week}`}
+        buildWeekPayload={() => buildSubstituteSnapshot({ year, week, planner })}
+      />
     </div>
   );
 }

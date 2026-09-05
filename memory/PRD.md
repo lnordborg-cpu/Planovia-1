@@ -40,6 +40,11 @@ Build a functional MVP of a digital teacher planner named **Planovia** (formerly
 - **[2026-02] Trend Insikter** – Regelbaserad analys av `daySummaries` i `frontend/src/lib/insights.js`. Detekterar tunga veckodagar, stigande/fallande trender och "drömveckor". Visas kompakt (max 2) på Översikt och fullständig på Statistik via `TrendInsights.jsx`.
 - **[2026-02] Välkomstsida (/valkommen)** – `PlanoviaFull` lockup + tagline + Samla · Planera · Inspirera + tre feature-kort + "Kom igång"-CTA. Auto-omdirigering första gången via `hasSeenWelcome`-flag i planner-state.
 - **[2026-02] Kollapsbar sidebar** – Toggle-knapp fäller sidebaren till 64px med enbart trädikon + nav-ikoner. Persisterat i `sidebarCollapsed`. Auto-kollaps under 1024px viewport.
+- **[2026-09-05] Officiell logotyp + ny hero-copy** – PNG-logotyp (`/planovia-logo.png`) används överallt (nav, favicon, valkommen, logga-in). Ny hero-rubrik "Allt för din lärarvardag – samlat på ett ställe."
+- **[2026-09-05] Lektionsmallar-katalog i Inställningar** – Ny sektion `section-lesson-templates` med lista, inline-rename (`renameLessonTemplate`) och radering med bekräftelse.
+- **[2026-09-05] Skriv ut/PDF möte** – `lib/printMeeting.js` öppnar nytt fönster med utskriftsvänlig HTML (agenda, deltagare, beslut, uppföljningar). Print-knapp visas i `LessonExpandedDialog` header för `type === "meeting"`.
+- **[2026-09-05] Terminstidslinje utökad** – `TerminTimeline` renderar `calendarExceptions` som färgade band ovanför unit-lanes (typ 'lov' = beige, 'provperiod' = rosa, etc.). Rendrar även när endast exceptions finns.
+- **[2026-09-05] Dela vecka med vikarie** – Ny publik läslänk via `POST /api/share/week` + `GET /api/share/week/{token}` + `DELETE /api/share/week/{token}` (revoke via `X-Revoke-Secret`). 7-dagars TTL. Ny route `/vikarie/:token` renderar `Vikarie.jsx` utan sidebar. Nytt fält `event.substituteNote` för "För vikarie"-anteckningar. Backend: MongoDB `week_shares` collection med bcrypt-hashad revoke-secret.
 
 ## Backlog
 - **P1 – Auth (skipped by user's earlier requests):** Emergent-managed Google Sign-in + Email/password login (msg 183 + 211). Must call `integration_playbook_expert_v2` before implementing.

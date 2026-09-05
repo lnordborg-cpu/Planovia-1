@@ -15,6 +15,7 @@ import Installningar from "@/pages/Installningar";
 import Valkommen from "@/pages/Valkommen";
 import LoggaIn from "@/pages/LoggaIn";
 import AuthCallback from "@/pages/AuthCallback";
+import Vikarie from "@/pages/Vikarie";
 
 const RootRedirect = () => {
   const planner = usePlanner();
@@ -33,6 +34,7 @@ const Router = () => {
       <Route path="/" element={<RootRedirect />} />
       <Route path="/valkommen" element={<Valkommen />} />
       <Route path="/logga-in" element={<LoggaIn />} />
+      <Route path="/vikarie/:token" element={<Vikarie />} />
       <Route element={<Layout />}>
         <Route path="/oversikt" element={<Oversikt />} />
         <Route path="/lasar" element={<LasarTermin />} />

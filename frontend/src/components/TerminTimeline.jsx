@@ -1,8 +1,8 @@
 import React, { useMemo, useRef, useState } from "react";
 import { usePlanner } from "@/context/PlannerContext";
-import { getSubjectColor, TERMS, inferCurrentTerm } from "@/lib/constants";
+import { getSubjectColor, getExceptionType, TERMS, inferCurrentTerm } from "@/lib/constants";
 import { unitProgress } from "@/lib/plannerHelpers";
-import { getISOWeek } from "@/lib/dateUtils";
+import { getISOWeek, fromISODate } from "@/lib/dateUtils";
 import { Button } from "@/components/ui/button";
 
 const layoutLanes = (units) => {
@@ -65,6 +65,41 @@ export default function TerminTimeline() {
   const laneCount = Math.max(1, ...laid.map((u) => u._lane + 1));
   const totalWeeks = rangeData.weeks.length;
 
+  // Build week bands from calendar exceptions (lov / studiedag / provperiod etc.)
+  // For each visible week, determine which exception types cover it, so we can
+  // tint that week's column background and show a top-row band with the title.
+  const exceptionBands = useMemo(() => {
+    const excs = planner.calendarExceptions || [];
+    return excs
+      .map((ex) => {
+        const s = fromISODate(ex.startDate);
+        const e = fromISODate(ex.endDate);
+        if (!s || !e) return null;
+        const [, ws] = getISOWeek(s);
+        const [, we] = getISOWeek(e);
+        return {
+          ...ex,
+          startWeek: Math.min(ws, we),
+          endWeek: Math.max(ws, we),
+          typeInfo: getExceptionType(ex.type),
+        };
+      })
+      .filter(Boolean);
+  }, [planner.calendarExceptions]);
+
+  const exceptionsLaidOut = useMemo(() => {
+    const sorted = [...exceptionBands].sort((a, b) => a.startWeek - b.startWeek);
+    const lanes = [];
+    return sorted.map((ex) => {
+      let lane = 0;
+      while (lane < lanes.length && lanes[lane] >= ex.startWeek) lane += 1;
+      lanes[lane] = ex.endWeek;
+      return { ...ex, _lane: lane };
+    });
+  }, [exceptionBands]);
+
+  const exceptionLaneCount = Math.max(0, ...exceptionsLaidOut.map((e) => e._lane + 1));
+
   // Map a "actual week number" to a column index (1-based within the visible weeks)
   const weekToCol = (weekNum) => {
     if (view === "year") {
@@ -113,7 +148,7 @@ export default function TerminTimeline() {
     };
   }, [drag, planner]);
 
-  if (usable.length === 0) return null;
+  if (usable.length === 0 && exceptionsLaidOut.length === 0) return null;
 
   const isWeekVisible = (weekNum) => {
     if (view === "year") return true;
@@ -159,6 +194,54 @@ export default function TerminTimeline() {
             ))}
           </div>
 
+          {exceptionsLaidOut.length > 0 && (
+            <div
+              className="relative grid mt-2"
+              style={{
+                gridTemplateColumns: `140px repeat(${totalWeeks}, minmax(28px, 1fr))`,
+                gridTemplateRows: `repeat(${exceptionLaneCount}, 22px)`,
+                rowGap: "4px",
+              }}
+              data-testid="timeline-exceptions"
+            >
+              <div
+                className="text-[10px] uppercase tracking-widest text-[#A3A69F] font-semibold flex items-center px-3"
+                style={{ gridColumn: 1, gridRow: `1 / span ${exceptionLaneCount}` }}
+              >
+                Lov & prov
+              </div>
+              {rangeData.weeks.map((w, wIdx) => (
+                <div
+                  key={`excol-${w.key}`}
+                  className={`border-l ${w.label === currentWeek ? "border-[#718A7F]" : "border-[#EFEAE1]"}`}
+                  style={{ gridColumn: wIdx + 2, gridRow: `1 / span ${exceptionLaneCount}` }}
+                />
+              ))}
+              {exceptionsLaidOut.map((ex) => {
+                if (!isWeekVisible(ex.startWeek) && !isWeekVisible(ex.endWeek)) return null;
+                const startCol = Math.max(1, weekToCol(ex.startWeek));
+                const endCol = Math.min(totalWeeks, weekToCol(ex.endWeek));
+                const span = Math.max(1, endCol - startCol + 1);
+                const t = ex.typeInfo;
+                return (
+                  <div
+                    key={`ex-${ex.id}`}
+                    className={`rounded-md px-2 flex items-center border text-[10px] font-semibold truncate ${t.badge}`}
+                    style={{
+                      gridColumn: `${startCol + 1} / span ${span}`,
+                      gridRow: ex._lane + 1,
+                    }}
+                    title={`${t.label}: ${ex.title} · v${ex.startWeek}${ex.startWeek !== ex.endWeek ? "–v" + ex.endWeek : ""}`}
+                    data-testid={`timeline-exception-${ex.id}`}
+                  >
+                    <span className="truncate">{ex.title}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {laid.length > 0 && (
           <div
             className="relative grid gap-y-2 mt-2"
             style={{
@@ -235,6 +318,7 @@ export default function TerminTimeline() {
               );
             })}
           </div>
+          )}
 
           {currentWeek && (
             <div className="mt-3 text-[11px] text-[#718A7F] font-semibold flex items-center gap-1.5">

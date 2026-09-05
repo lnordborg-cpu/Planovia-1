@@ -17,12 +17,13 @@ import { addMinutes, validateTimePair, formatTimeRange, DEFAULT_LESSON_MINUTES }
 import {
   Trash2, Link as LinkIcon, X, Paperclip, FileText, StickyNote, Eye, Loader2, Clock,
   Check, Pencil, Target, BookOpen, ListChecks, ClipboardList, GraduationCap, Award,
-  Sparkles,
+  Sparkles, Printer, HeartHandshake,
 } from "lucide-react";
 import { toast } from "sonner";
 import MaterialPreview, { canPreview } from "@/components/dialogs/MaterialPreview";
 import SeriesActionDialog from "@/components/dialogs/SeriesActionDialog";
 import { describeRecurrence } from "@/lib/recurrence";
+import { printMeeting } from "@/lib/printMeeting";
 
 const PRINTABLE_RE = /\.(pdf|docx?|odt|pptx?|xlsx?|rtf|txt|png|jpe?g)(\?|#|$)/i;
 
@@ -81,6 +82,8 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
   const [agenda, setAgenda] = useState("");
   const [decisions, setDecisions] = useState("");
   const [followupInput, setFollowupInput] = useState("");
+  // Substitute-teacher note (visible to shared vikarie-link)
+  const [substituteNote, setSubstituteNote] = useState("");
   // Templates
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
@@ -116,6 +119,7 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
     setAgenda(event.agenda || "");
     setDecisions(event.decisions || "");
     setFollowupInput("");
+    setSubstituteNote(event.substituteNote || "");
     setSavingTemplate(false);
     setTemplateName(event.title || "");
     setTimeError("");
@@ -144,7 +148,7 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
   const persist = (patch) => {
     if (isSeries) {
       // Free-text section auto-saves apply to the WHOLE series (they're shared metadata)
-      const shareable = ["goals", "plan", "notes", "preparation", "homework", "assessment", "location", "participants", "agenda", "decisions"];
+      const shareable = ["goals", "plan", "notes", "preparation", "homework", "assessment", "location", "participants", "agenda", "decisions", "substituteNote"];
       const isShareable = Object.keys(patch).every((k) => shareable.includes(k));
       if (isShareable) {
         planner.updateEventInSeries(event, patch, "all");
@@ -365,15 +369,32 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
               ><X className="h-4 w-4" /></button>
               {!metaEdit ? (
                 <div className="flex flex-col items-end gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setMetaEdit(true)}
-                    className="border-[#DEDAD2] text-[#293330]"
-                    data-testid="expanded-edit-lesson-btn"
-                  >
-                    <Pencil className="h-3.5 w-3.5 mr-1.5" /> {isMeeting ? "Redigera möte" : "Redigera lektion"}
-                  </Button>
+                  <div className="flex items-center gap-1.5">
+                    {isMeeting && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const klassForPrint = planner.classes.find((c) => c.id === event.classId);
+                          const subjectForPrint = planner.subjects.find((s) => s.id === event.subjectId);
+                          printMeeting({ event, followups: eventFollowups, klass: klassForPrint, subject: subjectForPrint });
+                        }}
+                        className="border-[#DEDAD2] text-[#293330]"
+                        data-testid="meeting-print-btn"
+                      >
+                        <Printer className="h-3.5 w-3.5 mr-1.5" /> Skriv ut / PDF
+                      </Button>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setMetaEdit(true)}
+                      className="border-[#DEDAD2] text-[#293330]"
+                      data-testid="expanded-edit-lesson-btn"
+                    >
+                      <Pencil className="h-3.5 w-3.5 mr-1.5" /> {isMeeting ? "Redigera möte" : "Redigera lektion"}
+                    </Button>
+                  </div>
                   {!isMeeting && !isSamtal && (
                     <div className="flex items-center gap-1.5 mt-1">
                       {templatesForSubject.length > 0 && (
@@ -752,6 +773,24 @@ export default function LessonExpandedDialog({ open, onOpenChange, event }) {
                   );
                 })}
               </div>
+            </Section>
+          )}
+
+          {!isMeeting && (
+            <Section
+              icon={HeartHandshake}
+              label="För vikarie"
+              hint="Syns i den delade vikarie-länken"
+              testId="section-substitute"
+            >
+              <AutoTextarea
+                testId="expanded-substitute-note"
+                value={substituteNote}
+                onChange={setSubstituteNote}
+                onBlur={() => persist({ substituteNote })}
+                placeholder="Extra info till vikarien – t.ex. rutiner, elever att uppmärksamma, klassregler…"
+                rows={3}
+              />
             </Section>
           )}
 

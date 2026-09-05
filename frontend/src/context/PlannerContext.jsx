@@ -204,6 +204,16 @@ export const PlannerProvider = ({ children }) => {
   };
   const deleteLessonTemplate = (id) =>
     setState((s) => ({ ...s, lessonTemplates: (s.lessonTemplates || []).filter((t) => t.id !== id) }));
+  const renameLessonTemplate = (id, name) =>
+    setState((s) => ({
+      ...s,
+      lessonTemplates: (s.lessonTemplates || []).map((t) => (t.id === id ? { ...t, name } : t)),
+    }));
+  const updateLessonTemplate = (id, patch) =>
+    setState((s) => ({
+      ...s,
+      lessonTemplates: (s.lessonTemplates || []).map((t) => (t.id === id ? { ...t, ...patch } : t)),
+    }));
   const applyLessonTemplate = (eventId, templateId) => {
     setState((s) => {
       const tpl = (s.lessonTemplates || []).find((t) => t.id === templateId);
@@ -627,7 +637,7 @@ export const PlannerProvider = ({ children }) => {
       addTimetableSlot, deleteTimetableSlot,
       upsertEvent, deleteEvent, toggleEventCompleted, duplicateEvent,
       deleteEventInSeries, updateEventInSeries,
-      addLessonTemplate, deleteLessonTemplate, applyLessonTemplate,
+      addLessonTemplate, deleteLessonTemplate, applyLessonTemplate, renameLessonTemplate, updateLessonTemplate,
       addMaterialToEvent, removeMaterialFromEvent, addPrintTaskForMaterial,
       moveEventToDate, copyEventsBetweenDates,
       addUnit, updateUnit, deleteUnit,
