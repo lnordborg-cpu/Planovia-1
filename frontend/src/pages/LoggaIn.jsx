@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { PlanoviaFull } from "@/components/PlanoviaLogo";
+import { PlanoviaMark } from "@/components/PlanoviaLogo";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,8 +51,34 @@ export default function LoggaIn() {
       data-testid="page-logga-in"
     >
       <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
-          <PlanoviaFull iconSize={72} />
+        <div className="flex flex-col items-center text-center mb-8">
+          <PlanoviaMark size={72} />
+          <div
+            className="mt-4 font-display font-bold tracking-tight"
+            style={{ color: "#3B4A44", fontSize: 30, lineHeight: 1 }}
+          >
+            Planovia
+          </div>
+          <div className="mt-1.5 text-xs tracking-wide" style={{ color: "#5E6B65" }}>
+            Din digitala lärarplanerare
+          </div>
+          <h1
+            className="mt-6 font-display font-semibold tracking-tight text-2xl sm:text-[26px]"
+            style={{ color: "#3B4A44", lineHeight: 1.2, maxWidth: 360 }}
+            data-testid="loggain-headline"
+          >
+            Allt för din lärarvardag – samlat på ett ställe.
+          </h1>
+          <div
+            className="mt-4 flex items-center gap-2.5 text-[10px] uppercase tracking-[0.28em]"
+            data-testid="loggain-core-words"
+          >
+            <span style={{ color: "#718A7F" }}>Samla</span>
+            <span style={{ color: "#78817D" }}>·</span>
+            <span style={{ color: "#B98B8B" }}>Planera</span>
+            <span style={{ color: "#78817D" }}>·</span>
+            <span style={{ color: "#B49E6A" }}>Inspirera</span>
+          </div>
         </div>
 
         <div

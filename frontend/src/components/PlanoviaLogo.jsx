@@ -20,56 +20,36 @@ const CORE_SAMLA = "#718A7F";
 const CORE_PLANERA = "#B98B8B";
 const CORE_INSPIRERA = "#B49E6A";
 
-// Icon-only SVG (tree + heart). Uses viewBox 0 0 64 64.
+// Icon-only official Planovia logo (tree + heart).
+// Uses the uploaded PNG asset – never redrawn, never distorted.
 export const PlanoviaMark = ({ size = 32, className = "", withBackground = false }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 64 64"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
+  <div
     className={className}
+    style={{
+      width: size,
+      height: size,
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      borderRadius: withBackground ? Math.round(size * 0.22) : 0,
+      backgroundColor: withBackground ? "#FFFEFB" : "transparent",
+      flexShrink: 0,
+    }}
     aria-hidden="true"
   >
-    {withBackground && (
-      <rect x="0" y="0" width="64" height="64" rx="14" fill="#FFFEFB" />
-    )}
-    {/* Trunk */}
-    <path
-      d="M32 34 C 32 44, 30 50, 26 56 L 38 56 C 34 50, 32 44, 32 34 Z"
-      fill={TRUNK}
+    <img
+      src="/planovia-logo.png"
+      alt=""
+      width={size}
+      height={size}
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "contain",
+        display: "block",
+      }}
     />
-    {/* Ground line */}
-    <path d="M22 56 L 42 56" stroke={TRUNK} strokeWidth="1.5" strokeLinecap="round" />
-
-    {/* Canopy leaves – overlapping soft ellipses */}
-    {/* Bottom ring */}
-    <circle cx="20" cy="30" r="7.5" fill={LEAF_SAGE} />
-    <circle cx="44" cy="30" r="7.5" fill={LEAF_OLIVE} />
-    <circle cx="26" cy="34" r="6.5" fill={LEAF_BEIGE} />
-    <circle cx="38" cy="34" r="6.5" fill={LEAF_CREAM} />
-    {/* Middle ring */}
-    <circle cx="16" cy="22" r="7" fill={LEAF_OLIVE} />
-    <circle cx="48" cy="22" r="7" fill={LEAF_SAGE} />
-    <circle cx="24" cy="20" r="7" fill={LEAF_CREAM} />
-    <circle cx="40" cy="20" r="7" fill={LEAF_BEIGE} />
-    {/* Top */}
-    <circle cx="32" cy="14" r="7" fill={LEAF_ROSE} />
-    <circle cx="22" cy="14" r="6" fill={LEAF_SAGE} />
-    <circle cx="42" cy="14" r="6" fill={LEAF_OLIVE} />
-
-    {/* Heart nestled in centre of canopy */}
-    <path
-      d="M32 32.5
-         C 32 30.5, 30 28.5, 27.8 28.5
-         C 25.6 28.5, 24 30.2, 24 32.3
-         C 24 35.5, 27.5 37.8, 32 40.5
-         C 36.5 37.8, 40 35.5, 40 32.3
-         C 40 30.2, 38.4 28.5, 36.2 28.5
-         C 34 28.5, 32 30.5, 32 32.5 Z"
-      fill={HEART}
-    />
-  </svg>
+  </div>
 );
 
 // Compact lockup: icon + wordmark (used in sidebar / navigation)

@@ -6,9 +6,10 @@ Build a functional MVP of a digital teacher planner named **Planovia** (formerly
 ## Brand identity (2026-02)
 - Name: **Planovia**
 - Tagline: *Din digitala lärarplanerare*
-- Core words: **Samla · Planera · Inspirera** (login/welcome only, muted sage / dusty rose / warm gold)
-- Logo: stylised knowledge-tree with a dusty-rose heart in the canopy, deep sage trunk. Leaves: muted sage, olive, warm beige, cream, dusty rose. Component `/app/frontend/src/components/PlanoviaLogo.jsx` exports `PlanoviaMark` (icon), `PlanoviaCompact` (sidebar), `PlanoviaStandard` (headers), `PlanoviaFull` (login/welcome).
-- Favicon: `/app/frontend/public/favicon.svg` (tree+heart on cream #FFFEFB).
+- Core words: **Samla · Planera · Inspirera** (muted sage / dusty rose / warm gold)
+- **Official logo (2026-09)**: uploaded PNG at `/app/frontend/public/planovia-logo.png` – tree with dusty-rose heart in the canopy. Used consistently: navigation, welcome page, login page, favicon. Component `/app/frontend/src/components/PlanoviaLogo.jsx` exports `PlanoviaMark` (renders the official PNG) plus `PlanoviaCompact` / `PlanoviaStandard` / `PlanoviaFull` lockups.
+- Favicon: `/planovia-logo.png` (same official mark).
+- **Hero copy (landing / login)**: headline *"Allt för din lärarvardag – samlat på ett ställe."* with supporting paragraph *"Planera undervisningen, samla reflektioner och behåll överblicken. Planovia kopplar samman din planering så att informationen finns där du behöver den – från läsår och vecka till dagens lektion."* Dashboard `/oversikt` retains personal "God morgon" greeting – hero copy never appears there.
 
 ## Architecture
 - React 19 + React Router 7 + Tailwind + shadcn/ui + Lucide + Sonner (toasts) + Recharts
