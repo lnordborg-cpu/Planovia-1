@@ -1,10 +1,14 @@
 import { toISODate, getMondayOfISOWeek, getWeekdays, dateInRange, weekdayIndex } from "./dateUtils";
 import { PRIORITY_VALUES } from "./constants";
+import { expandEventsInRange } from "./recurrence";
 
 // For given ISO year+week, return array of 5 day objects
 export const buildWeekData = ({ year, week, timetable, events, calendarExceptions, followups, autoCompletedSlots = [] }) => {
   const monday = getMondayOfISOWeek(year, week);
   const days = getWeekdays(monday);
+  const rangeStart = toISODate(days[0]);
+  const rangeEnd = toISODate(days[days.length - 1]);
+  const expanded = expandEventsInRange(events, rangeStart, rangeEnd);
   const autoSet = new Set(autoCompletedSlots.map((a) => `${a.slotId}|${a.date}`));
   return days.map((date, i) => {
     const iso = toISODate(date);
@@ -13,7 +17,7 @@ export const buildWeekData = ({ year, week, timetable, events, calendarException
     const exceptionsOnDate = calendarExceptions.filter((e) => dateInRange(iso, e.startDate, e.endDate));
     const hideRegular = exceptionsOnDate.some((e) => e.hideRegularLessons);
 
-    const dayEvents = events.filter((e) => e.date === iso);
+    const dayEvents = expanded.filter((e) => e.date === iso);
 
     // Timetable slots for this weekday, unless a manual lesson already exists at the same time+class+subject
     const slots = hideRegular

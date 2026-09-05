@@ -274,6 +274,7 @@ const TimetableCard = ({ item, planner, onExpandEvent, onMaterialiseSlot }) => {
   const isMeeting = isEvent && data.type === "meeting";
   const isSamtal = isEvent && data.type === "utvecklingssamtal";
   const isAutoDone = !isEvent && data.autoCompleted;
+  const isRecurring = isEvent && (data.recurrence || data._isSeriesOccurrence);
 
   // Position
   const startMin = clamp(item.startMin - START_HOUR * 60, 0, TOTAL_MIN);
@@ -286,7 +287,7 @@ const TimetableCard = ({ item, planner, onExpandEvent, onMaterialiseSlot }) => {
   const leftPct = (item.laneIndex || 0) * laneWidthPct;
 
   const handleClick = () => {
-    if (isEvent) onExpandEvent(data.id);
+    if (isEvent) onExpandEvent(data);
     else onMaterialiseSlot({
       time: data.time,
       endTime: data.endTime,
@@ -304,9 +305,9 @@ const TimetableCard = ({ item, planner, onExpandEvent, onMaterialiseSlot }) => {
   return (
     <button
       onClick={handleClick}
-      draggable={isEvent}
+      draggable={isEvent && !data._isSeriesOccurrence}
       onDragStart={(e) => {
-        if (!isEvent) return;
+        if (!isEvent || data._isSeriesOccurrence) return;
         e.dataTransfer.setData("text/x-event-id", data.id);
         e.dataTransfer.effectAllowed = "move";
       }}
@@ -333,6 +334,7 @@ const TimetableCard = ({ item, planner, onExpandEvent, onMaterialiseSlot }) => {
         </span>
         {isMeeting && <span className="text-[9px] px-1 rounded bg-white/70 uppercase tracking-wider">Möte</span>}
         {isSamtal && <span className="text-[9px] px-1 rounded bg-white/70 uppercase tracking-wider">Samtal</span>}
+        {isRecurring && <span className="text-[9px] px-1 rounded bg-white/70" title="Återkommande" data-testid={`recurring-badge-${data.id}`}>↻</span>}
         {isAutoDone && <span className="text-[9px] flex items-center gap-0.5"><Check className="h-2.5 w-2.5" /></span>}
       </div>
       {!compact && (

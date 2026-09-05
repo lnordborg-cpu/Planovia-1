@@ -11,6 +11,7 @@ import { formatDateLong, fromISODate } from "@/lib/dateUtils";
 import { addMinutes, validateTimePair, findOverlaps, formatTimeRange, DEFAULT_LESSON_MINUTES } from "@/lib/timeUtils";
 import { Sparkles, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import RecurrencePicker from "@/components/dialogs/RecurrencePicker";
 
 const DEFAULT_SAMTAL_TEMPLATE = {
   name: "Utvecklingssamtal (standard)",
@@ -77,6 +78,7 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
   const [participants, setParticipants] = useState("");
   const [meetingType, setMeetingType] = useState("");
   const [addPrepTask, setAddPrepTask] = useState(true);
+  const [recurrence, setRecurrence] = useState(null);
   const [timeError, setTimeError] = useState("");
 
   useEffect(() => {
@@ -94,6 +96,7 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
       setParticipants("");
       setMeetingType("");
       setAddPrepTask(true);
+      setRecurrence(null);
       setTimeError("");
     }
   }, [open, prefill.type, prefill.time, prefill.endTime, prefill.classId, prefill.subjectId, prefill.title]);
@@ -162,6 +165,8 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
         meetingType,
         participants,
         studentId: studentId || null,
+        recurrence: recurrence || undefined,
+        seriesId: recurrence ? (prefill.seriesId || `srs_${Date.now().toString(36)}`) : undefined,
       });
     } else {
       // utvecklingssamtal
@@ -287,16 +292,19 @@ export default function LessonDialog({ open, onOpenChange, date, prefill = {} })
           )}
 
           {type === "meeting" && (
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Möteskategori</Label>
-                <Input data-testid="meeting-type-input" value={meetingType} onChange={(e) => setMeetingType(e.target.value)} className="mt-1" placeholder="Arbetslag, etc." />
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Möteskategori</Label>
+                  <Input data-testid="meeting-type-input" value={meetingType} onChange={(e) => setMeetingType(e.target.value)} className="mt-1" placeholder="Arbetslag, etc." />
+                </div>
+                <div>
+                  <Label className="text-xs uppercase tracking-widest text-[#78817D]">Deltagare</Label>
+                  <Input data-testid="meeting-participants-input" value={participants} onChange={(e) => setParticipants(e.target.value)} className="mt-1" />
+                </div>
               </div>
-              <div>
-                <Label className="text-xs uppercase tracking-widest text-[#78817D]">Deltagare</Label>
-                <Input data-testid="meeting-participants-input" value={participants} onChange={(e) => setParticipants(e.target.value)} className="mt-1" />
-              </div>
-            </div>
+              <RecurrencePicker value={recurrence} onChange={setRecurrence} />
+            </>
           )}
 
           {type === "utvecklingssamtal" && (

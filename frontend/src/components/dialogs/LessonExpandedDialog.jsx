@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import MaterialPreview, { canPreview } from "@/components/dialogs/MaterialPreview";
+import SeriesActionDialog from "@/components/dialogs/SeriesActionDialog";
+import { describeRecurrence } from "@/lib/recurrence";
 
 const PRINTABLE_RE = /\.(pdf|docx?|odt|pptx?|xlsx?|rtf|txt|png|jpe?g)(\?|#|$)/i;
 
@@ -52,9 +54,11 @@ const Section = ({ icon: Icon, label, hint, children, testId }) => (
   </section>
 );
 
-export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
+export default function LessonExpandedDialog({ open, onOpenChange, event }) {
   const planner = usePlanner();
-  const event = planner.events.find((e) => e.id === eventId);
+  const isSeries = !!(event?.recurrence || event?._isSeriesOccurrence);
+  const templateId = event?._seriesTemplateId || event?.id;
+  const [seriesAction, setSeriesAction] = useState(null); // { mode: 'edit'|'delete', pending?: {...} }
 
   // Meta editing (title, date, class, subject, unit)
   const [metaEdit, setMetaEdit] = useState(false);
@@ -117,35 +121,86 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
   const klass = planner.classes.find((c) => c.id === (metaEdit ? meta.classId : event.classId));
   const unit = planner.units.find((u) => u.id === event.unitId);
   const color = subject ? getSubjectColor(subject.colorId) : null;
-  const linkedNotes = planner.studentNotes.filter((n) => n.linkedEventId === event.id);
+  const linkedNotes = planner.studentNotes.filter((n) => n.linkedEventId === templateId);
 
   // ---- helpers ------------------------------------------------------------
-  const persist = (patch) => planner.upsertEvent({ ...event, ...patch });
+  // For non-series events: patch directly. For series occurrences: prompt scope.
+  const persist = (patch) => {
+    if (isSeries) {
+      // Free-text section auto-saves apply to the WHOLE series (they're shared metadata)
+      const shareable = ["goals", "plan", "notes", "preparation", "homework", "assessment"];
+      const isShareable = Object.keys(patch).every((k) => shareable.includes(k));
+      if (isShareable) {
+        planner.updateEventInSeries(event, patch, "all");
+        return;
+      }
+      // Otherwise open scope dialog with the pending patch
+      setSeriesAction({ mode: "edit", patch });
+      return;
+    }
+    planner.upsertEvent({ ...event, ...patch });
+  };
+
+  const persistDirect = (patch) => {
+    // Used inside SeriesActionDialog handler where the scope is already decided.
+    if (!isSeries) { planner.upsertEvent({ ...event, ...patch }); return; }
+  };
 
   const saveTime = () => {
     const v = validateTimePair(start, end);
     if (!v.ok) { setTimeError(v.message); return; }
     setTimeError("");
-    persist({ time: v.start, endTime: v.end });
+    if (isSeries) {
+      setSeriesAction({ mode: "edit", patch: { time: v.start, endTime: v.end } });
+      return;
+    }
+    planner.upsertEvent({ ...event, time: v.start, endTime: v.end });
     setEditingTime(false);
     toast.success("Tid uppdaterad");
   };
 
   const saveMeta = () => {
-    persist({
+    const patch = {
       title: meta.title.trim() || event.title,
       date: meta.date || event.date,
       classId: meta.classId || null,
       subjectId: meta.subjectId || null,
       unitId: meta.unitId || null,
-    });
+    };
+    if (isSeries) { setSeriesAction({ mode: "edit", patch }); return; }
+    planner.upsertEvent({ ...event, ...patch });
     setMetaEdit(false);
     toast.success("Lektionen uppdaterad");
   };
 
+  const remove = () => {
+    if (isSeries) { setSeriesAction({ mode: "delete" }); return; }
+    planner.deleteEvent(event.id);
+    onOpenChange(false);
+  };
+
+  const applySeriesChoice = (scope) => {
+    if (!seriesAction) return;
+    if (seriesAction.mode === "delete") {
+      planner.deleteEventInSeries(event, scope);
+      toast.success("Mötesserien uppdaterad");
+      setSeriesAction(null);
+      onOpenChange(false);
+      return;
+    }
+    // edit
+    planner.updateEventInSeries(event, seriesAction.patch, scope);
+    setEditingTime(false);
+    setMetaEdit(false);
+    setSeriesAction(null);
+    toast.success(scope === "all" ? "Hela serien uppdaterad" : scope === "future" ? "Detta och framtida uppdaterade" : "Endast detta tillfälle uppdaterat");
+    // Close panel because a virtual occurrence's ID has changed
+    onOpenChange(false);
+  };
+
   const addMaterial = () => {
     if (!matName.trim()) return;
-    planner.addMaterialToEvent(event.id, { name: matName.trim(), url: matUrl.trim() });
+    planner.addMaterialToEvent(templateId, { name: matName.trim(), url: matUrl.trim() });
     const isPdf = /\.pdf(\?|#|$)/i.test(matName.trim()) || /\.pdf(\?|#|$)/i.test(matUrl.trim());
     if (isPdf) setConfirmPrint({ name: matName.trim() });
     setMatName(""); setMatUrl("");
@@ -160,7 +215,7 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
         if (file.size > 20 * 1024 * 1024) { toast.error(`${file.name} är för stor (max 20MB).`); continue; }
         const uploaded = await uploadFile(file);
         const subcategory = autoClassifyMaterial(file.name);
-        planner.addMaterialToEvent(event.id, { ...uploaded, subjectId: event.subjectId || null, subcategory });
+        planner.addMaterialToEvent(templateId, { ...uploaded, subjectId: event.subjectId || null, subcategory });
         addedNames.push(file.name);
       } catch (err) {
         toast.error(`Kunde inte ladda upp ${file.name}: ${err.message || ""}`);
@@ -168,7 +223,7 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
     }
     setUploading(false);
     addedNames.forEach((name) => {
-      if (PRINTABLE_RE.test(name)) planner.addPrintTaskForMaterial(event.id, name, event.date);
+      if (PRINTABLE_RE.test(name)) planner.addPrintTaskForMaterial(templateId, name, event.date);
     });
     if (addedNames.length > 0) {
       const printable = addedNames.filter((n) => PRINTABLE_RE.test(n)).length;
@@ -182,10 +237,8 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
   const removeMaterial = (id) => {
     const m = (event.materials || []).find((x) => x.id === id);
     if (m && m.fileId) deleteFile(m.fileId);
-    planner.removeMaterialFromEvent(event.id, id);
+    planner.removeMaterialFromEvent(templateId, id);
   };
-
-  const remove = () => { planner.deleteEvent(event.id); onOpenChange(false); };
 
   // ---- render -------------------------------------------------------------
   return (
@@ -229,12 +282,17 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
                   placeholder="Rubrik"
                 />
               )}
-              <div className="mt-1 flex items-center gap-2 text-sm text-[#78817D]">
+              <div className="mt-1 flex items-center gap-2 text-sm text-[#78817D] flex-wrap">
                 <span>{formatDateLong(fromISODate(event.date))}</span>
                 <span className="text-[#DEDAD2]">·</span>
                 <span className="font-medium text-[#293330] tabular-nums">
                   {formatTimeRange(event.time, event.endTime)}
                 </span>
+                {event.recurrence && (
+                  <span className="text-[10px] uppercase tracking-widest bg-[#F0F5FA] text-[#2C5282] border border-[#D6E4F0] px-2 py-0.5 rounded" data-testid="recurrence-badge">
+                    ↻ {describeRecurrence(event.recurrence)}
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex flex-col items-end gap-1">
@@ -518,7 +576,7 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
                 <Checkbox
                   data-testid="expanded-completed"
                   checked={!!event.completed}
-                  onCheckedChange={() => planner.toggleEventCompleted(event.id)}
+                  onCheckedChange={() => planner.toggleEventCompleted(templateId)}
                 />
                 Genomförd
               </label>
@@ -535,6 +593,13 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
 
       <MaterialPreview material={previewMaterial} onOpenChange={(v) => !v && setPreviewMaterial(null)} />
 
+      <SeriesActionDialog
+        open={!!seriesAction}
+        onOpenChange={(v) => !v && setSeriesAction(null)}
+        mode={seriesAction?.mode}
+        onChoose={applySeriesChoice}
+      />
+
       <AlertDialog open={!!confirmPrint} onOpenChange={(v) => !v && setConfirmPrint(null)}>
         <AlertDialogContent data-testid="print-confirm-dialog">
           <AlertDialogHeader>
@@ -548,7 +613,7 @@ export default function LessonExpandedDialog({ open, onOpenChange, eventId }) {
             <AlertDialogAction
               data-testid="print-confirm"
               onClick={() => {
-                planner.addPrintTaskForMaterial(event.id, confirmPrint.name, event.date);
+                planner.addPrintTaskForMaterial(templateId, confirmPrint.name, event.date);
                 setConfirmPrint(null);
               }}
               className="bg-[#718A7F] hover:bg-[#5C7267]"

@@ -183,6 +183,112 @@ export const PlannerProvider = ({ children }) => {
       events: s.events.map((e) => (e.id === id ? { ...e, completed: !e.completed } : e)),
     }));
 
+  // ------- Series operations (recurring meetings) -------
+  // scope: 'single' | 'future' | 'all'
+  const deleteEventInSeries = (occurrence, scope) => {
+    const templateId = occurrence._seriesTemplateId || occurrence.id;
+    const occurrenceDate = occurrence.date;
+    if (scope === "all") {
+      deleteEvent(templateId);
+      return;
+    }
+    if (scope === "single") {
+      setState((s) => ({
+        ...s,
+        events: s.events.map((e) => {
+          if (e.id !== templateId) return e;
+          const excs = new Set(e.recurrence?.exceptions || []);
+          excs.add(occurrenceDate);
+          return { ...e, recurrence: { ...e.recurrence, exceptions: [...excs] } };
+        }),
+      }));
+      return;
+    }
+    if (scope === "future") {
+      // Cap the series to end the day before this occurrence
+      const prev = new Date(occurrenceDate + "T00:00:00");
+      prev.setDate(prev.getDate() - 1);
+      const cap = prev.toISOString().slice(0, 10);
+      setState((s) => ({
+        ...s,
+        events: s.events
+          .map((e) => (e.id === templateId ? { ...e, recurrence: { ...e.recurrence, ends: { type: "date", date: cap } } } : e))
+          // If the template itself is being "future"-deleted (this is the first occurrence),
+          // simply remove the template.
+          .filter((e) => !(e.id === templateId && e.date >= occurrenceDate)),
+      }));
+    }
+  };
+
+  // Apply a patch (usually time/endTime/title changes) to a series occurrence.
+  // scope: 'single' | 'future' | 'all'
+  const updateEventInSeries = (occurrence, patch, scope) => {
+    const templateId = occurrence._seriesTemplateId || occurrence.id;
+    if (scope === "all") {
+      setState((s) => ({
+        ...s,
+        events: s.events.map((e) => (e.id === templateId ? { ...e, ...patch } : e)),
+      }));
+      return;
+    }
+    if (scope === "single") {
+      // Add exception to template + create an override event on that occurrence date
+      const occDate = occurrence.date;
+      const override = {
+        id: uid(),
+        ...occurrence, // includes materials, notes, etc. from template
+        ...patch,
+        date: occDate,
+        recurrence: undefined,
+        _seriesTemplateId: undefined,
+        _isSeriesOccurrence: undefined,
+      };
+      delete override._seriesTemplateId;
+      delete override._isSeriesOccurrence;
+      delete override.recurrence;
+      setState((s) => ({
+        ...s,
+        events: [
+          ...s.events.map((e) => {
+            if (e.id !== templateId) return e;
+            const excs = new Set(e.recurrence?.exceptions || []);
+            excs.add(occDate);
+            return { ...e, recurrence: { ...e.recurrence, exceptions: [...excs] } };
+          }),
+          override,
+        ],
+      }));
+      return;
+    }
+    if (scope === "future") {
+      // Cap the old series to end the day before this occurrence
+      const occDate = occurrence.date;
+      const prev = new Date(occDate + "T00:00:00");
+      prev.setDate(prev.getDate() - 1);
+      const cap = prev.toISOString().slice(0, 10);
+      // New series starts from this occurrence with the patch applied
+      const newSeries = {
+        id: uid(),
+        ...occurrence,
+        ...patch,
+        date: occDate,
+        recurrence: { ...occurrence.recurrence, exceptions: [] },
+        seriesId: uid(),
+        _seriesTemplateId: undefined,
+        _isSeriesOccurrence: undefined,
+      };
+      delete newSeries._seriesTemplateId;
+      delete newSeries._isSeriesOccurrence;
+      setState((s) => ({
+        ...s,
+        events: [
+          ...s.events.map((e) => (e.id === templateId ? { ...e, recurrence: { ...e.recurrence, ends: { type: "date", date: cap } } } : e)),
+          newSeries,
+        ],
+      }));
+    }
+  };
+
   const addMaterialToEvent = (eventId, material) => {
     // material: { name, url }
     setState((s) => ({
@@ -475,6 +581,7 @@ export const PlannerProvider = ({ children }) => {
       addStudent, deleteStudent,
       addTimetableSlot, deleteTimetableSlot,
       upsertEvent, deleteEvent, toggleEventCompleted,
+      deleteEventInSeries, updateEventInSeries,
       addMaterialToEvent, removeMaterialFromEvent, addPrintTaskForMaterial,
       moveEventToDate, copyEventsBetweenDates,
       addUnit, updateUnit, deleteUnit,

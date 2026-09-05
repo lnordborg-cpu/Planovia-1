@@ -33,7 +33,7 @@ export default function Veckoplanering() {
     return { year: y, week: w };
   });
   const [dialogState, setDialogState] = useState(null); // { date, prefill }
-  const [expandedEventId, setExpandedEventId] = useState(null);
+  const [expandedEvent, setExpandedEvent] = useState(null);
   const initialFilter = loadFilter();
   const [filterClassId, setFilterClassId] = useState(initialFilter.classId);
   const [filterSubjectId, setFilterSubjectId] = useState(initialFilter.subjectId);
@@ -194,7 +194,7 @@ export default function Veckoplanering() {
         weekData={weekData}
         planner={planner}
         onAdd={(date, prefill) => setDialogState({ date, prefill })}
-        onExpandEvent={(id) => setExpandedEventId(id)}
+        onExpandEvent={(ev) => setExpandedEvent(ev)}
         onMaterialiseSlot={(prefill) => {
           // Same behaviour as clicking a slot: open LessonDialog on the slot's date
           // The slot's date is embedded in the day it comes from; we open it via the
@@ -214,11 +214,11 @@ export default function Veckoplanering() {
           prefill={dialogState.prefill}
         />
       )}
-      {expandedEventId && (
+      {expandedEvent && (
         <LessonExpandedDialog
-          open={!!expandedEventId}
-          onOpenChange={(v) => !v && setExpandedEventId(null)}
-          eventId={expandedEventId}
+          open={!!expandedEvent}
+          onOpenChange={(v) => !v && setExpandedEvent(null)}
+          event={expandedEvent}
         />
       )}
     </div>
